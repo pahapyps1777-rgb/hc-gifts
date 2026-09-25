@@ -117,13 +117,11 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .tw-cell.gem{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.5)}
 .tw-cell.boom{background:rgba(248,113,113,.16);border-color:rgba(248,113,113,.5)}
 .tw-lbl{width:52px;text-align:right;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
-/* Slots */
 .slots-frame{background:var(--bg);border:1px solid var(--border2);border-radius:16px;padding:14px;display:flex;justify-content:center;gap:9px;margin-bottom:12px}
-.slots-reel{width:64px;height:74px;border-radius:12px;background:var(--surface2);border:1px solid var(--border2);display:grid;place-items:center;font-size:38px;will-change:transform}
+.slots-reel{width:64px;height:74px;border-radius:12px;background:var(--surface2);border:1px solid var(--border2);display:grid;place-items:center;font-size:38px}
 .slots-reel.spin{animation:reelSpin .12s linear infinite}
 @keyframes reelSpin{0%{transform:translateY(-6px)}50%{transform:translateY(6px)}100%{transform:translateY(-6px)}}
 .slots-reel.hit{box-shadow:0 0 0 2px var(--gold),0 0 24px -4px var(--gold)}
-/* Roulette */
 .roul-strip-wrap{position:relative;overflow:hidden;height:84px;border-radius:14px;background:var(--bg);border:1px solid var(--border2);margin-bottom:12px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
 .roul-strip{display:flex;align-items:center;height:100%;will-change:transform}
 .roul-cell{flex:0 0 48px;width:48px;height:66px;margin-right:6px;border-radius:11px;display:grid;place-items:center;font-family:var(--mono);font-weight:800;font-size:16px;color:#fff}
@@ -137,6 +135,32 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .roul-pick .btn.sel-red{background:linear-gradient(135deg,#DC2626,#991B1B);border-color:rgba(255,255,255,.3)}
 .roul-pick .btn.sel-green{background:linear-gradient(135deg,#16A34A,#14532D);border-color:rgba(255,255,255,.3)}
 .roul-pick .btn.sel-black{background:linear-gradient(135deg,#3F3F46,#18181B);border-color:rgba(255,255,255,.3)}
+/* Limbo */
+.limbo-disp{text-align:center;font-family:var(--mono);font-size:52px;font-weight:800;height:86px;line-height:86px;color:var(--muted)}
+.limbo-disp.win{color:var(--green)}.limbo-disp.lose{color:var(--red)}
+.limbo-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:12px}
+.limbo-meta b{color:var(--text);font-family:var(--mono)}
+/* Hi-Lo */
+.hilo-stage{display:flex;align-items:center;justify-content:center;gap:22px;height:130px;margin-bottom:10px}
+.hilo-card{width:82px;height:114px;border-radius:13px;background:linear-gradient(160deg,#F8FAFC,#CBD5E1);color:#0F172A;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;box-shadow:0 10px 26px rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.6)}
+.hilo-card .r{font-size:34px;line-height:1}
+.hilo-card .s{font-size:26px;margin-top:4px}
+.hilo-card.red{color:#B91C1C}
+.hilo-card.next{transform:scale(.92);opacity:.75}
+.hilo-card.flip{animation:hiloFlip .5s cubic-bezier(.2,.7,.3,1)}
+@keyframes hiloFlip{0%{transform:rotateY(90deg) scale(.8);opacity:.3}100%{transform:rotateY(0) scale(.92);opacity:.75}}
+.hilo-vs{font-family:var(--mono);font-size:20px;color:var(--muted2);font-weight:800}
+.hilo-odds{display:flex;gap:9px;margin-bottom:12px}
+.hilo-odds .btn{flex:1;padding:12px}
+.hilo-odds small{display:block;font-size:9.5px;opacity:.75;font-family:var(--mono)}
+/* Keno */
+.keno-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:10px}
+.keno-cell{aspect-ratio:1;border-radius:9px;background:var(--surface2);border:1px solid var(--border2);font-family:var(--mono);font-size:12px;font-weight:700;display:grid;place-items:center;color:var(--muted)}
+.keno-cell.sel{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-txt)}
+.keno-cell.drawn{border-color:rgba(255,255,255,.35);color:var(--text)}
+.keno-cell.hit{background:rgba(52,211,153,.2);border-color:var(--green);color:var(--green);box-shadow:0 0 12px -3px var(--green)}
+.keno-info{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:10px}
+.keno-info b{color:var(--text);font-family:var(--mono)}
 .upg-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px 14px 14px;text-align:center}
 .upg-wheel{position:relative;width:212px;height:212px;margin:8px auto 2px}
 .upg-dial{width:100%;height:100%;border-radius:50%;border:1px solid var(--border2);box-shadow:0 12px 36px rgba(0,0,0,.55),inset 0 0 0 7px rgba(0,0,0,.28);will-change:transform}
@@ -249,12 +273,20 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .rl-marker::before,.rl-marker::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border:6px solid transparent}
 .rl-marker::before{top:-1px;border-top:7px solid var(--accent-txt)}
 .rl-marker::after{bottom:-1px;border-bottom:7px solid var(--accent-txt)}
+.multi-bar{display:none;margin-top:10px;text-align:center;font-family:var(--mono);font-weight:800;font-size:14px;color:var(--accent-txt)}
+.multi-bar.show{display:block}
 .roll-result{display:none;margin-top:14px;padding:15px;border-radius:16px;text-align:center;background:var(--surface2);border:1px solid var(--bc)}
 .roll-result.show{display:block;animation:popIn .4s}
 .rr-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
 .rr-emoji{font-size:46px;line-height:1.1}
 .rr-name{font-size:16px;font-weight:800;margin-top:5px}
 .rr-val{font-family:var(--mono);font-size:12px;color:var(--muted);margin:4px 0 13px}
+.rr-list{max-height:150px;overflow-y:auto;margin:8px 0 12px;text-align:left}
+.rr-li{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:9px;font-size:12.5px}
+.rr-li:nth-child(odd){background:rgba(255,255,255,.04)}
+.rr-li .le{font-size:18px}
+.rr-li .ln{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.rr-li .lv{font-family:var(--mono);color:var(--muted)}
 .rr-btns{display:flex;gap:9px}.rr-btns .btn{flex:1;padding:11px}
 .chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
 .chip i{width:6px;height:6px;border-radius:50%;display:inline-block}
@@ -326,7 +358,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
     </section>
 
     <section class="pane" id="pane-games">
-      <div class="section-title"><span class="tt">Мини-игры</span><span class="st-action">играй на HC</span></div>
+      <div class="section-title"><span class="tt">Мини-игры</span><span class="st-action">12 игр</span></div>
       <div class="game-grid" id="gameGrid"></div>
     </section>
 
@@ -487,12 +519,26 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
     <button class="icon-btn" id="rollClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="sheet-sub" id="rollSub"></div>
   <div class="rl-window"><div class="rl-strip" id="rlStrip"></div><div class="rl-marker"></div></div>
+  <div class="multi-bar" id="multiBar"></div>
   <div class="roll-result" id="rollResult">
-    <div class="rr-label">Вы выиграли</div><div class="rr-emoji" id="rrEmoji">🎁</div>
-    <div class="rr-name" id="rrName">—</div><div class="rr-val" id="rrVal">—</div>
-    <div class="rr-btns"><button class="btn btn-ghost" id="rrSell">Продать</button><button class="btn" id="rrAgain">Ещё раз</button></div>
+    <div class="rr-label" id="rrLabel">Вы выиграли</div>
+    <div id="rrSingle">
+      <div class="rr-emoji" id="rrEmoji">🎁</div>
+      <div class="rr-name" id="rrName">—</div>
+      <div class="rr-val" id="rrVal">—</div>
+    </div>
+    <div id="rrMulti" style="display:none">
+      <div class="rr-list" id="rrList"></div>
+      <div class="rr-val" id="rrTotal" style="margin-top:0"></div>
+    </div>
+    <div class="rr-btns">
+      <button class="btn btn-ghost" id="rrSell">Продать</button>
+      <button class="btn" id="rrAgain">Ещё раз</button>
+    </div>
   </div>
-  <div class="section-title" style="margin-top:16px"><span class="tt">Содержимое и шансы</span></div>
+  <div class="section-title" style="margin-top:16px"><span class="tt">Сколько открыть</span></div>
+  <div class="chips" id="openCountChips" style="grid-template-columns:repeat(5,1fr)"></div>
+  <div class="section-title"><span class="tt">Содержимое и шансы</span></div>
   <div id="cntList"></div>
 </div></div>
 
@@ -584,11 +630,47 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
   <div class="game-res" id="roulRes"></div>
   <div class="roul-pick">
     <button class="btn btn-ghost sel-red" id="rRed">Красное x2</button>
-    <button class="btn btn-ghost" id="rGreen">🟢 Зеро x14</button>
+    <button class="btn btn-ghost" id="rGreen">🟢 x14</button>
     <button class="btn btn-ghost" id="rBlack">Чёрное x2</button>
   </div>
   <div class="field"><label>Ставка</label><input class="inp" id="roulBet" type="text" inputmode="numeric" placeholder="100" maxlength="9"></div>
   <button class="btn btn-block" id="roulPlay">Крутить рулетку</button>
+</div></div>
+
+<div class="overlay" id="ovLimbo"><div class="sheet">
+  <div class="sheet-head"><div class="sheet-title">📈 Limbo</div><button class="icon-btn" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="limbo-disp" id="limboDisp">—</div>
+  <div class="game-res" id="limboRes"></div>
+  <div class="limbo-meta"><span>Цель: <b id="limboTarget">x2.00</b></span><span>Шанс: <b id="limboChance">49.5%</b></span></div>
+  <div class="field"><label>Целевой множитель (1.01–1000)</label><input class="inp" id="limboTargetInp" type="text" inputmode="decimal" placeholder="2.00" maxlength="8"></div>
+  <div class="field"><label>Ставка</label><input class="inp" id="limboBet" type="text" inputmode="numeric" placeholder="100" maxlength="9"></div>
+  <button class="btn btn-block" id="limboPlay">Играть</button>
+</div></div>
+
+<div class="overlay" id="ovHilo"><div class="sheet">
+  <div class="sheet-head"><div class="sheet-title">🃏 Hi-Lo</div><button class="icon-btn" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="hilo-stage">
+    <div class="hilo-card" id="hiloCard">🂠</div>
+    <div class="hilo-vs">→</div>
+    <div class="hilo-card next" id="hiloNext">?</div>
+  </div>
+  <div class="game-res" id="hiloRes"></div>
+  <div class="hilo-odds">
+    <button class="btn" id="hiloHi">⬆ Выше<small id="hiloHiOdds">x—</small></button>
+    <button class="btn" id="hiloLo">⬇ Ниже<small id="hiloLoOdds">x—</small></button>
+  </div>
+  <div class="field"><label>Ставка</label><input class="inp" id="hiloBet" type="text" inputmode="numeric" placeholder="100" maxlength="9"></div>
+  <button class="btn btn-ghost btn-block" id="hiloNew" style="margin-bottom:9px">🔀 Новая карта</button>
+  <button class="btn btn-block" id="hiloFree" disabled style="opacity:.5">Дальше (бесплатно после ставки)</button>
+</div></div>
+
+<div class="overlay" id="ovKeno"><div class="sheet">
+  <div class="sheet-head"><div class="sheet-title">🎱 Keno</div><button class="icon-btn" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="keno-info"><span>Выбрано: <b id="kenoCount">0</b>/10</span><span>Совпадений: <b id="kenoHits">—</b></span></div>
+  <div class="keno-grid" id="kenoGrid"></div>
+  <div class="game-res" id="kenoRes"></div>
+  <div class="field"><label>Ставка</label><input class="inp" id="kenoBet" type="text" inputmode="numeric" placeholder="100" maxlength="9"></div>
+  <button class="btn btn-block" id="kenoPlay">Разыграть (10 из 40)</button>
 </div></div>
 
 <div class="overlay" id="ovTopup"><div class="sheet">
@@ -642,7 +724,10 @@ const nick = () => pick(NAME_A) + pick(NAME_B) + (Math.random() < .55 ? Math.flo
 const AVATARS = ['🦊','🐼','🐸','🦁','🐯','🐙','🦄','🐨','🐺','🐵','🦉','🐳'];
 const LS_TOKEN = 'hc_gifts_token_v1', LS_SOUND = 'hc_gifts_sound_v1';
 const CELL = 86, GAP = 9, STEP = CELL + GAP;
-const HIGH_RAR = ['legendary','mythic','divine','secret','radiant','astral','eternal','celestial','primal','chrono','ascended','omega','void','absolute','limited'];
+const HIGH_RAR = ['legendary','mythic','divine','secret','radiant','astral','eternal','celestial','primal','chrono','ascended','omega','void','absolute','limited','nova','apex','transcend'];
+const HILO_RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const HILO_VAL = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
+const HILO_SUITS = ['♠','♥','♦','♣'];
 
 /* ================= Конфиг с сервера ================= */
 let CFG = null, ITEMS = null, CASES = null, ITEM_IDS = null, LIMITED = new Set(), caseById = id => null;
@@ -903,14 +988,27 @@ setInterval(() => {
   else el.textContent = 'FREE';
 }, 1000);
 
-/* ================= Рулетка кейса (надёжная анимация) ================= */
-const roll = {raf:null, spinning:false, cs:null, winner:null, prizeUid:null, sold:false};
+/* ================= Рулетка кейса (надёжная анимация + мульти) ================= */
+const roll = {raf:null, watchdog:null, spinning:false, cs:null, mode:'single',
+              results:[], multiIdx:0, multiTotal:0, soldAll:false};
+
+function openCountChips(){
+  const cs = caseById(roll.cs.id);
+  const maxN = cs.free ? 1 : (CFG.multiMax || 10);
+  $('#openCountChips').innerHTML = [...Array(maxN).keys()].map(i =>
+    `<button data-n="${i+1}" class="${i+1===roll.openCount?'sel':''}">×${i+1}</button>`).join('');
+  $$('#openCountChips button').forEach(b => b.onclick = () => {
+    roll.openCount = +b.dataset.n;
+    $('#openCountChips .sel') && $('#openCountChips .sel').classList.remove('sel');
+    b.classList.add('sel');
+  });
+}
 
 async function tryOpen(caseId, rowEl){
-  if (roll.spinning) return;
+  if (roll.spinning) return; // защита от двойного клика
   const cs = caseById(caseId);
   let d;
-  try { d = await api('open-case', {caseId}); }
+  try { d = await api('open-case', {caseId, count: roll.openCount || 1}); }
   catch(e){
     if (e.error){
       if (rowEl){ rowEl.classList.remove('shake'); void rowEl.offsetWidth; rowEl.classList.add('shake'); }
@@ -920,50 +1018,48 @@ async function tryOpen(caseId, rowEl){
   }
   if (d.freeAt !== undefined) S.freeAt = d.freeAt;
   if (d.opened !== undefined) S.stats.opened = d.opened;
-  S.inventory.unshift(d.entry);
+  d.results.forEach(r => S.inventory.unshift(r.entry));
   feed.lastReal = Date.now();
 
-  roll.cs = cs; roll.winner = d.item; roll.prizeUid = d.entry.uid; roll.sold = false;
-  $('#rollTitle').textContent = `Открытие «${cs.name}»`;
-  $('#rollSub').textContent = cs.free ? 'Бесплатный кейс · следующий через 10 минут' : `Списано ${fmt(cs.price)} HC`;
+  roll.cs = cs;
+  roll.results = d.results;
+  roll.mode = d.results.length > 1 ? 'multi' : 'single';
+  roll.multiIdx = 0; roll.multiTotal = d.results.length; roll.soldAll = false;
+  $('#rollTitle').textContent = `Открытие «${cs.name}»${d.results.length>1 ? ' ×'+d.results.length : ''}`;
+  $('#rollSub').textContent = cs.free
+    ? 'Бесплатный кейс · следующий через 10 минут'
+    : `Списано ${fmt(cs.price * d.results.length)} HC`;
   $('#rollResult').classList.remove('show');
+  $('#multiBar').classList.remove('show');
   renderContents(cs);
-  /* Анимация подготовки на плитке */
+  openCountChips();
+
   if (rowEl){ rowEl.classList.remove('armed'); void rowEl.offsetWidth; rowEl.classList.add('armed'); }
   beep(300,.12,'sine',.06); beep(450,.12,'sine',.06,.13);
   setTimeout(() => {
     if (rowEl) rowEl.classList.remove('armed');
     openOv('#ovRoll');
-    /* Ждём кадр, чтобы overlay отрисовался и clientWidth был корректным */
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      try { startSpin(); }
-      catch(err){ /* страховка: спин всегда завершаем */
-        roll.spinning = false;
-        finishSpinStatic();
-      }
-    }));
+    requestAnimationFrame(() => requestAnimationFrame(() => runSequence()));
   }, 520);
 }
 
-function finishSpinStatic(){
-  /* fallback, если анимация не смогла начаться */
-  const id = roll.winner, r = RARC(itR(id));
-  $('#rrEmoji').textContent = itE(id);
-  $('#rrName').textContent = itN(id);
-  $('#rrName').style.color = r.c;
-  $('#rrVal').innerHTML = `<span class="chip" style="color:${r.c}"><i style="background:${r.c}"></i>${r.label}</span> · ценность ≈ ${fmt(itV(id))} HC`;
-  $('#rrSell').disabled = false; $('#rrSell').textContent = `Продать${isLim(id)?' (🔒 недоступно)':' +'+fmt(itV(id))}`;
-  $('#rrResult').classList.add('show');
-  winSnd(itR(id));
+/* Последовательность спинов: одиночный — 1 длинный, мульти — короткие по очереди */
+function runSequence(){
+  roll.spinning = true;
+  if (roll.mode === 'multi'){
+    $('#multiBar').textContent = `${roll.multiIdx+1} / ${roll.multiTotal}`;
+    $('#multiBar').classList.add('show');
+  }
+  const winItem = roll.results[roll.mode === 'multi' ? roll.multiIdx : 0].item;
+  startSpin(winItem, roll.mode === 'multi' ? 1300 + Math.random()*300 : 4600 + Math.random()*900);
 }
 
-function startSpin(){
-  roll.spinning = true;
+function startSpin(winItem, dur){
   const winEl = $('#rlWindow'), W = winEl.clientWidth || 380, strip = $('#rlStrip');
   const N = 64, WIN = 56;
   strip.innerHTML = ''; strip.style.transform = 'translateX(0px)';
   for (let i = 0; i < N; i++){
-    const id = i === WIN ? roll.winner : pickLocal(roll.cs.drops);
+    const id = i === WIN ? winItem : pickLocal(roll.cs.drops);
     const rc = RARC(itR(id));
     const c = rc.c, el = document.createElement('div');
     el.className = 'rl-cell' + (HIGH_RAR.includes(itR(id)) ? ' glow' : '');
@@ -979,48 +1075,117 @@ function startSpin(){
   const off1 = W/2 - (WIN*STEP + CELL/2) + jitter;
   strip.style.transform = `translateX(${off0}px)`;
   void strip.offsetWidth;
-  const dur = 4600 + Math.random()*900, t0 = performance.now();
+  const t0 = performance.now();
   const ease = t => 1 - Math.pow(1-t, 4.2);
-  let lastIdx = 2;
+  let lastIdx = 2, done = false;
   cancelAnimationFrame(roll.raf);
+  clearTimeout(roll.watchdog);
+  /* Страховка: если RAF замер (вкладка спала, ошибка) — принудительно завершаем */
+  roll.watchdog = setTimeout(() => { if (!done) finishSpin(WIN, winItem); }, dur + 1500);
   const frame = now => {
+    if (done) return;
     const t = Math.min(1,(now-t0)/dur);
     const cur = off0 + (off1-off0)*ease(t);
     strip.style.transform = `translateX(${cur}px)`;
     const idx = Math.floor((W/2-cur)/STEP);
     if (idx !== lastIdx){ lastIdx = idx; tickSnd(); }
     if (t < 1) roll.raf = requestAnimationFrame(frame);
-    else finishSpin(WIN);
+    else { done = true; finishSpin(WIN, winItem); }
   };
   roll.raf = requestAnimationFrame(frame);
 }
 
-function finishSpin(winIdx){
-  try{
-    const id = roll.winner, r = RARC(itR(id));
-    const cell = $('#rlStrip').children[winIdx];
-    if (cell) cell.classList.add('won');
-    const rr = $('#rollResult');
-    rr.style.setProperty('--bc', hexA(r.c,.45));
+function finishSpin(winIdx, winItem){
+  clearTimeout(roll.watchdog);
+  const id = winItem, r = RARC(itR(id));
+  const cell = $('#rlStrip').children[winIdx];
+  if (cell) cell.classList.add('won');
+  const res = roll.results.find(x => x.item === id) || roll.results[0];
+  const rr = $('#rollResult');
+  rr.style.setProperty('--bc', hexA(r.c,.45));
+
+  if (roll.mode === 'multi'){
+    /* Показ текущего приза в мульти-режиме */
+    $('#rrLabel').textContent = `Приз ${roll.multiIdx+1}`;
+    $('#rrSingle').style.display = '';
+    $('#rrMulti').style.display = 'none';
     $('#rrEmoji').textContent = itE(id);
     $('#rrName').textContent = itN(id);
     $('#rrName').style.color = r.c;
-    const limTxt = isLim(id) ? ' · 🔒 лимитный (не продаётся)' : '';
-    $('#rrVal').innerHTML = `<span class="chip" style="color:${r.c}"><i style="background:${r.c}"></i>${r.label}</span> · ценность ≈ ${fmt(itV(id))} HC${limTxt}`;
-    const sellBtn = $('#rrSell');
-    if (isLim(id)){ sellBtn.disabled = true; sellBtn.textContent = '🔒 Лимитный предмет'; }
-    else { sellBtn.disabled = false; sellBtn.textContent = `Продать +${fmt(itV(id))}`; }
-    rr.classList.add('show');
-    winSnd(itR(id)); vib(HIGH_RAR.includes(itR(id))?[40,60,80]:30);
-    if (itR(id) === 'epic') burst($('#rollResult'), ['#A855F7','#C4B5FD','#fff']);
-    if (HIGH_RAR.includes(itR(id))){
-      screenFlash(r.c);
-      burst($('#rollResult'), [r.c,'#fff','#C4B5FD']);
+    $('#rrVal').innerHTML = `<span class="chip" style="color:${r.c}"><i style="background:${r.c}"></i>${r.label}</span> · ≈ ${fmt(itV(id))} HC`;
+    roll.multiIdx++;
+    if (roll.multiIdx < roll.multiTotal){
+      rr.classList.add('show');
+      const btn = $('#rrAgain');
+      btn.textContent = 'Следующий →';
+      rr.classList.add('show');
+      winSnd(itR(id));
+      if (HIGH_RAR.includes(itR(id))){ screenFlash(r.c); burst(rr, [r.c,'#fff']); }
+      roll.spinning = false;
+      return;
     }
-  } finally {
-    roll.spinning = false;
+    /* Все открыты — сводка */
+    showMultiSummary();
+    return;
+  }
+
+  /* Одиночный режим */
+  $('#rrLabel').textContent = 'Вы выиграли';
+  $('#rrSingle').style.display = '';
+  $('#rrMulti').style.display = 'none';
+  $('#rrEmoji').textContent = itE(id);
+  $('#rrName').textContent = itN(id);
+  $('#rrName').style.color = r.c;
+  const limTxt = isLim(id) ? ' · 🔒 лимитный (не продаётся)' : '';
+  $('#rrVal').innerHTML = `<span class="chip" style="color:${r.c}"><i style="background:${r.c}"></i>${r.label}</span> · ≈ ${fmt(itV(id))} HC${limTxt}`;
+  const sellBtn = $('#rrSell');
+  const againBtn = $('#rrAgain');
+  if (isLim(id)){ sellBtn.disabled = true; sellBtn.textContent = '🔒 Лимитный'; }
+  else { sellBtn.disabled = false; sellBtn.textContent = `Продать +${fmt(itV(id))}`; roll.soldUid = res.entry.uid; }
+  againBtn.textContent = 'Ещё раз';
+  rr.classList.add('show');
+  roll.spinning = false;
+  winSnd(itR(id)); vib(HIGH_RAR.includes(itR(id))?[40,60,80]:30);
+  if (itR(id) === 'epic') burst(rr, ['#A855F7','#C4B5FD','#fff']);
+  if (HIGH_RAR.includes(itR(id))){
+    screenFlash(r.c);
+    burst(rr, [r.c,'#fff','#C4B5FD']);
   }
 }
+
+function showMultiSummary(){
+  const rr = $('#rollResult');
+  const totalV = roll.results.reduce((s,x) => s + itV(x.item), 0);
+  const best = [...roll.results].sort((a,b) => itV(b.item)-itV(a.item))[0];
+  const br = RARC(itR(best.item));
+  $('#rrLabel').textContent = `Открыто ${roll.multiTotal} кейсов`;
+  $('#rrSingle').style.display = 'none';
+  $('#rrMulti').style.display = '';
+  $('#rrList').innerHTML = roll.results.map((x,i) => {
+    const rc = RARC(itR(x.item));
+    return `<div class="rr-li"><span class="le">${itE(x.item)}</span>
+      <span class="ln" style="color:${HIGH_RAR.includes(itR(x.item))?rc.c:'inherit'}">${itN(x.item)}</span>
+      <span class="lv">${fmt(itV(x.item))}</span></div>`;
+  }).join('');
+  const sellable = roll.results.filter(x => !isLim(x.item));
+  const sellSum = sellable.reduce((s,x) => s + itV(x.item), 0);
+  $('#rrTotal').innerHTML = `Всего ≈ <b style="color:${br.c}">${fmt(totalV)} HC</b> · лучший: ${itE(best.item)} ${itN(best.item)}`;
+  const sellBtn = $('#rrSell'), againBtn = $('#rrAgain');
+  if (sellable.length){
+    sellBtn.disabled = false;
+    sellBtn.textContent = `Продать все +${fmt(sellSum)}`;
+    roll.soldAll = false;
+  } else {
+    sellBtn.disabled = true; sellBtn.textContent = '🔒 Только лимитные';
+  }
+  againBtn.textContent = 'Закрыть';
+  rr.classList.add('show');
+  roll.spinning = false;
+  $('#multiBar').classList.remove('show');
+  winSnd(itR(best.item)); vib([40,60,80]);
+  if (HIGH_RAR.includes(itR(best.item))){ screenFlash(br.c); burst(rr, [br.c,'#fff','#C4B5FD']); }
+}
+
 function renderContents(cs){
   const total = dropTotal(cs);
   const sorted = [...cs.drops].sort((a,b)=>itV(b[0])-itV(a[0]));
@@ -1035,14 +1200,45 @@ function renderContents(cs){
   }).join('');
 }
  $('#rrSell').onclick = async () => {
-  if (!roll.prizeUid || roll.sold) return;
-  if (isLim(roll.winner)){ toast('🔒 Лимитные предметы нельзя продать'); return; }
-  roll.sold = true;
-  await sellItem(roll.prizeUid, true);
+  if (roll.mode === 'multi'){
+    if (roll.soldAll) return;
+    const sellable = roll.results.filter(x => !isLim(x.item));
+    if (!sellable.length){ toast('🔒 Только лимитные предметы'); return; }
+    roll.soldAll = true;
+    for (const x of sellable){
+      try { await api('sell', {uid:x.entry.uid}); } catch(e){ continue; }
+      const idx = S.inventory.findIndex(inv => inv.uid === x.entry.uid);
+      if (idx >= 0) S.inventory.splice(idx,1);
+    }
+    const sum = sellable.reduce((s,x) => s + itV(x.item), 0);
+    toast(`Продано ${sellable.length} шт · +${fmt(sum)} HC`);
+    $('#rrSell').disabled = true; $('#rrSell').textContent = 'Продано';
+    renderProfile(); renderUpgrader();
+    return;
+  }
+  if (!roll.soldUid) return;
+  const uid = roll.soldUid; roll.soldUid = null;
+  await sellItem(uid, true);
   $('#rrSell').disabled = true; $('#rrSell').textContent = 'Продано';
 };
- $('#rrAgain').onclick = () => tryOpen(roll.cs.id);
- $('#rollClose').onclick = () => { if (!roll.spinning) closeOv($('#ovRoll')); };
+ $('#rrAgain').onclick = () => {
+  if (roll.mode === 'multi' && roll.multiIdx >= roll.multiTotal){ closeOv($('#ovRoll')); return; }
+  if (roll.mode === 'multi' && roll.spinning === false && roll.multiIdx < roll.multiTotal){
+    /* Кнопка «Следующий» — просто следующий спин */
+    roll.spinning = false;
+    $('#rollResult').classList.remove('show');
+    requestAnimationFrame(() => requestAnimationFrame(runSequence));
+    return;
+  }
+  tryOpen(roll.cs.id);
+};
+ $('#rollClose').onclick = () => {
+  /* Закрывать можно всегда — спин корректно отменяется */
+  cancelAnimationFrame(roll.raf);
+  clearTimeout(roll.watchdog);
+  roll.spinning = false;
+  closeOv($('#ovRoll'));
+};
 
 /* ================= Апгрейдер ================= */
 const upg = {inputs:new Set(), target:null, busy:false, angle:0, lastChance:0};
@@ -1204,11 +1400,9 @@ async function sellItem(uid, silent){
   if (!S.inventory.length) return;
   try {
     const d = await api('sell-all');
-    const keptLim = S.inventory.filter(x => isLim(x.id));
-    S.inventory = keptLim;
+    S.inventory = S.inventory.filter(x => isLim(x.id));
     upg.inputs.clear(); upg.target = null;
-    toast(`+${fmt(d.balance ? '' : '')}`.replace('+','') || '');
-    toast(d.kept ? `Инвентарь продан · 🔒 лимитных оставлено: ${d.kept}` : 'Инвентарь продан');
+    toast(d.kept ? `Продано ${d.soldCount} шт · 🔒 лимитных оставлено: ${d.kept}` : 'Инвентарь продан');
   } catch(e){ if (e.error) toast(e.error); return; }
   renderProfile(); renderUpgrader();
 };
@@ -1335,7 +1529,7 @@ async function renderTop(){
 
 /* ================= Мини-игры ================= */
 const GAMES = [
-  {id:'coin',e:'🪙',n:'Coin Flip',s:'50/50 · x1.96',c:['#3A2E85','#181238']},
+  {id:'coin',e:'🪙',n:'Coin Flip',s:'x1.96',c:['#3A2E85','#181238']},
   {id:'dice',e:'🎲',n:'Dice',s:'до x49.5',c:['#173B63','#101B33']},
   {id:'mines',e:'💣',n:'Mines',s:'до x8+',c:['#5E2347','#22102A']},
   {id:'crash',e:'📈',n:'Crash',s:'до x250',c:['#1E3A34','#0F1A18']},
@@ -1344,6 +1538,9 @@ const GAMES = [
   {id:'tower',e:'🏰',n:'Tower',s:'до x16',c:['#6B4E1B','#241A0E']},
   {id:'slots',e:'🎰',n:'Slots',s:'до x100',c:['#7F1D1D','#2A0808']},
   {id:'roulette',e:'🔴',n:'Roulette',s:'до x14',c:['#134E4A','#04141F']},
+  {id:'limbo',e:'🚀',n:'Limbo',s:'до x1000',c:['#1E1B4B','#07061A']},
+  {id:'hilo',e:'🃏',n:'Hi-Lo',s:'карты',c:['#14532D','#0A1F10']},
+  {id:'keno',e:'🎱',n:'Keno',s:'до x1000',c:['#4C1D95','#160A33']},
 ];
 function renderGames(){
   $('#gameGrid').innerHTML = GAMES.map(g => `
@@ -1791,17 +1988,11 @@ function slotsLegendBuild(){
   }, 2200);
 };
 /* Roulette */
-const roul = {busy:false, pick:'red', angleStrip:null};
+const roul = {busy:false, pick:'red'};
 const RED_N = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 function roulBuildStrip(){
   const strip = $('#roulStrip');
   if (strip.children.length) return;
-  const cells = [];
-  for (let i = 0; i <= 36; i++){
-    cells.push({n:i, c: i === 0 ? 'green' : (RED_N.has(i) ? 'red' : 'black')});
-  }
-  roul.angleStrip = cells;
-  /* рисуем 60 случайных, победная ставится на позицию 46 при спине */
   for (let i = 0; i < 60; i++){
     const el = document.createElement('div');
     el.className = 'roul-cell';
@@ -1828,13 +2019,12 @@ function roulSetPick(p){
   roulBuildStrip();
   const strip = $('#roulStrip');
   const cells = strip.children;
-  const CW = 54; /* 48 + 6 */
+  const CW = 54;
   const WIN = 46;
-  const cellAt = i => cells[i];
   for (let i = 0; i < 60; i++){
     const n = i === WIN ? d.num : Math.floor(Math.random()*37);
     const c = n === 0 ? 'green' : (RED_N.has(n) ? 'red' : 'black');
-    const el = cellAt(i);
+    const el = cells[i];
     el.className = 'roul-cell ' + c;
     el.textContent = n;
   }
@@ -1855,7 +2045,7 @@ function roulSetPick(p){
     if (idx !== lastIdx){ lastIdx = idx; tickSnd(); }
     if (t < 1) requestAnimationFrame(step);
     else {
-      const wc = cellAt(WIN);
+      const wc = cells[WIN];
       if (wc) wc.classList.add('won');
       const cr = $('#roulRes');
       const colorRu = d.color==='red'?'🔴 красное':(d.color==='black'?'⚫ чёрное':'🟢 зеро');
@@ -1873,6 +2063,179 @@ function roulSetPick(p){
   };
   requestAnimationFrame(step);
 };
+/* Limbo */
+const limbo = {busy:false};
+function limboMeta(){
+  let t = parseFloat(String($('#limboTargetInp').value).replace(',','.')) || 2;
+  t = Math.min(1000, Math.max(1.01, t));
+  $('#limboTarget').textContent = 'x' + t.toFixed(2);
+  $('#limboChance').textContent = (99/t).toFixed(t >= 10 ? 1 : 2) + '%';
+  return t;
+}
+ $('#limboTargetInp').oninput = limboMeta;
+ $('#limboPlay').onclick = async () => {
+  if (limbo.busy) return;
+  const bet = takeBet($('#limboBet')); if (bet === null) return;
+  const target = limboMeta();
+  limbo.busy = true;
+  $('#limboRes').className = 'game-res'; $('#limboRes').textContent = '';
+  const disp = $('#limboDisp'); disp.className = 'limbo-disp';
+  const iv = setInterval(() => { disp.textContent = 'x' + (Math.random()*100+1).toFixed(2); }, 60);
+  let d;
+  try { d = await api('game/limbo', {target, bet}); }
+  catch(e){ clearInterval(iv); limbo.busy = false; if (e.error) toast(e.error); return; }
+  setTimeout(() => {
+    clearInterval(iv);
+    disp.textContent = 'x' + d.result.toFixed(2);
+    disp.classList.add(d.win ? 'win' : 'lose');
+    const cr = $('#limboRes');
+    if (d.win){
+      cr.className = 'game-res win';
+      cr.textContent = `🎉 +${fmt(d.payout)} HC (x${target.toFixed(2)})`;
+      if (target >= 10){ winSnd('legendary'); screenFlash('#34D399'); } else winSnd('rare');
+      vib(30);
+    } else {
+      cr.className = 'game-res lose';
+      cr.textContent = `💨 Нужно было x${target.toFixed(2)}`;
+      beep(150,.25,'sawtooth',.07); vib(50);
+    }
+    limbo.busy = false;
+  }, 800);
+};
+/* Hi-Lo */
+const hilo = {busy:false, cur:null};
+function hiloCardEl(el, cardStr){
+  const rank = cardStr.slice(0, -1), suit = cardStr.slice(-1);
+  el.className = 'hilo-card next' + (suit === '♥' || suit === '♦' ? ' red' : '');
+  el.innerHTML = `<span class="r">${rank}</span><span class="s">${suit}</span>`;
+}
+function hiloOdds(){
+  if (!hilo.cur) return;
+  const v = HILO_VAL[hilo.cur.slice(0,-1)];
+  const pHi = (14 - v) / 13, pLo = (v - 2) / 13;
+  $('#hiloHiOdds').textContent = pHi > 0 ? 'x' + (0.95/pHi).toFixed(2) : '—';
+  $('#hiloLoOdds').textContent = pLo > 0 ? 'x' + (0.95/pLo).toFixed(2) : '—';
+  $('#hiloHi').disabled = pHi <= 0;
+  $('#hiloLo').disabled = pLo <= 0;
+}
+function hiloNewCard(){
+  const r = HILO_RANKS[Math.floor(Math.random()*13)];
+  const s = HILO_SUITS[Math.floor(Math.random()*4)];
+  hilo.cur = r + s;
+  const cardEl = $('#hiloCard');
+  const rank = r, suit = s;
+  cardEl.className = 'hilo-card' + (suit === '♥' || suit === '♦' ? ' red' : '');
+  cardEl.innerHTML = `<span class="r">${rank}</span><span class="s">${suit}</span>`;
+  $('#hiloNext').className = 'hilo-card next';
+  $('#hiloNext').innerHTML = '?';
+  $('#hiloRes').className = 'game-res'; $('#hiloRes').textContent = '';
+  $('#hiloFree').disabled = true; $('#hiloFree').style.opacity = '.5';
+  hiloOdds();
+}
+ $('#hiloNew').onclick = () => { if (!hilo.busy) hiloNewCard(); };
+async function hiloPlay(pick){
+  if (hilo.busy || !hilo.cur) return;
+  const bet = takeBet($('#hiloBet')); if (bet === null) return;
+  hilo.busy = true;
+  $('#hiloRes').className = 'game-res'; $('#hiloRes').textContent = '';
+  let d;
+  try { d = await api('game/hilo', {pick, bet}); }
+  catch(e){ hilo.busy = false; if (e.error) toast(e.error); return; }
+  const nextEl = $('#hiloNext');
+  hiloCardEl(nextEl, d.next);
+  nextEl.classList.add('flip');
+  setTimeout(() => {
+    const cr = $('#hiloRes');
+    if (d.push){
+      cr.className = 'game-res';
+      cr.textContent = `🤝 Ничья — ставка возвращена`;
+    } else if (d.win){
+      cr.className = 'game-res win';
+      cr.textContent = `🎉 +${fmt(d.payout)} HC (x${d.mult.toFixed(2)})`;
+      winSnd('rare'); vib(30);
+    } else {
+      cr.className = 'game-res lose';
+      cr.textContent = '💨 Проигрыш';
+      beep(150,.25,'sawtooth',.07); vib(50);
+    }
+    /* Новая карта становится текущей бесплатно */
+    hilo.cur = d.next;
+    const cardEl = $('#hiloCard');
+    const rank = d.next.slice(0,-1), suit = d.next.slice(-1);
+    cardEl.className = 'hilo-card' + (suit === '♥' || suit === '♦' ? ' red' : '');
+    cardEl.innerHTML = `<span class="r">${rank}</span><span class="s">${suit}</span>`;
+    nextEl.className = 'hilo-card next';
+    nextEl.innerHTML = '?';
+    nextEl.classList.remove('flip');
+    $('#hiloFree').disabled = false; $('#hiloFree').style.opacity = '1';
+    hiloOdds();
+    hilo.busy = false;
+  }, 550);
+}
+ $('#hiloHi').onclick = () => hiloPlay('hi');
+ $('#hiloLo').onclick = () => hiloPlay('lo');
+ $('#hiloFree').onclick = () => { if (!hilo.busy) hiloNewCard(); };
+/* Keno */
+const keno = {busy:false, sel:new Set()};
+function kenoRender(){
+  const g = $('#kenoGrid');
+  g.innerHTML = '';
+  for (let n = 1; n <= 40; n++){
+    const b = document.createElement('button');
+    b.className = 'keno-cell' + (keno.sel.has(n) ? ' sel' : '');
+    b.textContent = n;
+    b.disabled = keno.busy;
+    b.onclick = () => {
+      if (keno.busy) return;
+      if (keno.sel.has(n)) keno.sel.delete(n);
+      else { if (keno.sel.size >= 10){ toast('Максимум 10 чисел'); return; } keno.sel.add(n); }
+      kenoRender();
+    };
+    g.append(b);
+  }
+  $('#kenoCount').textContent = keno.sel.size;
+}
+ $('#kenoPlay').onclick = async () => {
+  if (keno.busy) return;
+  if (!keno.sel.size){ toast('Выбери от 1 до 10 чисел'); return; }
+  const bet = takeBet($('#kenoBet')); if (bet === null) return;
+  keno.busy = true;
+  $('#kenoRes').className = 'game-res'; $('#kenoRes').textContent = '';
+  let d;
+  try { d = await api('game/keno', {picks:[...keno.sel], bet}); }
+  catch(e){ keno.busy = false; if (e.error) toast(e.error); return; }
+  /* Анимация розыгрыша: подсвечиваем выпавшие по очереди */
+  const cells = $$('#kenoGrid .keno-cell');
+  cells.forEach(c => { c.classList.remove('drawn','hit'); });
+  $('#kenoHits').textContent = '…';
+  d.drawn.forEach((n, i) => setTimeout(() => {
+    const cell = cells[n-1];
+    if (cell){
+      cell.classList.add('drawn');
+      if (keno.sel.has(n)) cell.classList.add('hit');
+    }
+    beep(600 + Math.random()*300, .04, 'sine', .04);
+  }, i * 130));
+  setTimeout(() => {
+    $('#kenoHits').textContent = d.hits;
+    const cr = $('#kenoRes');
+    if (d.mult >= 10){
+      cr.className = 'game-res win';
+      cr.textContent = `🎉 ${d.hits} совпадений · x${d.mult}! +${fmt(d.payout)} HC`;
+      winSnd('legendary'); screenFlash('#34D399'); vib([40,60,80]);
+    } else if (d.mult > 0){
+      cr.className = 'game-res win';
+      cr.textContent = `🎉 ${d.hits} совпадений · +${fmt(d.payout)} HC (x${d.mult})`;
+      winSnd('epic'); vib(30);
+    } else {
+      cr.className = 'game-res lose';
+      cr.textContent = `💨 ${d.hits} совпадений — не повезло`;
+      beep(150,.25,'sawtooth',.07); vib(40);
+    }
+    keno.busy = false;
+    kenoRender();
+  }, d.drawn.length * 130 + 300);
+};
 function openGame(id){
   if (id === 'coin'){ $('#coinDisp').textContent='🪙'; $('#coinRes').textContent=''; $('#coinRes').className='game-res'; coinSetSide('heads'); coin.busy=false; openOv('#ovCoin'); }
   if (id === 'dice'){ $('#diceDisp').textContent='50.00'; $('#diceDisp').className='dice-disp'; $('#diceRes').textContent=''; $('#diceRes').className='game-res'; $('#diceRange').value=50; diceMeta(); dice.busy=false; openOv('#ovDice'); }
@@ -1883,6 +2246,9 @@ function openGame(id){
   if (id === 'tower'){ towerReset(); openOv('#ovTower'); }
   if (id === 'slots'){ slotsLegendBuild(); $('#slotsRes').textContent=''; $('#slotsRes').className='game-res'; slots.busy=false; openOv('#ovSlots'); }
   if (id === 'roulette'){ roulSetPick('red'); roulBuildStrip(); $('#roulRes').textContent=''; $('#roulRes').className='game-res'; roul.busy=false; openOv('#ovRoulette'); }
+  if (id === 'limbo'){ $('#limboTargetInp').value='2.00'; limboMeta(); $('#limboDisp').textContent='—'; $('#limboDisp').className='limbo-disp'; $('#limboRes').textContent=''; $('#limboRes').className='game-res'; limbo.busy=false; openOv('#ovLimbo'); }
+  if (id === 'hilo'){ hilo.busy=false; hiloNewCard(); $('#hiloBet').value=''; openOv('#ovHilo'); }
+  if (id === 'keno'){ keno.busy=false; keno.sel.clear(); kenoRender(); $('#kenoHits').textContent='—'; $('#kenoRes').textContent=''; $('#kenoRes').className='game-res'; openOv('#ovKeno'); }
 }
 
 /* ================= Промокод ================= */
@@ -2133,6 +2499,7 @@ function bootApp(){
   $('#appRoot').style.visibility = 'visible';
   shownBal = S.balance;
   paintBal();
+  roll.openCount = 1;
   const lim = myTopupLimits();
   $('#whNote').textContent = S.admin
     ? '👑 Режим админа · пополнение без лимитов и задержки'
@@ -2150,7 +2517,7 @@ function bootApp(){
   try {
     CFG = await fetch('/api/config').then(r => r.json());
   } catch(e){
-    document.body.innerHTML = '<div style="min-height:100dvh;display:grid;place-items:center;text-align:center;color:#928AA8"><div><div style="font-size:50px">📡</div><div style="margin-top:10px">Нет связи с сервером.<br>Убедись, что запущен server.js v5,<br>и обнови страницу (Ctrl+Shift+R).</div></div></div>';
+    document.body.innerHTML = '<div style="min-height:100dvh;display:grid;place-items:center;text-align:center;color:#928AA8"><div><div style="font-size:50px">📡</div><div style="margin-top:10px">Нет связи с сервером.<br>Убедись, что запущены data.js + server.js v6,<br>и обнови страницу (Ctrl+Shift+R).</div></div></div>';
     return;
   }
   ITEMS = CFG.items; CASES = CFG.cases;
