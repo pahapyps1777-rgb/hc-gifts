@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0A0714">
 <title>HC Gifts</title>
 <style>
-:root{--bg:#0A0714;--surface:#141021;--surface2:#1B152D;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);--text:#F0EDF8;--muted:#928AA8;--muted2:#5F5880;--accent:#7C3AED;--accent-soft:rgba(124,58,237,.16);--accent-txt:#C4B5FD;--grad:linear-gradient(135deg,#8B5CF6,#4F46E5);--green:#34D399;--red:#F87171;--mono:ui-monospace,Menlo,Consolas,monospace}
+:root{--bg:#0A0714;--surface:#141021;--surface2:#1B152D;--raise:#251C3E;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);--text:#F0EDF8;--muted:#928AA8;--muted2:#5F5880;--accent:#7C3AED;--accent-soft:rgba(124,58,237,.16);--accent-txt:#C4B5FD;--grad:linear-gradient(135deg,#8B5CF6,#4F46E5);--green:#34D399;--red:#F87171;--mono:ui-monospace,Menlo,Consolas,monospace}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{min-height:100dvh;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.45;user-select:none}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
@@ -90,6 +90,27 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .crash-disp.crash{color:var(--red)}
 .crash-bar{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-bottom:14px}
 .crash-bar i{display:block;height:100%;width:0;background:var(--grad)}
+/* Wheel */
+.wheel-wrap{position:relative;width:200px;height:200px;margin:8px auto 6px}
+.wheel-dial{width:100%;height:100%;border-radius:50%;border:3px solid var(--border2);box-shadow:0 10px 30px rgba(0,0,0,.5);will-change:transform}
+.wheel-needle{position:absolute;top:-8px;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top:13px solid #fff;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))}
+.wheel-legend{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+/* Plinko */
+.plinko-board{position:relative;background:var(--bg);border:1px solid var(--border2);border-radius:14px;padding:10px 0 6px;margin-bottom:10px;overflow:hidden}
+.pl-row{display:flex;justify-content:center;gap:14px;height:20px;align-items:center}
+.pl-row i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25)}
+.pl-slots{display:flex;justify-content:center;gap:2px;margin-top:4px}
+.pl-slots span{flex:1;text-align:center;font-family:var(--mono);font-size:8.5px;font-weight:800}
+.pl-slots span.hit{text-shadow:0 0 10px currentColor;transform:scale(1.2)}
+.pl-ball{position:absolute;top:0;left:0;width:11px;height:11px;border-radius:50%;background:var(--grad);box-shadow:0 0 10px rgba(139,92,246,.8);opacity:0;z-index:3}
+/* Tower */
+.tower-grid{display:flex;flex-direction:column-reverse;gap:6px;margin:10px 0}
+.tw-row{display:flex;gap:6px;align-items:center;opacity:.45}
+.tw-row.act{opacity:1}
+.tw-cell{flex:1;aspect-ratio:2.2;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);font-size:18px;display:grid;place-items:center}
+.tw-cell.gem{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.5)}
+.tw-cell.boom{background:rgba(248,113,113,.16);border-color:rgba(248,113,113,.5)}
+.tw-lbl{width:52px;text-align:right;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
 .upg-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px 14px 14px;text-align:center}
 .upg-wheel{position:relative;width:212px;height:212px;margin:8px auto 2px}
 .upg-dial{width:100%;height:100%;border-radius:50%;border:1px solid var(--border2);box-shadow:0 12px 36px rgba(0,0,0,.55),inset 0 0 0 7px rgba(0,0,0,.28);will-change:transform}
@@ -428,6 +449,35 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
   <div class="rr-btns"><button class="btn btn-ghost" id="crashStart" style="flex:1">Запустить</button><button class="btn" id="crashCash" style="flex:1" disabled>Забрать</button></div>
 </div></div>
 
+<div class="overlay" id="ovWheel"><div class="sheet">
+  <div class="sheet-head"><div class="sheet-title">🎡 Wheel of Fortune</div><button class="icon-btn" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="wheel-wrap"><div class="wheel-dial" id="wheelDial"></div><div class="wheel-needle"></div></div>
+  <div class="wheel-legend" id="wheelLegend"></div>
+  <div class="game-res" id="wheelRes"></div>
+  <div class="field"><label>Ставка</label><input class="inp" id="wheelBet" type="text" inputmode="numeric" placeholder="100" maxlength="9"></div>
+  <button class="btn btn-block" id="wheelPlay">Крутить колесо</button>
+</div></div>
+
+<div class="overlay" id="ovPlinko"><div class="sheet">
+  <div class="sheet-head"><div class="sheet-title">🎯 Plinko</div><button class="icon-btn" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="plinko-board" id="plinkoBoard"></div>
+  <div class="game-res" id="plinkoRes"></div>
+  <div class="field"><label>Ставка</label><input class="inp" id="plinkoBet" type="text" inputmode="numeric" placeholder="100" maxlength="9"></div>
+  <button class="btn btn-block" id="plinkoPlay">Бросить шарик</button>
+</div></div>
+
+<div class="overlay" id="ovTower"><div class="sheet">
+  <div class="sheet-head"><div class="sheet-title">🏰 Tower</div><button class="icon-btn" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="mines-top">
+    <input class="inp" id="towerBet" type="text" inputmode="numeric" placeholder="Ставка 100" maxlength="9">
+    <div class="game-status" style="flex:1;margin:0;justify-content:flex-end"><span>Множитель: <b id="towerCur">x1.00</b></span></div>
+  </div>
+  <div class="game-status"><span>Следующий: <b id="towerNext">x1.42</b></span><span>Этаж: <b id="towerFloor">0</b>/8</span></div>
+  <div class="tower-grid" id="towerGrid"></div>
+  <div class="game-res" id="towerRes"></div>
+  <div class="rr-btns"><button class="btn btn-ghost" id="towerStart" style="flex:1">Начать</button><button class="btn" id="towerCash" style="flex:1" disabled>Забрать</button></div>
+</div></div>
+
 <div class="overlay" id="ovTopup"><div class="sheet">
   <div class="sheet-head"><div class="sheet-title">Пополнение баланса</div><button class="icon-btn" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="field"><label>Сумма · демо-монеты, бесплатно</label><input class="inp" id="topupInp" type="text" inputmode="numeric" placeholder="Введите сумму" maxlength="9"><div class="field-err" id="topupErr">Введите корректную сумму</div></div>
@@ -464,7 +514,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 </div></div>
 
 <script>
-/* ================= Данные для отрисовки (копия серверных) ================= */
+/* ================= Данные (копия серверных для отрисовки) ================= */
 const RAR = {common:{label:'Common',c:'#8B93A7'},rare:{label:'Rare',c:'#38BDF8'},epic:{label:'Epic',c:'#A855F7'},legendary:{label:'Legendary',c:'#F5B544'}};
 const ITEMS = {
   candy:['🍬','Конфета','common',30],lolli:['🍭','Лоллипоп','common',35],coffee:['☕','Кофе','common',50],
@@ -487,26 +537,59 @@ const itE=id=>ITEMS[id][0], itN=id=>ITEMS[id][1], itR=id=>ITEMS[id][2], itV=id=>
 const CASES = [
   {id:'free',name:'Free Case',e:'🍀',price:0,free:true,c:['#1E3A34','#0F1A18'],drops:[['candy',2200],['lolli',2000],['coffee',1400],['balloon',1200],['donut',1000],['pizza',800],['cactus',500],['frog',400],['rose',350],['cake',100],['headphones',40],['gamepad',8],['star',1]]},
   {id:'sweet',name:'Sweet Case',e:'🍬',price:75,c:['#4A1F4E','#1C0F26'],drops:[['candy',2400],['lolli',2200],['coffee',1600],['balloon',1400],['donut',1000],['pizza',700],['cactus',300],['frog',180],['rose',140],['teddy',60],['star',2]]},
+  {id:'coffee',name:'Coffee Break',e:'☕',price:100,c:['#5D4037','#241812'],drops:[['candy',1800],['lolli',1500],['coffee',1600],['balloon',900],['donut',1000],['pizza',600],['cactus',300],['frog',250],['rose',500],['cake',150],['headphones',60],['gamepad',15],['star',2]]},
   {id:'starter',name:'Starter Case',e:'🎒',price:150,c:['#2F2C68','#161232'],drops:[['candy',900],['lolli',900],['coffee',800],['balloon',750],['donut',600],['pizza',500],['cactus',350],['frog',400],['rose',1100],['teddy',700],['cake',500],['shades',260],['headphones',140],['rocket',60],['gamepad',45],['robot',18],['star',2]]},
+  {id:'beach',name:'Beach Party',e:'🏖️',price:250,c:['#0E7490','#082830'],drops:[['balloon',1200],['donut',700],['pizza',600],['frog',500],['palm',1600],['cherry',700],['rose',700],['shades',600],['skate',350],['watch',180],['champagne',150],['rocket',60],['ring',12],['star',5]]},
   {id:'party',name:'Party Case',e:'🎉',price:300,c:['#5E2347','#22102A'],drops:[['balloon',800],['donut',500],['pizza',400],['frog',350],['rose',1100],['teddy',950],['cake',850],['shades',700],['headphones',550],['skate',400],['watch',250],['champagne',200],['rocket',150],['gamepad',130],['robot',90],['ring',45],['diamond',20],['crown',8],['star',14],['unicorn',4]]},
+  {id:'music',name:'Music Case',e:'🎵',price:350,c:['#7C2D12','#2A0F06'],drops:[['balloon',900],['donut',600],['rose',800],['headphones',1700],['skate',600],['watch',350],['champagne',450],['rocket',250],['gamepad',350],['robot',120],['ring',50],['star',9]]},
+  {id:'retro',name:'Retro Arcade',e:'🕹️',price:450,c:['#3730A3','#151038'],drops:[['pizza',700],['frog',600],['shades',700],['headphones',900],['skate',800],['watch',450],['champagne',350],['rocket',300],['gamepad',1600],['robot',550],['ring',180],['diamond',50],['star',14]]},
   {id:'gift',name:'Gift Case',e:'🎁',price:500,c:['#472A7A','#1B1236'],drops:[['rose',800],['teddy',750],['cake',700],['shades',650],['headphones',600],['skate',480],['watch',420],['champagne',400],['rocket',300],['gamepad',320],['robot',260],['ring',180],['diamond',110],['moai',60],['planet',55],['crown',35],['star',30],['unicorn',14],['dragon',6]]},
+  {id:'jungle',name:'Jungle Quest',e:'🌴',price:600,c:['#14532D','#0A1F10'],drops:[['cactus',1000],['frog',1300],['palm',1700],['cherry',900],['rose',700],['shades',450],['skate',350],['watch',300],['champagne',250],['rocket',180],['gamepad',220],['robot',140],['diamond',40],['star',12]]},
   {id:'neon',name:'Neon City',e:'🌃',price:750,c:['#173B63','#101B33'],drops:[['shades',600],['headphones',700],['skate',650],['watch',550],['champagne',500],['rocket',420],['gamepad',520],['robot',430],['ring',340],['diamond',260],['moai',160],['planet',140],['crown',95],['star',85],['unicorn',45],['dragon',25],['trophy',8]]},
+  {id:'desert',name:'Desert Treasure',e:'🏜️',price:850,c:['#92400E','#3B1D05'],drops:[['cactus',1500],['frog',600],['palm',900],['rose',500],['shades',700],['watch',550],['champagne',400],['rocket',350],['moai',1000],['crown',120],['diamond',70],['star',16],['unicorn',4]]},
   {id:'premium',name:'Premium Case',e:'💼',price:1000,c:['#3A2E85','#181238'],drops:[['rose',300],['teddy',280],['cake',260],['shades',250],['headphones',260],['skate',230],['watch',220],['champagne',210],['rocket',200],['gamepad',520],['robot',480],['ring',420],['diamond',360],['moai',260],['planet',240],['crown',180],['star',200],['unicorn',130],['dragon',90],['trophy',40]]},
+  {id:'ocean',name:'Ocean Deep',e:'🌊',price:1100,c:['#1E40AF','#0B1B3A'],drops:[['balloon',600],['frog',700],['palm',800],['cherry',600],['shades',550],['watch',650],['champagne',550],['rocket',400],['diamond',220],['planet',140],['crown',70],['star',20],['unicorn',6]]},
   {id:'love',name:'Love Case',e:'💝',price:1200,c:['#7A1F3D','#2A0E1A'],drops:[['heart',900],['rose',800],['teddy',700],['cake',600],['cherry',500],['champagne',400],['ring',350],['diamond',150],['crown',60],['star',90],['unicorn',40],['dragon',18],['trophy',8],['phoenix',3]]},
+  {id:'sky',name:'Sky Clouds',e:'☁️',price:1300,c:['#475569','#1E2530'],drops:[['balloon',1000],['cherry',700],['snow',800],['shades',550],['watch',550],['champagne',450],['rocket',700],['planet',240],['crown',140],['star',50],['unicorn',14],['dragon',5]]},
   {id:'cyber',name:'Cyber Case',e:'🤖',price:1600,c:['#16405E','#0F1A33'],drops:[['headphones',200],['champagne',150],['watch',260],['rocket',420],['gamepad',520],['robot',480],['ring',380],['diamond',340],['moai',240],['planet',220],['crown',170],['star',150],['unicorn',105],['dragon',75],['trophy',45],['phoenix',18],['ufo',4]]},
+  {id:'storm',name:'Thunder Storm',e:'⛈️',price:1700,c:['#334155','#111827'],drops:[['shades',500],['headphones',600],['watch',500],['champagne',450],['rocket',700],['gamepad',400],['robot',350],['ring',280],['diamond',240],['moai',160],['planet',200],['crown',140],['star',160],['unicorn',90],['dragon',50],['phoenix',12],['thor',4]]},
   {id:'halloween',name:'Halloween',e:'🎃',price:1800,c:['#5E2A0A','#1D0E05'],drops:[['pumpkin',700],['cactus',300],['frog',400],['shades',500],['rocket',350],['moai',400],['planet',300],['crown',180],['star',200],['dragon',120],['phoenix',60],['ufo',20]]},
+  {id:'ice',name:'Ice Kingdom',e:'🧊',price:2000,c:['#155E75','#0A1C26'],drops:[['snow',1400],['cake',500],['watch',450],['champagne',400],['diamond',500],['planet',380],['crown',260],['star',320],['unicorn',200],['dragon',140],['trophy',90],['phoenix',40],['ufo',10]]},
   {id:'royal',name:'Royal Case',e:'👑',price:2200,c:['#6B4E1B','#241A0E'],drops:[['rose',150],['champagne',120],['gamepad',250],['robot',220],['ring',420],['diamond',400],['moai',320],['planet',300],['crown',260],['star',240],['unicorn',170],['dragon',130],['trophy',90],['phoenix',55],['ufo',14]]},
+  {id:'ninja',name:'Ninja Shadow',e:'🥷',price:2400,c:['#1F2937','#0B0F14'],drops:[['shades',400],['headphones',350],['watch',300],['rocket',400],['gamepad',300],['robot',350],['ring',300],['diamond',300],['moai',250],['planet',280],['crown',220],['star',300],['unicorn',200],['dragon',150],['trophy',110],['phoenix',55],['ufo',14]]},
   {id:'winter',name:'Winter Case',e:'❄️',price:2600,c:['#1D4A6E','#0E1B2E'],drops:[['snow',700],['cake',400],['watch',350],['champagne',300],['diamond',400],['planet',300],['crown',200],['star',260],['unicorn',160],['dragon',110],['trophy',70],['phoenix',30],['ufo',8]]},
+  {id:'samurai',name:'Samurai Honor',e:'⛩️',price:2800,c:['#7F1D1D','#2A0808'],drops:[['watch',300],['champagne',250],['rocket',350],['robot',300],['ring',320],['diamond',340],['moai',300],['planet',320],['crown',280],['star',320],['unicorn',240],['dragon',190],['trophy',150],['phoenix',90],['ufo',25],['thor',6]]},
   {id:'space',name:'Space Case',e:'🚀',price:3000,c:['#252A6E','#12152F'],drops:[['champagne',150],['rocket',500],['gamepad',260],['robot',240],['diamond',440],['moai',420],['planet',560],['crown',380],['star',340],['unicorn',260],['dragon',210],['trophy',160],['phoenix',105],['ufo',30],['comet',6]]},
+  {id:'pirate',name:'Pirate Booty',e:'🏴‍☠️',price:3200,c:['#134E4A','#06201E'],drops:[['shades',300],['watch',250],['champagne',250],['rocket',300],['robot',260],['ring',380],['diamond',400],['moai',380],['planet',360],['crown',320],['star',340],['unicorn',260],['dragon',220],['trophy',180],['phoenix',120],['ufo',35],['thor',8]]},
+  {id:'pharaoh',name:'Pharaoh Tomb',e:'🏺',price:3800,c:['#78350F','#2B1404'],drops:[['watch',200],['champagne',150],['rocket',200],['robot',200],['ring',350],['diamond',450],['moai',600],['planet',550],['crown',450],['star',400],['unicorn',300],['dragon',250],['trophy',220],['phoenix',160],['ufo',50],['thor',12]]},
   {id:'elite',name:'Elite Case',e:'💠',price:4000,c:['#48288C','#180F38'],drops:[['robot',180],['ring',220],['moai',340],['planet',400],['diamond',460],['crown',430],['star',380],['unicorn',300],['dragon',250],['trophy',200],['phoenix',150],['ufo',45],['comet',10]]},
+  {id:'viking',name:'Viking Saga',e:'🪓',price:4200,c:['#3F3F46','#18181B'],drops:[['rocket',200],['robot',220],['ring',300],['diamond',420],['moai',480],['planet',500],['crown',440],['star',400],['unicorn',320],['dragon',270],['trophy',220],['phoenix',170],['ufo',60],['thor',15]]},
+  {id:'wizard',name:'Wizard Tower',e:'🧙',price:4800,c:['#4C1D95','#160A33'],drops:[['champagne',120],['rocket',200],['ring',180],['diamond',280],['moai',300],['planet',340],['crown',320],['star',420],['unicorn',360],['dragon',320],['trophy',280],['phoenix',220],['ufo',70],['thor',18]]},
   {id:'mythic',name:'Mythic Case',e:'🔮',price:5000,c:['#4C1D72','#170B2E'],drops:[['champagne',120],['rocket',260],['ring',140],['moai',230],['planet',260],['diamond',280],['crown',300],['star',420],['unicorn',360],['dragon',320],['trophy',270],['phoenix',210],['ufo',60],['comet',14]]},
+  {id:'knight',name:"Knight's Armor",e:'🛡️',price:5500,c:['#57534E','#1C1917'],drops:[['rocket',150],['robot',180],['ring',220],['diamond',360],['moai',380],['planet',420],['crown',400],['star',440],['unicorn',380],['dragon',330],['trophy',300],['phoenix',250],['ufo',90],['thor',24]]},
+  {id:'vampire',name:'Vampire Night',e:'🧛',price:6200,c:['#450A0A','#1A0303'],drops:[['rocket',120],['ring',140],['diamond',260],['moai',300],['planet',340],['crown',360],['star',440],['unicorn',400],['dragon',360],['trophy',330],['phoenix',280],['ufo',110],['thor',30]]},
   {id:'golden',name:'Golden Case',e:'🥇',price:6500,c:['#6E5417','#23190C'],drops:[['rocket',80],['planet',170],['moai',140],['diamond',200],['crown',240],['star',380],['unicorn',320],['dragon',280],['trophy',280],['phoenix',230],['ufo',90],['comet',30]]},
-  {id:'dragon',name:"Dragon's Hoard",e:'🐉',price:7500,featured:true,sub:'Хайп-кейс · топовые шансы на легендарки',c:['#77202F','#270D16'],drops:[['rocket',60],['moai',120],['planet',140],['diamond',160],['crown',190],['star',320],['unicorn',360],['dragon',520],['trophy',420],['phoenix',480],['ufo',180],['comet',80]]},
+  {id:'zombie',name:'Zombie Outbreak',e:'🧟',price:7000,c:['#3F6212','#141B05'],drops:[['champagne',80],['rocket',100],['ring',120],['diamond',220],['moai',280],['planet',320],['crown',360],['star',460],['unicorn',420],['dragon',380],['trophy',350],['phoenix',300],['ufo',130],['thor',36]]},
+  {id:'dragon',name:"Dragon's Hoard",e:'🐉',price:7500,featured:false,c:['#77202F','#270D16'],drops:[['rocket',60],['moai',120],['planet',140],['diamond',160],['crown',190],['star',320],['unicorn',360],['dragon',520],['trophy',420],['phoenix',480],['ufo',180],['comet',80]]},
   {id:'inferno',name:'Inferno Case',e:'🔥',price:8000,c:['#7A2610','#260B04'],drops:[['crown',350],['star',500],['unicorn',420],['dragon',380],['trophy',340],['phoenix',280],['ufo',130],['comet',40],['blackhole',6]]},
+  {id:'galaxy',name:'Galaxy Case',e:'🌌',price:8800,c:['#312E81','#0F0D2E'],drops:[['ring',90],['diamond',200],['moai',240],['planet',280],['crown',340],['star',480],['unicorn',440],['dragon',400],['trophy',380],['phoenix',320],['ufo',150],['thor',50],['comet',12]]},
   {id:'legend',name:'Legend Case',e:'👽',price:9500,c:['#5B21B6','#160B2E'],drops:[['ring',70],['moai',110],['planet',130],['diamond',150],['crown',200],['star',420],['unicorn',400],['dragon',380],['trophy',360],['phoenix',340],['ufo',360],['comet',320]]},
+  {id:'volcano',name:'Volcano Core',e:'🌋',price:10500,c:['#7C2D12','#210A04'],drops:[['diamond',180],['moai',220],['planet',260],['crown',320],['star',500],['unicorn',460],['dragon',430],['trophy',400],['phoenix',350],['ufo',170],['thor',60],['comet',16]]},
   {id:'quantum',name:'Quantum Case',e:'⚛️',price:11000,c:['#155E75','#08222B'],drops:[['star',520],['unicorn',460],['dragon',430],['trophy',400],['phoenix',330],['ufo',170],['comet',60],['blackhole',12]]},
+  {id:'nebula',name:'Nebula Mist',e:'🌫️',price:12500,c:['#5B21B6','#150A2E'],drops:[['diamond',150],['moai',180],['planet',220],['crown',280],['star',520],['unicorn',480],['dragon',460],['trophy',420],['phoenix',380],['ufo',190],['thor',70],['comet',20]]},
+  {id:'portal',name:'Portal Case',e:'🌀',price:14500,c:['#0E7490','#06222B'],drops:[['planet',180],['crown',240],['star',560],['unicorn',500],['dragon',480],['trophy',450],['phoenix',400],['ufo',220],['thor',85],['comet',26]]},
   {id:'godlike',name:'Godlike Case',e:'🌠',price:15000,c:['#4C1D95','#1B0B3A'],drops:[['star',600],['unicorn',520],['dragon',500],['trophy',470],['phoenix',400],['ufo',230],['comet',90],['blackhole',25],['thor',40]]},
+  {id:'time',name:'Time Machine',e:'⏳',price:16500,c:['#713F12','#241503'],drops:[['planet',150],['crown',200],['star',600],['unicorn',540],['dragon',520],['trophy',480],['phoenix',430],['ufo',250],['thor',100],['comet',32]]},
+  {id:'titan',name:'Titan Case',e:'🏔️',price:19000,c:['#1E3A8A','#0B1338'],drops:[['crown',160],['star',640],['unicorn',580],['dragon',560],['trophy',520],['phoenix',460],['ufo',280],['thor',120],['comet',40],['blackhole',6]]},
+  {id:'aurora',name:'Aurora Borealis',e:'🌅',price:23000,c:['#0F766E','#052E2B'],drops:[['crown',130],['star',700],['unicorn',640],['dragon',620],['trophy',560],['phoenix',500],['ufo',320],['thor',150],['comet',55],['blackhole',9]]},
   {id:'ultimate',name:'Ultimate Case',e:'🌈',price:25000,c:['#6D28D9','#2E1065'],drops:[['dragon',600],['trophy',550],['phoenix',500],['ufo',350],['comet',160],['blackhole',60],['thor',120]]},
+  {id:'eclipse',name:'Eclipse Case',e:'🌑',price:27000,c:['#312E81','#090714'],drops:[['crown',110],['star',760],['unicorn',700],['dragon',680],['trophy',600],['phoenix',540],['ufo',360],['thor',180],['comet',70],['blackhole',12]]},
+  {id:'supernova',name:'Supernova',e:'💥',price:32000,c:['#9A3412','#2A0B03'],drops:[['star',840],['unicorn',780],['dragon',760],['trophy',660],['phoenix',600],['ufo',420],['thor',220],['comet',90],['blackhole',18]]},
+  {id:'throne',name:'Iron Throne',e:'⚜️',price:38000,c:['#71717A','#18181B'],drops:[['star',950],['unicorn',900],['dragon',860],['trophy',760],['phoenix',680],['ufo',500],['thor',280],['comet',120],['blackhole',26]]},
+  {id:'infinity',name:'Infinity Case',e:'♾️',price:45000,c:['#6D28D9','#1E0A45'],drops:[['star',1100],['unicorn',1050],['dragon',1000],['trophy',880],['phoenix',780],['ufo',600],['thor',360],['comet',160],['blackhole',38]]},
+  {id:'cosmic',name:'Cosmic Case',e:'🛸',price:55000,c:['#1E1B4B','#07061A'],drops:[['star',1300],['unicorn',1250],['dragon',1200],['trophy',1050],['phoenix',950],['ufo',750],['thor',480],['comet',220],['blackhole',55]]},
+  {id:'fortune',name:'Fortune Case',e:'🎰',price:75000,c:['#A16207','#2E1D02'],drops:[['star',1600],['unicorn',1500],['dragon',1450],['trophy',1300],['phoenix',1150],['ufo',950],['thor',650],['comet',320],['blackhole',80]]},
+  {id:'singularity',name:'Singularity',e:'⚫',price:100000,featured:true,sub:'ТОП-1 кейс · только легендарки · Чёрная дыра 30 000 HC',c:['#181818','#000000'],drops:[['unicorn',1400],['dragon',1400],['trophy',1400],['phoenix',1400],['ufo',1400],['thor',1400],['comet',1400],['blackhole',200]]},
 ];
 
 const GAMES = [
@@ -514,6 +597,9 @@ const GAMES = [
   {id:'dice',e:'🎲',n:'Dice',s:'Roll under · до x49.5',c:['#173B63','#101B33']},
   {id:'mines',e:'💣',n:'Mines',s:'Поле 5×5 · до x8+',c:['#5E2347','#22102A']},
   {id:'crash',e:'📈',n:'Crash',s:'Забери до взрыва',c:['#1E3A34','#0F1A18']},
+  {id:'wheel',e:'🎡',n:'Wheel',s:'Колесо · до x5',c:['#4C1D72','#170B2E']},
+  {id:'plinko',e:'🎯',n:'Plinko',s:'Шарик · до x10',c:['#155E75','#08222B']},
+  {id:'tower',e:'🏰',n:'Tower',s:'8 этажей · до x16',c:['#6B4E1B','#241A0E']},
 ];
 const AVATARS = ['🦊','🐼','🐸','🦁','🐯','🐙','🦄','🐨','🐺','🐵','🦉','🐳'];
 const NAME_A = ['Neon','Ghost','Pixel','Lucky','Turbo','Cyber','Hyper','Risky','Shadow','Nova'];
@@ -751,9 +837,11 @@ async function tryOpen(caseId, rowEl){
   const cs = CASES.find(c => c.id === caseId);
   let d;
   try { d = await api('open-case', {caseId}); }
-   catch(e){
-    if (rowEl){ rowEl.classList.remove('shake'); void rowEl.offsetWidth; rowEl.classList.add('shake'); }
-    toast(e.error || 'Нет связи с сервером — проверь, что запущено чёрное окно node server.js');
+  catch(e){
+    if (e.error){
+      if (rowEl){ rowEl.classList.remove('shake'); void rowEl.offsetWidth; rowEl.classList.add('shake'); }
+      toast(e.error);
+    }
     return;
   }
   if (d.freeAt !== undefined) S.freeAt = d.freeAt;
@@ -1087,7 +1175,7 @@ function renderTopupChips(){
   renderWallet();
 };
 
-/* ================= Мини-игры ================= */
+/* ================= Мини-игры: сетка ================= */
 function renderGames(){
   $('#gameGrid').innerHTML = GAMES.map(g => `
     <div class="game-tile" data-game="${g.id}" style="--c1:${g.c[0]};--c2:${g.c[1]}">
@@ -1102,7 +1190,7 @@ function takeBet(inp){
   return v;
 }
 
-/* Coin Flip */
+/* ---- Coin Flip ---- */
 const coin = {side:'heads', busy:false};
 function coinSetSide(s){
   coin.side = s;
@@ -1135,7 +1223,7 @@ function coinSetSide(s){
   }, 950);
 };
 
-/* Dice */
+/* ---- Dice ---- */
 const dice = {busy:false};
 function diceMeta(){
   const t = +$('#diceRange').value;
@@ -1150,7 +1238,6 @@ function diceMeta(){
   dice.busy = true;
   $('#diceRes').className = 'game-res'; $('#diceRes').textContent = '';
   const disp = $('#diceDisp'); disp.className = 'dice-disp';
-  let n = 0;
   const iv = setInterval(() => { disp.textContent = (Math.random()*100).toFixed(2); }, 65);
   let d;
   try { d = await api('game/dice', {target:+$('#diceRange').value, bet}); }
@@ -1172,7 +1259,7 @@ function diceMeta(){
   }, 700);
 };
 
-/* Mines */
+/* ---- Mines ---- */
 const mines = {active:false, busy:false};
 function minesRender(){
   const g = $('#minesGrid');
@@ -1250,7 +1337,7 @@ async function minesCash(){
  $('#minesCash').onclick = () => minesCash();
 ovHooks.ovMines = () => { minesReset(); };
 
-/* Crash */
+/* ---- Crash ---- */
 const crash = {raf:null, running:false, t0:0};
 function crashStop(){ cancelAnimationFrame(crash.raf); crash.running = false; }
  $('#crashStart').onclick = async () => {
@@ -1304,11 +1391,239 @@ ovHooks.ovCrash = () => {
   }
 };
 
+/* ---- Wheel ---- */
+const WHEEL_SEGS = [
+  {m:0, w:9, c:'#F87171'}, {m:0.5, w:4, c:'#F5B544'}, {m:1.5, w:3, c:'#38BDF8'},
+  {m:2, w:2, c:'#A855F7'}, {m:3, w:1, c:'#34D399'}, {m:5, w:1, c:'#F97316'},
+];
+const wheel = {busy:false, angle:0, stops:[]};
+function wheelBuild(){
+  const total = WHEEL_SEGS.reduce((s,x)=>s+x.w,0);
+  let acc = 0; wheel.stops = [];
+  let css = '';
+  WHEEL_SEGS.forEach(s => {
+    const a = acc/total*360, b = (acc+s.w)/total*360;
+    wheel.stops.push([a, b]);
+    css += `${s.c} ${a}deg ${b}deg,`;
+    acc += s.w;
+  });
+  $('#wheelDial').style.background = `conic-gradient(from 0deg, ${css.slice(0,-1)})`;
+  $('#wheelLegend').innerHTML = WHEEL_SEGS.map(s =>
+    `<span class="chip" style="color:${s.c}"><i style="background:${s.c}"></i>x${s.m}</span>`).join(' ');
+}
+ $('#wheelPlay').onclick = async () => {
+  if (wheel.busy) return;
+  const bet = takeBet($('#wheelBet')); if (bet === null) return;
+  wheel.busy = true;
+  $('#wheelRes').className = 'game-res'; $('#wheelRes').textContent = '';
+  let d;
+  try { d = await api('game/wheel', {bet}); }
+  catch(e){ wheel.busy = false; if (e.error) toast(e.error); return; }
+  const [a, b] = wheel.stops[d.seg];
+  const span = b - a;
+  const center = a + span/2;
+  const jitter = (Math.random() - .5) * span * 0.6;
+  const cur = ((wheel.angle % 360) + 360) % 360;
+  const target = ((360 - center + jitter) % 360 + 360) % 360;
+  const delta = ((target - cur) % 360 + 360) % 360;
+  const from = wheel.angle, targetA = wheel.angle + 360*5 + delta;
+  const dial = $('#wheelDial'), t0 = performance.now(), dur = 3800;
+  const ease = t => 1 - Math.pow(1 - t, 4);
+  const step = now => {
+    const t = Math.min(1, (now - t0)/dur);
+    dial.style.transform = `rotate(${from + (targetA - from)*ease(t)}deg)`;
+    if (t < 1) requestAnimationFrame(step);
+    else {
+      wheel.angle = targetA; wheel.busy = false;
+      const cr = $('#wheelRes');
+      if (d.mult > 0){
+        cr.className = 'game-res win'; cr.textContent = `🎉 +${fmt(d.payout)} HC (x${d.mult})`;
+        winSnd('rare'); vib(30);
+      } else {
+        cr.className = 'game-res lose'; cr.textContent = '💨 Пусто — попробуй ещё';
+        beep(150,.25,'sawtooth',.07); vib(50);
+      }
+    }
+  };
+  requestAnimationFrame(step);
+};
+
+/* ---- Plinko ---- */
+const plinko = {busy:false};
+function plinkoBuild(){
+  const board = $('#plinkoBoard');
+  board.innerHTML = '';
+  for (let r = 1; r <= 12; r++){
+    const row = document.createElement('div');
+    row.className = 'pl-row';
+    for (let i = 0; i < r + 2; i++) row.append(document.createElement('i'));
+    board.append(row);
+  }
+  const slots = document.createElement('div');
+  slots.className = 'pl-slots';
+  const cols = ['#F87171','#FB923C','#F5B544','#FDE68A','#34D399','#38BDF8','#A855F7','#38BDF8','#34D399','#FDE68A','#F5B544','#FB923C','#F87171'];
+  [10,3,1.8,1.3,1,0.8,0.6,0.8,1,1.3,1.8,3,10].forEach((m,i) => {
+    const s = document.createElement('span');
+    s.textContent = 'x' + m;
+    s.style.color = cols[i];
+    s.dataset.slot = i;
+    slots.append(s);
+  });
+  board.append(slots);
+  const ball = document.createElement('div');
+  ball.className = 'pl-ball'; ball.id = 'plBall';
+  board.append(ball);
+}
+ $('#plinkoPlay').onclick = async () => {
+  if (plinko.busy) return;
+  const bet = takeBet($('#plinkoBet')); if (bet === null) return;
+  plinko.busy = true;
+  $('#plinkoRes').className = 'game-res'; $('#plinkoRes').textContent = '';
+  let d;
+  try { d = await api('game/plinko', {bet}); }
+  catch(e){ plinko.busy = false; if (e.error) toast(e.error); return; }
+  const steps = Array(12).fill('L');
+  for (let i = 0; i < d.slot; i++) steps[i] = 'R';
+  for (let i = steps.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [steps[i], steps[j]] = [steps[j], steps[i]];
+  }
+  const board = $('#plinkoBoard'), ball = $('#plBall');
+  const W = board.clientWidth, slotW = W/13;
+  let x = W/2 - 6, y = 2;
+  ball.style.opacity = '1';
+  ball.style.transform = `translate(${x}px, ${y}px)`;
+  let i = 0;
+  const iv = setInterval(() => {
+    y += 20;
+    x += (steps[i] === 'R' ? 1 : -1) * slotW/2 * 0.98;
+    ball.style.transform = `translate(${x}px, ${y}px)`;
+    beep(700 + Math.random()*300, .03, 'sine', .03);
+    i++;
+    if (i >= 12){
+      clearInterval(iv);
+      const slot = board.querySelector(`[data-slot="${d.slot}"]`);
+      if (slot){ slot.classList.add('hit'); setTimeout(()=>slot.classList.remove('hit'), 1400); }
+      const cr = $('#plinkoRes');
+      if (d.mult >= 1){
+        cr.className = 'game-res win'; cr.textContent = `🎉 +${fmt(d.payout)} HC (x${d.mult})`;
+        if (d.mult >= 3){ winSnd('epic'); vib([30,40,60]); } else winSnd('rare');
+      } else {
+        cr.className = 'game-res lose'; cr.textContent = `💨 x${d.mult} — получено ${fmt(d.payout)} HC`;
+        beep(150,.25,'sawtooth',.07); vib(40);
+      }
+      setTimeout(() => { ball.style.opacity = '0'; plinko.busy = false; }, 700);
+    }
+  }, 110);
+};
+
+/* ---- Tower ---- */
+const tower = {active:false, busy:false, floor:0, picked:new Set(), boomCells:new Set()};
+function towerRender(){
+  const g = $('#towerGrid');
+  g.innerHTML = '';
+  for (let f = 0; f < 8; f++){
+    const row = document.createElement('div');
+    row.className = 'tw-row' + (tower.active && f === tower.floor ? ' act' : '');
+    for (let c = 0; c < 3; c++){
+      const b = document.createElement('button');
+      b.className = 'tw-cell';
+      b.disabled = !tower.active || tower.busy || f !== tower.floor;
+      if (tower.picked.has(f*3+c)){ b.classList.add('gem'); b.textContent = '💎'; }
+      if (tower.boomCells.has(f*3+c)){ b.classList.add('boom'); b.textContent = '💣'; }
+      b.onclick = () => towerPick(c);
+      row.append(b);
+    }
+    const lbl = document.createElement('span');
+    lbl.className = 'tw-lbl';
+    lbl.textContent = 'x' + Math.pow(1.42, f+1).toFixed(2);
+    row.append(lbl);
+    g.append(row);
+  }
+  $('#towerCur').textContent = 'x' + Math.pow(1.42, tower.floor).toFixed(2);
+  $('#towerFloor').textContent = tower.floor;
+}
+function endTowerButtons(){
+  $('#towerStart').disabled = false; $('#towerBet').disabled = false; $('#towerCash').disabled = true;
+}
+function towerReset(){
+  tower.active = false; tower.busy = false; tower.floor = 0;
+  tower.picked.clear(); tower.boomCells.clear();
+  $('#towerRes').className = 'game-res'; $('#towerRes').textContent = '';
+  $('#towerStart').disabled = false; $('#towerCash').disabled = true; $('#towerBet').disabled = false;
+  $('#towerNext').textContent = 'x1.42';
+  towerRender();
+}
+ $('#towerStart').onclick = async () => {
+  if (tower.active) return;
+  const bet = takeBet($('#towerBet')); if (bet === null) return;
+  try { await api('game/tower/start', {bet}); }
+  catch(e){ if (e.error) toast(e.error); return; }
+  tower.active = true; tower.floor = 0;
+  tower.picked.clear(); tower.boomCells.clear();
+  $('#towerStart').disabled = true; $('#towerBet').disabled = true; $('#towerCash').disabled = true;
+  $('#towerRes').className = 'game-res'; $('#towerRes').textContent = '';
+  towerRender();
+};
+async function towerPick(c){
+  if (!tower.active || tower.busy) return;
+  tower.busy = true;
+  let d;
+  try { d = await api('game/tower/pick', {cell:c}); }
+  catch(e){ tower.busy = false; if (e.error) toast(e.error); return; }
+  if (d.boom){
+    (d.bombs||[]).forEach((b, f) => tower.boomCells.add(f*3+b));
+    tower.active = false;
+    $('#towerRes').className = 'game-res lose';
+    $('#towerRes').textContent = '💨 Бомба! Ставка потеряна';
+    endTowerButtons();
+    beep(150,.3,'sawtooth',.08); vib([60,40,60]);
+  } else {
+    tower.picked.add(tower.floor*3+c);
+    tower.floor = d.floor;
+    $('#towerNext').textContent = 'x' + d.next;
+    $('#towerCash').disabled = false;
+    beep(600 + Math.random()*200, .05, 'sine', .05); vib(15);
+    if (d.finished){
+      tower.active = false;
+      $('#towerRes').className = 'game-res win';
+      $('#towerRes').textContent = `🎉 Башня пройдена! +${fmt(d.payout)} HC (x${d.mult})`;
+      winSnd('epic'); vib([30,40,60]);
+      endTowerButtons();
+    }
+  }
+  tower.busy = false;
+  towerRender();
+}
+ $('#towerCash').onclick = async () => {
+  if (!tower.active || tower.busy || tower.floor === 0) return;
+  tower.busy = true;
+  let d;
+  try { d = await api('game/tower/cash'); }
+  catch(e){ tower.busy = false; if (e.error) toast(e.error); return; }
+  tower.active = false;
+  (d.bombs||[]).forEach((b, f) => tower.boomCells.add(f*3+b));
+  $('#towerRes').className = 'game-res win';
+  $('#towerRes').textContent = `🎉 +${fmt(d.payout)} HC (x${d.mult})`;
+  winSnd('epic'); vib([30,40,60]);
+  tower.busy = false; endTowerButtons(); towerRender();
+};
+ovHooks.ovTower = () => {
+  if (tower.active && tower.floor > 0){
+    api('game/tower/cash').then(d => toast(`Tower: авто-вывод +${fmt(d.payout)} HC`)).catch(()=>{});
+  }
+  towerReset();
+};
+
+/* ================= Открытие игры ================= */
 function openGame(id){
   if (id === 'coin'){ $('#coinDisp').textContent='🪙'; $('#coinRes').textContent=''; $('#coinRes').className='game-res'; coinSetSide('heads'); coin.busy=false; openOv('#ovCoin'); }
   if (id === 'dice'){ $('#diceDisp').textContent='50.00'; $('#diceDisp').className='dice-disp'; $('#diceRes').textContent=''; $('#diceRes').className='game-res'; $('#diceRange').value=50; diceMeta(); dice.busy=false; openOv('#ovDice'); }
   if (id === 'mines'){ minesReset(); openOv('#ovMines'); }
   if (id === 'crash'){ crashStop(); $('#crashDisp').textContent='x1.00'; $('#crashDisp').className='crash-disp'; $('#crashBarFill').style.width='0'; $('#crashRes').textContent=''; $('#crashRes').className='game-res'; $('#crashStart').disabled=false; $('#crashCash').disabled=true; $('#crashBet').disabled=false; openOv('#ovCrash'); }
+  if (id === 'wheel'){ wheelBuild(); $('#wheelBet').disabled=false; $('#wheelRes').textContent=''; $('#wheelRes').className='game-res'; wheel.busy=false; openOv('#ovWheel'); }
+  if (id === 'plinko'){ plinkoBuild(); $('#plinkoBet').disabled=false; $('#plinkoRes').textContent=''; $('#plinkoRes').className='game-res'; plinko.busy=false; openOv('#ovPlinko'); }
+  if (id === 'tower'){ towerReset(); openOv('#ovTower'); }
 }
 
 /* ================= Промокод ================= */
@@ -1320,6 +1635,10 @@ function openGame(id){
   try { d = await api('promo', {code}); }
   catch(e){ toast(e.error || 'Ошибка'); return; }
   if (d.admin){ S.admin = true; renderProfile(); }
+  if (d.entries && d.entries.length){
+    d.entries.forEach(e => S.inventory.unshift(e));
+    renderProfile();
+  }
   toast(d.message || 'Готово');
   closeOv('#ovPromo');
 };
@@ -1414,10 +1733,10 @@ function renderProfile(){
     }).join('');
     $$('#invGrid .inv-tile').forEach(t => t.onclick = () => openItem(t.dataset.uid));
   }
- 
+  $('#refLink').textContent = `t.me/hc_gifts_bot?start=${S.ref}`;
   renderAdminPanel();
 }
- $('#refCopy') && ($('#refCopy').onclick = () => toast('Ссылка скопирована'));
+ $('#refCopy').onclick = () => toast('Ссылка скопирована');
 let editAva = null;
  $('#pEdit').onclick = $('#pAva').onclick = () => {
   editAva = S.avatar;
