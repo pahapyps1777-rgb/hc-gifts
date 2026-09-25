@@ -59,7 +59,6 @@ main{padding:14px 14px 132px}
 .ct-name{font-weight:700;font-size:13.5px;margin-bottom:8px}
 .ct-price{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;background:rgba(0,0,0,.38);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:4px 10px 4px 5px;font-family:var(--mono);font-size:11.5px;font-weight:700}
 .ct-price.free{color:var(--green)}
-/* === Анимация открытия кейса (исправлено) === */
 .case-tile.armed{animation:caseArm .5s ease}
 @keyframes caseArm{0%,100%{transform:none}15%,45%,75%{transform:scale(1.07) rotate(-2.5deg)}30%,60%,90%{transform:scale(1.05) rotate(2.5deg)}}
 .case-tile.armed .ct-emoji{animation:emojiGlow .25s ease infinite alternate}
@@ -318,7 +317,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
       <div class="gb"><div class="gb-in">
         <div class="wh-label">Баланс кошелька</div>
         <div class="wh-amount"><span class="hc-coin lg">HC</span><b data-bal>0</b></div>
-        <div class="wh-note" id="whNote">Демо-режим · HC виртуальные</div>
+        <div class="wh-note" id="whNote">Демо-режим</div>
         <div class="wh-actions">
           <button class="btn" id="wTopup">Пополнить</button>
           <button class="btn btn-ghost" id="wWithdraw">Вывести</button>
@@ -329,7 +328,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
     </section>
 
     <section class="pane" id="pane-top">
-      <div class="section-title"><span class="tt">🏆 Топ игроков по монетам</span></div>
+      <div class="section-title"><span class="tt">🏆 Топ игроков</span></div>
       <div class="ref-card" style="margin-bottom:12px;text-align:center"><div class="ref-sub" style="margin:0" id="topMe"></div></div>
       <div id="topList"></div>
     </section>
@@ -393,6 +392,17 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
             <button class="btn btn-ghost" id="admUnban" style="flex:1">✅ Разбан</button>
             <button class="btn btn-danger" id="admReset" style="flex:1">♻️ Сброс</button>
           </div>
+        </div>
+      </div>
+
+      <div class="section-title"><span class="tt">Друзья</span></div>
+      <div class="ref-card">
+        <div class="ref-title">Реферальная программа</div>
+        <div class="ref-sub">Приглашай друзей (демо)</div>
+        <div class="ref-link"><code id="refLink"></code>
+          <button class="icon-btn" id="refCopy" style="width:28px;height:28px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>
+          </button>
         </div>
       </div>
 
@@ -506,7 +516,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
   <div class="sheet-head"><div class="sheet-title">Пополнение баланса</div><button class="icon-btn" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="field"><label id="topupLabel">Сумма</label><input class="inp" id="topupInp" type="text" inputmode="numeric" placeholder="Введите сумму" maxlength="9"><div class="field-err" id="topupErr"></div></div>
   <div class="chips" id="topupChips"></div>
-  <button class="btn btn-block" id="topupGo">Зачислить на счёт</button>
+  <button class="btn btn-block" id="topupGo">Зачислить</button>
 </div></div>
 
 <div class="overlay" id="ovWithdraw"><div class="sheet">
@@ -555,11 +565,11 @@ const LS_TOKEN = 'hc_gifts_token_v1', LS_SOUND = 'hc_gifts_sound_v1';
 const CELL = 86, GAP = 9, STEP = CELL + GAP;
 
 /* ================= Конфиг с сервера ================= */
-let CFG = null, ITEMS = null, CASES = null, ITEM_IDS = null, caseById = null;
+let CFG = null, ITEMS = null, CASES = null, ITEM_IDS = null, caseById = id => null;
 let TOKEN = localStorage.getItem(LS_TOKEN) || '';
 let S = null;
 const itE = id => ITEMS[id][0], itN = id => ITEMS[id][1], itR = id => ITEMS[id][2], itV = id => ITEMS[id][3];
-const RARC = r => CFG.rar[r] || CFG.rar.common;
+const RARC = r => (CFG && CFG.rar[r]) || {label:r||'Common', c:'#8B93A7'};
 function pickLocal(drops){
   let r = Math.random()*drops.reduce((s,d)=>s+d[1],0);
   for (const [id,w] of drops){ if ((r-=w) < 0) return id; }
@@ -581,8 +591,8 @@ async function api(path, body){
     else if (r.status === 401) showAuth();
     throw d;
   }
-  if (d.balance !== undefined){ S.balance = d.balance; animateBalance(); }
-  if (d.topupAt !== undefined) S.topupAt = d.topupAt;
+  if (S && d.balance !== undefined){ S.balance = d.balance; animateBalance(); }
+  if (S && d.topupAt !== undefined) S.topupAt = d.topupAt;
   return d;
 }
 
@@ -601,9 +611,9 @@ function beep(freq,dur,type='square',vol=0.06,when=0){
   }catch(e){}
 }
 const tickSnd = () => beep(1900+Math.random()*400,.035,'square',.045);
-function winSnd(r){ const notes = (r==='legendary'||r==='mythic'||r==='divine'||r==='secret')?[523,659,784,1046,1318]:[659,830,988]; notes.forEach((f,i)=>beep(f,.16,'sine',.09,i*.09)); }
+function winSnd(r){ const notes = ['legendary','mythic','divine','secret'].includes(r)?[523,659,784,1046,1318]:[659,830,988]; notes.forEach((f,i)=>beep(f,.16,'sine',.09,i*.09)); }
 
-/* ================= Тосты / вспышки ================= */
+/* ================= Тосты / эффекты ================= */
 function toast(msg){
   const box = $('#toasts'), el = document.createElement('div');
   el.className = 'toast'; el.innerHTML = `<span>${msg}</span>`;
@@ -805,7 +815,7 @@ setInterval(() => {
   else el.textContent = 'FREE';
 }, 1000);
 
-/* ================= Рулетка (с исправленной анимацией) ================= */
+/* ================= Рулетка ================= */
 const roll = {raf:null, spinning:false, cs:null, winner:null, prizeUid:null, sold:false};
 
 async function tryOpen(caseId, rowEl){
@@ -829,7 +839,7 @@ async function tryOpen(caseId, rowEl){
   $('#rollSub').textContent = cs.free ? 'Бесплатный кейс · следующий через 10 минут' : `Списано ${fmt(cs.price)} HC`;
   $('#rollResult').classList.remove('show');
   renderContents(cs);
-  /* Анимация подготовки: кейс трясётся и светится, потом едет лента */
+  /* Анимация: кейс трясётся и светится, потом лента */
   if (rowEl){ rowEl.classList.remove('armed'); void rowEl.offsetWidth; rowEl.classList.add('armed'); }
   beep(300,.12,'sine',.06); beep(450,.12,'sine',.06,.13);
   setTimeout(() => {
@@ -891,7 +901,7 @@ function finishSpin(winIdx){
   sellBtn.disabled = false;
   sellBtn.textContent = `Продать +${fmt(itV(id))}`;
   rr.classList.add('show');
-  winSnd(itR(id)); vib(itR(id)==='legendary'||itR(id)==='mythic'||itR(id)==='divine'||itR(id)==='secret'?[40,60,80]:30);
+  winSnd(itR(id)); vib(['legendary','mythic','divine','secret'].includes(itR(id))?[40,60,80]:30);
   if (itR(id) === 'epic') burst($('#rollResult'), ['#A855F7','#C4B5FD','#fff']);
   if (['legendary','mythic','divine','secret'].includes(itR(id))){
     screenFlash(r.c);
@@ -1108,7 +1118,6 @@ function renderWallet(){
       <div class="h-amt ${h.dir}">${h.dir==='in'?'+':'−'}${fmt(h.amount)}</div>
     </div>`).join('');
 }
-/* Пополнение: до 300 HC раз в минуту; админ — без лимитов и без задержки */
 function renderTopupChips(){
   $('#topupChips').innerHTML = [50,100,150,200,250,300].map(v =>
     `<button data-v="${v}">+${fmt(v)}</button>`).join('');
@@ -1133,7 +1142,7 @@ function openTopup(){
   $('#topupInp').value = ''; $('#topupErr').classList.remove('show');
   $('#topupLabel').textContent = S.admin
     ? 'Сумма · 👑 админ: любой размер, без задержки'
-    : `Сумма · максимум ${CFG.topupMax} HC, следующее пополнение через 1 минуту`;
+    : `Сумма · максимум ${CFG.topupMax} HC, следующее через 1 минуту`;
   renderTopupChips();
   openOv('#ovTopup');
   topupTick();
@@ -1202,7 +1211,7 @@ function takeBet(inp){
   if (v > S.balance){ toast('Не хватает HC на ставку'); return null; }
   return v;
 }
-/* Coin */
+/* Coin Flip */
 const coin = {side:'heads', busy:false};
 function coinSetSide(s){
   coin.side = s;
@@ -1649,7 +1658,7 @@ function fillAdmPlayers(){
 function admInfoUpdate(){
   const u = admUsers.find(x => x.id === $('#admPlayer').value);
   $('#admInfo').innerHTML = u
-    ? `<b>${esc(u.name)}</b> · Баланс: <b>${fmt(u.balance)} HC</b> · Предметов: <b>${u.items}</b>${u.banUntil===-1?' · <b style="color:var(--red)">♾ забанен навсегда</b>':(u.banUntil>Date.now()?' · <b style="color:var(--red)">⏳ забанен</b>':'')}${u.admin?' · 👑 админ':''}`
+    ? `<b>${esc(u.name)}</b> · Баланс: <b>${fmt(u.balance)} HC</b> · Предметов: <b>${u.items}</b>${u.banUntil===-1?' · <b style="color:var(--red)">♾ навсегда</b>':(u.banUntil>Date.now()?' · <b style="color:var(--red)">⏳ забанен</b>':'')}${u.admin?' · 👑 админ':''}`
     : 'Выбери игрока из списка';
 }
  $('#admPlayer').onchange = admInfoUpdate;
@@ -1721,10 +1730,12 @@ function renderProfile(){
     }).join('');
     $$('#invGrid .inv-tile').forEach(t => t.onclick = () => openItem(t.dataset.uid));
   }
-  $('#refLink').textContent = `t.me/hc_gifts_bot?start=${S.ref}`;
+  const rl = $('#refLink');
+  if (rl) rl.textContent = `t.me/hc_gifts_bot?start=${S.ref}`;
   renderAdminPanel();
 }
- $('#refCopy').onclick = () => toast('Ссылка скопирована');
+const refCopyBtn = $('#refCopy');
+if (refCopyBtn) refCopyBtn.onclick = () => toast('Ссылка скопирована');
 let editAva = null;
  $('#pEdit').onclick = $('#pAva').onclick = () => {
   editAva = S.avatar;
@@ -1765,7 +1776,11 @@ function bootApp(){
   $('#whNote').textContent = S.admin
     ? '👑 Режим админа · пополнение без лимитов и задержки'
     : `Демо-режим · пополнение до ${CFG.topupMax} HC раз в минуту`;
-  renderCases(); renderGames(); renderUpgrader(); renderProfile(); renderWallet();
+  renderCases();
+  renderGames();
+  renderUpgrader();
+  renderProfile();
+  renderWallet();
   $('#sndSwitch').classList.toggle('on', soundOn());
   feedInit();
   setTimeout(() => toast(`С возвращением, ${esc(S.name)}!`), 400);
@@ -1774,7 +1789,7 @@ function bootApp(){
   try {
     CFG = await fetch('/api/config').then(r => r.json());
   } catch(e){
-    document.body.innerHTML = '<div style="min-height:100dvh;display:grid;place-items:center;text-align:center;color:#928AA8"><div><div style="font-size:50px">📡</div><div style="margin-top:10px">Нет связи с сервером.<br>Убедись, что сервер запущен, и обнови страницу.</div></div></div>';
+    document.body.innerHTML = '<div style="min-height:100dvh;display:grid;place-items:center;text-align:center;color:#928AA8"><div><div style="font-size:50px">📡</div><div style="margin-top:10px">Нет связи с сервером.<br>Убедись, что запущен новый server.js (v3),<br>и обнови страницу (Ctrl+Shift+R).</div></div></div>';
     return;
   }
   ITEMS = CFG.items; CASES = CFG.cases;
