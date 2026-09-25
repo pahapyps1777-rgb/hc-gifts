@@ -7,10 +7,12 @@ const {
   RAR, PRIV, PRIV_ORDER, ITEMS, LIMITED, CASES, PROMOS,
   AVATARS, START_BALANCE, FREE_COOLDOWN, TOPUP_MAX, TOPUP_COOLDOWN,
   MULTI_MAX, WHEEL_SEGS, PLINKO_MULTS, SLOTS_SYMS, ROULETTE_RED, KENO_PAY,
+  BATTLE_PLAYERS, BATTLE_ROUNDS, BATTLE_EXPIRE,
 } = require('./data');
 
 const PORT = process.env.PORT || 3000;
 const DB_FILE = process.env.DATA_FILE || path.join(__dirname, 'data.json');
+const LUCK_MAX = 1000000; // удача 1 000 000 = всегда лучший предмет
 
 /* ================= База ================= */
 let db;
@@ -25,6 +27,7 @@ function migrateUser(u){
   if (typeof u.banReason !== 'string') u.banReason = '';
   if (typeof u.topupAt !== 'number') u.topupAt = 0;
   if (typeof u.privilege === 'undefined') u.privilege = null;
+  if (typeof u.luck !== 'number') u.luck = 0;
   if (!u.stats) u.stats = {opened:0,upgrades:0,best:null};
   if (!Array.isArray(u.inventory)) u.inventory = [];
   if (!Array.isArray(u.history)) u.history = [];
@@ -39,8 +42,18 @@ process.on('SIGINT', () => { try { fs.writeFileSync(DB_FILE, JSON.stringify(db))
 /* ================= Утилиты ================= */
 const itV = id => ITEMS[id][3];
 const dropTotal = cs => cs.drops.reduce((s,d)=>s+d[1],0);
-function pickDrop(cs){ let r = Math.random()*dropTotal(cs); for (const [id,w] of cs.drops){ if ((r-=w) < 0) return id; } return cs.drops[0][0]; }
+function bestItem(cs){ let b = cs.drops[0][0]; for (const [id] of cs.drops) if (itV(id) > itV(b)) b = id; return b; }
+function pickDrop(cs, luck){
+  if (luck && luck > 0){
+    const chance = Math.min(1, luck / LUCK_MAX);
+    if (Math.random() < chance) return bestItem(cs);
+  }
+  let r = Math.random()*dropTotal(cs);
+  for (const [id,w] of cs.drops){ if ((r-=w) < 0) return id; }
+  return cs.drops[0][0];
+}
 const newUid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const newId = p => p + Math.random().toString(36).slice(2,10);
 const hash = (pw,salt) => crypto.scryptSync(String(pw),salt,64).toString('hex');
 function pubUser(u){ const {passHash,salt,nameLower,...rest} = u; return rest; }
 function findByName(n){ const l = String(n).toLowerCase(); return Object.values(db.users).find(u => u.nameLower === l); }
@@ -58,6 +71,9 @@ function recordBest(u, id){
   if (!u.stats.best || itV(id) > u.stats.best.v)
     u.stats.best = {e:ITEMS[id][0], n:ITEMS[id][1], v:itV(id)};
 }
+const NAME_A = ['Neon','Ghost','Pixel','Lucky','Turbo','Cyber','Hyper','Risky','Shadow','Nova'];
+const NAME_B = ['Wolf','Fox','Bear','Hawk','Shark','Cat','Viper','Bull','Owl','Ape'];
+const botName = () => NAME_A[Math.floor(Math.random()*NAME_A.length)] + NAME_B[Math.floor(Math.random()*NAME_B.length)] + Math.floor(Math.random()*99);
 
 /* ================= Приложение ================= */
 const app = express();
@@ -67,6 +83,20 @@ app.use(express.static(path.join(__dirname,'public')));
 const minesGames = new Map();
 const crashGames = new Map();
 const towerGames = new Map();
+const battles = new Map(); // battleId → battle
+
+function sweepBattles(){
+  const now = Date.now();
+  for (const [id,b] of battles){
+    if (b.status === 'done' && now - b.finishedAt > BATTLE_EXPIRE) battles.delete(id);
+    else if (b.status === 'waiting' && now - b.createdAt > BATTLE_EXPIRE){
+      // возврат ставки хосту при истечении
+      const host = db.users[b.players[0].uid];
+      if (host){ credit(host, b.price*BATTLE_ROUNDS, '⚔️ Битва отменена (возврат)'); }
+      battles.delete(id);
+    }
+  }
+}
 
 function auth(req,res,next){
   const t = (req.headers.authorization||'').replace('Bearer ','');
@@ -82,7 +112,8 @@ const admin = (req,res,next) => req.user.admin ? next() : res.status(403).json({
 app.get('/api/config', (req,res) => {
   res.json({rar:RAR,items:ITEMS,cases:CASES,priv:PRIV,privOrder:PRIV_ORDER,limited:[...LIMITED],
     topupMax:TOPUP_MAX,topupCooldown:TOPUP_COOLDOWN,startBalance:START_BALANCE,multiMax:MULTI_MAX,
-    wheelSegs:WHEEL_SEGS,plinkoMults:PLINKO_MULTS,slotsSyms:SLOTS_SYMS,kenoPay:KENO_PAY});
+    wheelSegs:WHEEL_SEGS,plinkoMults:PLINKO_MULTS,slotsSyms:SLOTS_SYMS,kenoPay:KENO_PAY,
+    battlePlayers:BATTLE_PLAYERS,battleRounds:BATTLE_ROUNDS,luckMax:LUCK_MAX});
 });
 
 /* ---------- Регистрация / вход ---------- */
@@ -93,7 +124,7 @@ app.post('/api/register', (req,res) => {
   if (findByName(name)) return res.status(400).json({error:'Ник уже занят'});
   const salt = crypto.randomBytes(16).toString('hex');
   const u = {id:'u'+(db.nextId++),name,nameLower:name.toLowerCase(),salt,passHash:hash(pass,salt),
-    createdAt:Date.now(),admin:false,privilege:null,banUntil:0,banReason:'',topupAt:0,
+    createdAt:Date.now(),admin:false,privilege:null,luck:0,banUntil:0,banReason:'',topupAt:0,
     balance:START_BALANCE,freeAt:0,avatar:AVATARS[Math.floor(Math.random()*AVATARS.length)],
     joined:Date.now(),ref:Math.random().toString(36).slice(2,10),
     stats:{opened:0,upgrades:0,best:null},inventory:[],history:[],usedPromos:[]};
@@ -120,12 +151,12 @@ app.post('/api/logout', auth, (req,res) => {
   delete db.tokens[t]; save(); res.json({ok:true});
 });
 
-/* ---------- Кейсы: одиночное и мультиоткрытие (до 10) ---------- */
+/* ---------- Кейсы (мульти до 10 + удача) ---------- */
 app.post('/api/open-case', auth, (req,res) => {
   const cs = CASES.find(c => c.id === req.body.caseId);
   if (!cs) return res.status(400).json({error:'Кейс не найден'});
   let count = Math.max(1, Math.min(MULTI_MAX, Math.floor(+req.body.count || 1)));
-  if (cs.free) count = 1; // фри-кейс всегда по одному
+  if (cs.free) count = 1;
   if (cs.free){
     if (Date.now() < req.user.freeAt) return res.status(400).json({error:'Фри-кейс ещё не доступен'});
     req.user.freeAt = Date.now() + FREE_COOLDOWN;
@@ -137,7 +168,7 @@ app.post('/api/open-case', auth, (req,res) => {
   }
   const results = [];
   for (let i = 0; i < count; i++){
-    const item = pickDrop(cs);
+    const item = pickDrop(cs, req.user.luck);
     const entry = {uid:newUid(),id:item,case:cs.id,ts:Date.now()};
     req.user.inventory.unshift(entry);
     req.user.stats.opened++;
@@ -173,11 +204,10 @@ app.post('/api/sell-all', auth, (req,res) => {
 app.post('/api/topup', auth, (req,res) => {
   const v = Math.floor(+req.body.amount||0);
   if (v < 1) return res.status(400).json({error:'Некорректная сумма'});
-  if (v > 10000000) return res.status(400).json({error:'Слишком большая сумма'});
+  if (v > TOPUP_MAX) return res.status(400).json({error:'Слишком большая сумма'});
   if (!req.user.admin){
     const p = PRIV[req.user.privilege];
-    const maxV = p ? p.topupMax : TOPUP_MAX, cd = p ? p.cd*1000 : TOPUP_COOLDOWN;
-    if (v > maxV) return res.status(400).json({error:'Максимум '+maxV.toLocaleString('ru-RU')+' HC за одно пополнение'});
+    const cd = p ? p.cd*1000 : TOPUP_COOLDOWN;
     const left = req.user.topupAt + cd - Date.now();
     if (left > 0) return res.status(400).json({error:'Подожди '+Math.ceil(left/1000)+' сек'});
   }
@@ -194,14 +224,14 @@ app.post('/api/withdraw', auth, (req,res) => {
   save(); res.json({balance:req.user.balance});
 });
 app.post('/api/reset', auth, (req,res) => {
-  const a = req.user.admin, pr = req.user.privilege;
+  const a = req.user.admin, pr = req.user.privilege, lk = req.user.luck;
   Object.assign(req.user,{balance:START_BALANCE,freeAt:0,topupAt:0,stats:{opened:0,upgrades:0,best:null},
-    inventory:[],history:[],usedPromos:[],admin:a,privilege:pr});
+    inventory:[],history:[],usedPromos:[],admin:a,privilege:pr,luck:lk});
   addHist(req.user,'in','Стартовый бонус',START_BALANCE);
   save(); res.json({user:pubUser(req.user)});
 });
 
-/* ---------- Топ игроков ---------- */
+/* ---------- Топ ---------- */
 app.post('/api/top', auth, (req,res) => {
   const all = Object.values(db.users).sort((a,b) => b.balance-a.balance);
   const myIdx = all.findIndex(u => u.id === req.user.id);
@@ -210,7 +240,7 @@ app.post('/api/top', auth, (req,res) => {
     me: myIdx >= 0 ? {place:myIdx+1,total:all.length} : null});
 });
 
-/* ---------- Промокоды (статические + динамические) ---------- */
+/* ---------- Промокоды ---------- */
 app.post('/api/promo', auth, (req,res) => {
   const code = String(req.body.code||'').trim().toUpperCase();
   if (!code) return res.status(400).json({error:'Введите промокод'});
@@ -229,7 +259,7 @@ app.post('/api/promo', auth, (req,res) => {
     if (dyn.itemId && ITEMS[dyn.itemId]) give(dyn.itemId);
     if (dyn.caseId){
       const cs = CASES.find(c => c.id === dyn.caseId);
-      if (cs){ const id = pickDrop(cs); const e = {uid:newUid(),id,case:'promo',ts:Date.now()};
+      if (cs){ const id = pickDrop(cs, 0); const e = {uid:newUid(),id,case:'promo',ts:Date.now()};
         req.user.inventory.unshift(e); entries.push(e);
         msg += ' · кейс «'+cs.name+'» → '+ITEMS[id][0]+' '+ITEMS[id][1]; addFeed(req.user.name,id); }
     }
@@ -262,7 +292,7 @@ app.post('/api/promo', auth, (req,res) => {
   }
   if (p.case){
     const cs = CASES.find(c => c.id === p.case);
-    if (cs){ const id = pickDrop(cs); const e = {uid:newUid(),id,case:'promo',ts:Date.now()};
+    if (cs){ const id = pickDrop(cs, 0); const e = {uid:newUid(),id,case:'promo',ts:Date.now()};
       req.user.inventory.unshift(e); entries.push(e);
       msg = '🎁 Кейс «'+cs.name+'» → '+ITEMS[id][0]+' '+ITEMS[id][1]; addFeed(req.user.name,id); }
   }
@@ -303,14 +333,14 @@ app.post('/api/upgrade', auth, (req,res) => {
   save(); res.json({win,chance:+chance.toFixed(2),entry,balance:req.user.balance});
 });
 
-/* ---------- Coin / Dice ---------- */
+/* ---------- Игры (экономика v7 — урезанная) ---------- */
 app.post('/api/game/coin', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0), side = req.body.side==='tails'?'tails':'heads';
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
   req.user.balance -= bet; addHist(req.user,'out','Ставка: Coin Flip',bet);
   const result = Math.random() < .5 ? 'heads' : 'tails', win = result === side;
   let payout = 0;
-  if (win){ payout = Math.round(bet*1.96); credit(req.user,payout,'Coin Flip выигрыш'); }
+  if (win){ payout = Math.round(bet*1.90); credit(req.user,payout,'Coin Flip выигрыш'); }
   save(); res.json({result,win,payout,balance:req.user.balance});
 });
 app.post('/api/game/dice', auth, (req,res) => {
@@ -319,11 +349,9 @@ app.post('/api/game/dice', auth, (req,res) => {
   req.user.balance -= bet; addHist(req.user,'out','Ставка: Dice',bet);
   const roll = +(Math.random()*100).toFixed(2), win = roll < target;
   let payout = 0;
-  if (win){ payout = Math.round(bet*99/target); credit(req.user,payout,'Dice выигрыш x'+(99/target).toFixed(2)); }
+  if (win){ payout = Math.round(bet*95/target); credit(req.user,payout,'Dice выигрыш x'+(95/target).toFixed(2)); }
   save(); res.json({roll,win,payout,balance:req.user.balance});
 });
-
-/* ---------- Mines ---------- */
 app.post('/api/game/mines/start', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0), count = [3,5,10].includes(+req.body.count)?+req.body.count:3;
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
@@ -342,30 +370,28 @@ app.post('/api/game/mines/pick', auth, (req,res) => {
   g.opened.add(cell);
   g.mult *= (25-g.picks)/(25-g.count-g.picks); g.picks++;
   if (g.picks >= 25-g.count){
-    const payout = Math.round(g.bet*g.mult*0.97);
-    credit(req.user,payout,'Mines выигрыш x'+(g.mult*0.97).toFixed(2));
+    const payout = Math.round(g.bet*g.mult*0.90);
+    credit(req.user,payout,'Mines выигрыш x'+(g.mult*0.90).toFixed(2));
     minesGames.delete(req.user.id); save();
-    return res.json({finished:true,win:true,payout,mult:g.mult*0.97,mines:[...g.mineSet],balance:req.user.balance});
+    return res.json({finished:true,win:true,payout,mult:g.mult*0.90,mines:[...g.mineSet],balance:req.user.balance});
   }
   save();
-  res.json({gem:true,mult:+(g.mult*0.97).toFixed(4),next:+(g.mult*(25-g.picks)/(25-g.count-g.picks)*0.97).toFixed(4)});
+  res.json({gem:true,mult:+(g.mult*0.90).toFixed(4),next:+(g.mult*(25-g.picks)/(25-g.count-g.picks)*0.90).toFixed(4)});
 });
 app.post('/api/game/mines/cash', auth, (req,res) => {
   const g = minesGames.get(req.user.id);
   if (!g) return res.status(400).json({error:'Нет активной игры'});
-  const payout = Math.round(g.bet*g.mult*0.97);
-  credit(req.user,payout,'Mines выигрыш x'+(g.mult*0.97).toFixed(2));
+  const payout = Math.round(g.bet*g.mult*0.90);
+  credit(req.user,payout,'Mines выигрыш x'+(g.mult*0.90).toFixed(2));
   const mines = [...g.mineSet];
   minesGames.delete(req.user.id); save();
-  res.json({win:true,payout,mult:+(g.mult*0.97).toFixed(4),mines,balance:req.user.balance});
+  res.json({win:true,payout,mult:+(g.mult*0.90).toFixed(4),mines,balance:req.user.balance});
 });
-
-/* ---------- Crash ---------- */
 app.post('/api/game/crash/start', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0);
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
   req.user.balance -= bet; addHist(req.user,'out','Ставка: Crash',bet);
-  crashGames.set(req.user.id,{startTs:Date.now(),crashAt:Math.min(250,Math.max(1.01,0.99/(1-Math.random()))),bet});
+  crashGames.set(req.user.id,{startTs:Date.now(),crashAt:Math.min(250,Math.max(1.01,0.92/(1-Math.random()))),bet});
   save(); res.json({ok:true,balance:req.user.balance});
 });
 app.post('/api/game/crash/cash', auth, (req,res) => {
@@ -378,8 +404,6 @@ app.post('/api/game/crash/cash', auth, (req,res) => {
   crashGames.delete(req.user.id); save();
   res.json({win:true,mult:+mult.toFixed(2),payout,balance:req.user.balance});
 });
-
-/* ---------- Wheel ---------- */
 app.post('/api/game/wheel', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0);
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
@@ -392,8 +416,6 @@ app.post('/api/game/wheel', auth, (req,res) => {
   if (m > 0){ payout = Math.round(bet*m); credit(req.user,payout,'Wheel выигрыш x'+m); }
   save(); res.json({seg,mult:m,payout,balance:req.user.balance});
 });
-
-/* ---------- Plinko ---------- */
 app.post('/api/game/plinko', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0);
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
@@ -404,8 +426,6 @@ app.post('/api/game/plinko', auth, (req,res) => {
   if (payout > 0) credit(req.user,payout,'Plinko выигрыш x'+m);
   save(); res.json({slot:k,mult:m,payout,balance:req.user.balance});
 });
-
-/* ---------- Tower ---------- */
 app.post('/api/game/tower/start', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0);
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
@@ -422,26 +442,24 @@ app.post('/api/game/tower/pick', auth, (req,res) => {
   if (!(cell >= 0 && cell < 3)) return res.status(400).json({error:'Некорректная клетка'});
   if (g.bombs[g.floor] === cell){ const bombs = g.bombs; towerGames.delete(req.user.id); save(); return res.json({boom:true,bombs,balance:req.user.balance}); }
   g.floor++;
-  const mult = +Math.pow(1.42,g.floor).toFixed(2);
+  const mult = +Math.pow(1.32,g.floor).toFixed(2);
   if (g.floor >= 8){
-    const payout = Math.round(g.bet*mult*0.98);
+    const payout = Math.round(g.bet*mult*0.96);
     credit(req.user,payout,'Tower выигрыш x'+mult);
     towerGames.delete(req.user.id); save();
     return res.json({safe:true,floor:g.floor,mult,finished:true,payout,balance:req.user.balance});
   }
-  save(); res.json({safe:true,floor:g.floor,mult,next:+Math.pow(1.42,g.floor+1).toFixed(2)});
+  save(); res.json({safe:true,floor:g.floor,mult,next:+Math.pow(1.32,g.floor+1).toFixed(2)});
 });
 app.post('/api/game/tower/cash', auth, (req,res) => {
   const g = towerGames.get(req.user.id);
   if (!g || g.floor === 0) return res.status(400).json({error:'Нет активной игры'});
-  const mult = +Math.pow(1.42,g.floor).toFixed(2);
-  const payout = Math.round(g.bet*mult*0.98);
+  const mult = +Math.pow(1.32,g.floor).toFixed(2);
+  const payout = Math.round(g.bet*mult*0.96);
   credit(req.user,payout,'Tower выигрыш x'+mult);
   towerGames.delete(req.user.id); save();
   res.json({win:true,mult,payout,bombs:g.bombs,balance:req.user.balance});
 });
-
-/* ---------- Slots ---------- */
 app.post('/api/game/slots', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0);
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
@@ -451,13 +469,11 @@ app.post('/api/game/slots', auth, (req,res) => {
   const a = pickOne(), b = pickOne(), c = pickOne();
   let mult = 0;
   if (a[0] === b[0] && b[0] === c[0]) mult = a[2];
-  else if (a[0] === b[0] || b[0] === c[0] || a[0] === c[0]) mult = 2;
+  else if (a[0] === b[0] || b[0] === c[0] || a[0] === c[0]) mult = 1.5;
   let payout = 0;
   if (mult > 0){ payout = Math.round(bet*mult); credit(req.user,payout,'Slots выигрыш x'+mult); }
   save(); res.json({reels:[a[0],b[0],c[0]],mult,payout,balance:req.user.balance});
 });
-
-/* ---------- Roulette ---------- */
 app.post('/api/game/roulette', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0);
   const pick = ['red','black','green'].includes(req.body.pick) ? req.body.pick : 'red';
@@ -466,28 +482,24 @@ app.post('/api/game/roulette', auth, (req,res) => {
   const num = Math.floor(Math.random()*37);
   const color = num === 0 ? 'green' : (ROULETTE_RED.has(num) ? 'red' : 'black');
   const win = color === pick;
-  const mult = pick === 'green' ? 14 : 2;
+  const mult = pick === 'green' ? 12 : 2;
   let payout = 0;
   if (win){ payout = Math.round(bet*mult); credit(req.user,payout,'Roulette выигрыш x'+mult); }
   save(); res.json({num,color,win,mult,payout,balance:req.user.balance});
 });
-
-/* ---------- Limbo (цель до x1000) ---------- */
 app.post('/api/game/limbo', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0);
   const target = Math.min(1000, Math.max(1.01, +req.body.target || 2));
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
   req.user.balance -= bet; addHist(req.user,'out','Ставка: Limbo x'+target.toFixed(2),bet);
-  const result = Math.min(1000, Math.max(1, 0.99/(1 - Math.random())));
+  const result = Math.min(1000, Math.max(1, 0.95/(1 - Math.random())));
   const win = result >= target;
   let payout = 0;
   if (win){ payout = Math.round(bet*target); credit(req.user,payout,'Limbo выигрыш x'+target.toFixed(2)); }
   save(); res.json({result:+result.toFixed(2),target,win,payout,balance:req.user.balance});
 });
-
-/* ---------- Hi-Lo (карты) ---------- */
-const HILO_RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const HILO_VAL = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
+const HILO_RANKS = Object.keys(HILO_VAL);
 const HILO_SUITS = ['♠','♥','♦','♣'];
 function hiloCard(){ return {r:HILO_RANKS[Math.floor(Math.random()*13)], s:HILO_SUITS[Math.floor(Math.random()*4)]}; }
 app.post('/api/game/hilo', auth, (req,res) => {
@@ -496,22 +508,18 @@ app.post('/api/game/hilo', auth, (req,res) => {
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
   const cur = hiloCard(), next = hiloCard();
   const v1 = HILO_VAL[cur.r], v2 = HILO_VAL[next.r];
-  const pHi = (14 - v1) / 13;      // вероятность строго выше
-  const pLo = (v1 - 2) / 13;       // строго ниже
+  const pHi = (14 - v1) / 13, pLo = (v1 - 2) / 13;
   const p = pick === 'hi' ? pHi : pLo;
   if (p <= 0) return res.status(400).json({error:'Нет смысла ставить «'+pick+'» на карту '+cur.r});
   req.user.balance -= bet; addHist(req.user,'out','Ставка: Hi-Lo '+pick.toUpperCase(),bet);
   let win = false, mult = 0, push = false;
   if (v2 === v1){ push = true; win = true; mult = 1; }
-  else if ((pick === 'hi' && v2 > v1) || (pick === 'lo' && v2 < v1)){ win = true; mult = Math.round(0.95/p * 100)/100; }
+  else if ((pick === 'hi' && v2 > v1) || (pick === 'lo' && v2 < v1)){ win = true; mult = Math.round(0.90/p * 100)/100; }
   let payout = 0;
   if (win){ payout = Math.round(bet*mult); if (payout > 0) credit(req.user,payout,'Hi-Lo выигрыш x'+mult.toFixed(2)); }
-  else addHist(req.user,'out','Hi-Lo проигрыш',0);
   save();
   res.json({cur:cur.r+cur.s, next:next.r+next.s, win, push, mult, payout, balance:req.user.balance});
 });
-
-/* ---------- Keno (выбери до 10 из 40) ---------- */
 app.post('/api/game/keno', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0);
   const picks = [...new Set((Array.isArray(req.body.picks)?req.body.picks:[]).map(x => Math.floor(+x)))]
@@ -531,11 +539,132 @@ app.post('/api/game/keno', auth, (req,res) => {
   save(); res.json({drawn, picks, hits, mult, payout, balance:req.user.balance});
 });
 
-/* ---------- Админ: игроки / монеты / предметы ---------- */
+/* ---------- ⚔️ Битвы кейсов (2/4/6 игроков) ---------- */
+function battleView(b){
+  return {id:b.id, caseId:b.caseId, caseName:b.caseName, caseEmoji:b.caseEmoji, price:b.price,
+    playersCount:b.playersCount, status:b.status,
+    players:b.players.map(p => ({name:p.name, avatar:p.avatar, isBot:p.isBot, isMe:p.uid === b.viewUid,
+      items:p.items || [], total:(p.items||[]).reduce((s,id) => s+itV(id),0)})),
+    winnerIdx:b.winnerIdx ?? null, rounds:b.rounds || null};
+}
+function runBattle(b){
+  const cs = CASES.find(c => c.id === b.caseId);
+  b.rounds = [];
+  for (let r = 0; r < BATTLE_ROUNDS; r++){
+    const round = b.players.map(p => pickDrop(cs, p.luck));
+    b.rounds.push(round);
+    b.players.forEach((p,i) => p.items.push(round[i]));
+  }
+  const totals = b.players.map(p => p.items.reduce((s,id) => s+itV(id),0));
+  let maxT = Math.max(...totals);
+  const tied = totals.map((t,i) => t === maxT ? i : -1).filter(i => i >= 0);
+  b.winnerIdx = tied[Math.floor(Math.random()*tied.length)];
+  const winner = b.players[b.winnerIdx];
+  const allItems = b.players.flatMap(p => p.items);
+  const allValue = allItems.reduce((s,id) => s+itV(id),0);
+  b.status = 'done';
+  b.finishedAt = Date.now();
+  if (!winner.isBot){
+    const u = db.users[winner.uid];
+    if (u){
+      allItems.forEach(id => {
+        const e = {uid:newUid(), id, case:'battle', ts:Date.now()};
+        u.inventory.unshift(e);
+        recordBest(u,id);
+      });
+      addHist(u,'in','⚔️ Битва: победа +'+allItems.length+' предметов',allValue);
+      addFeed(u.name, bestItem(cs));
+    }
+  }
+  save();
+}
+app.post('/api/battle/create', auth, (req,res) => {
+  sweepBattles();
+  const cs = CASES.find(c => c.id === req.body.caseId);
+  if (!cs) return res.status(400).json({error:'Кейс не найден'});
+  if (cs.free) return res.status(400).json({error:'Фри-кейс нельзя использовать в битвах'});
+  const playersCount = +req.body.playersCount;
+  if (!BATTLE_PLAYERS.includes(playersCount)) return res.status(400).json({error:'Только 2, 4 или 6 игроков'});
+  const fillBots = !!req.body.fillBots;
+  const cost = cs.price * BATTLE_ROUNDS;
+  if (req.user.balance < cost) return res.status(400).json({error:'Нужно '+cost.toLocaleString('ru-RU')+' HC (5 кейсов)', need:cost-req.user.balance});
+  req.user.balance -= cost;
+  addHist(req.user,'out','⚔️ Битва: взнос («'+cs.name+'» ×'+BATTLE_ROUNDS+')',cost);
+  const b = {
+    id:newId('b'), caseId:cs.id, caseName:cs.name, caseEmoji:cs.e, price:cs.price,
+    playersCount, rounds:BATTLE_ROUNDS,
+    players:[{uid:req.user.id, name:req.user.name, avatar:req.user.avatar, luck:req.user.luck||0, items:[], isBot:false}],
+    status:'waiting', createdAt:Date.now(), viewUid:req.user.id,
+  };
+  if (fillBots){
+    while (b.players.length < playersCount){
+      b.players.push({uid:'bot'+newId(''), name:botName(), avatar:'🤖', luck:0, items:[], isBot:true});
+    }
+    runBattle(b);
+    save();
+    return res.json({battle:battleView(b), result:{winnerIdx:b.winnerIdx, isMe:b.winnerIdx===0}, balance:req.user.balance});
+  }
+  battles.set(b.id, b);
+  save();
+  res.json({battle:battleView(b), balance:req.user.balance});
+});
+app.post('/api/battle/list', auth, (req,res) => {
+  sweepBattles();
+  const list = [...battles.values()].filter(b => b.status === 'waiting')
+    .sort((a,b) => b.createdAt-a.createdAt)
+    .map(b => ({id:b.id, caseId:b.caseId, caseName:b.caseName, caseEmoji:b.caseEmoji, price:b.price,
+      playersCount:b.playersCount, joined:b.players.length,
+      players:b.players.map(p => ({name:p.name, avatar:p.avatar, isBot:p.isBot}))}));
+  res.json({list});
+});
+app.post('/api/battle/join', auth, (req,res) => {
+  sweepBattles();
+  const b = battles.get(String(req.body.battleId||''));
+  if (!b) return res.status(404).json({error:'Битва не найдена'});
+  if (b.status !== 'waiting') return res.status(400).json({error:'Битва уже началась'});
+  if (b.players.some(p => p.uid === req.user.id)) return res.status(400).json({error:'Ты уже в этой битве'});
+  if (b.players.length >= b.playersCount) return res.status(400).json({error:'Битва заполнена'});
+  const cost = b.price * BATTLE_ROUNDS;
+  if (req.user.balance < cost) return res.status(400).json({error:'Нужно '+cost.toLocaleString('ru-RU')+' HC', need:cost-req.user.balance});
+  req.user.balance -= cost;
+  addHist(req.user,'out','⚔️ Битва: взнос («'+b.caseName+'» ×'+BATTLE_ROUNDS+')',cost);
+  b.players.push({uid:req.user.id, name:req.user.name, avatar:req.user.avatar, luck:req.user.luck||0, items:[], isBot:false});
+  let result = null;
+  if (b.players.length >= b.playersCount){
+    b.viewUid = req.user.id;
+    runBattle(b);
+    result = {winnerIdx:b.winnerIdx, isMe:b.winnerIdx === b.players.findIndex(p => p.uid === req.user.id)};
+  }
+  save();
+  res.json({battle:battleView(b), result, balance:req.user.balance});
+});
+app.post('/api/battle/fill-bots', auth, (req,res) => {
+  const b = battles.get(String(req.body.battleId||''));
+  if (!b) return res.status(404).json({error:'Битва не найдена'});
+  if (b.status !== 'waiting') return res.status(400).json({error:'Битва уже началась'});
+  const host = b.players[0];
+  if (host.uid !== req.user.id) return res.status(403).json({error:'Только создатель может начать с ботами'});
+  while (b.players.length < b.playersCount){
+    b.players.push({uid:'bot'+newId(''), name:botName(), avatar:'🤖', luck:0, items:[], isBot:true});
+  }
+  b.viewUid = req.user.id;
+  runBattle(b);
+  save();
+  res.json({battle:battleView(b), result:{winnerIdx:b.winnerIdx, isMe:b.winnerIdx===0}, balance:req.user.balance});
+});
+app.post('/api/battle/state', auth, (req,res) => {
+  sweepBattles();
+  const b = battles.get(String(req.body.battleId||''));
+  if (!b) return res.status(404).json({error:'Битва не найдена'});
+  b.viewUid = req.user.id;
+  res.json({battle:battleView(b)});
+});
+
+/* ---------- Админ ---------- */
 app.post('/api/admin/users', auth, admin, (req,res) => {
   res.json({users:Object.values(db.users)
     .map(u => ({id:u.id,name:u.name,avatar:u.avatar,balance:u.balance,items:u.inventory.length,
-      banUntil:u.banUntil,banReason:u.banReason,admin:u.admin,priv:u.privilege||null,joined:u.createdAt}))
+      banUntil:u.banUntil,banReason:u.banReason,admin:u.admin,priv:u.privilege||null,luck:u.luck||0,joined:u.createdAt}))
     .sort((a,b) => b.joined-a.joined)});
 });
 function getTarget(req,res){ const t = db.users[req.body.userId]; if (!t){ res.status(404).json({error:'Игрок не найден'}); return null; } return t; }
@@ -554,6 +683,14 @@ app.post('/api/admin/give-item', auth, admin, (req,res) => {
   t.inventory.unshift({uid:newUid(),id,case:'admin',ts:Date.now()});
   addHist(t,'in','👑 Админ: выдан '+ITEMS[id][1],itV(id));
   save(); res.json({ok:true});
+});
+app.post('/api/admin/setluck', auth, admin, (req,res) => {
+  const t = getTarget(req,res); if (!t) return;
+  let luck = Math.floor(+req.body.luck||0);
+  luck = Math.max(0, Math.min(LUCK_MAX, luck));
+  t.luck = luck;
+  addHist(t,'in','🍀 Удача: '+luck.toLocaleString('ru-RU'),0);
+  save(); res.json({ok:true,luck:t.luck});
 });
 app.post('/api/admin/ban', auth, (req,res) => {
   const t = getTarget(req,res); if (!t) return;
@@ -610,4 +747,4 @@ app.post('/api/admin/promo-delete', auth, admin, (req,res) => {
 });
 
 app.use('/api',(req,res) => res.status(404).json({error:'Не найдено'}));
-app.listen(PORT, () => console.log('✅ HC Gifts v6.0 (21 редкость, 102 предмета, 93 кейса, 12 игр, мульти-открытие ×'+MULTI_MAX+'): http://localhost:'+PORT));
+app.listen(PORT, () => console.log('✅ HC Gifts v7.0 (23 редкости, 96 кейсов, битвы 2/4/6, удача, новая экономика): http://localhost:'+PORT));

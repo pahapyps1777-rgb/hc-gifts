@@ -1,4 +1,4 @@
-/* ================= HC Gifts v6 — данные игры ================= */
+/* ================= HC Gifts v7 — данные игры ================= */
 
 const RAR = {
   common:{label:'Common',c:'#8B93A7'}, rare:{label:'Rare',c:'#38BDF8'}, epic:{label:'Epic',c:'#A855F7'},
@@ -8,6 +8,7 @@ const RAR = {
   chrono:{label:'Chrono',c:'#CBD5E1'}, ascended:{label:'Ascended',c:'#E879F9'}, omega:{label:'Omega',c:'#EF4444'},
   void:{label:'Void',c:'#7C3AED'}, absolute:{label:'Absolute',c:'#FFD700'}, limited:{label:'Limited',c:'#FF6B6B'},
   nova:{label:'Nova',c:'#FF9E64'}, apex:{label:'Apex',c:'#FF4DFF'}, transcend:{label:'Transcendent',c:'#7FFFD4'},
+  galactic:{label:'Galactic',c:'#00D9FF'}, universal:{label:'Universal',c:'#FF3EF5'},
 };
 
 const PRIV = {
@@ -20,33 +21,33 @@ const PRIV = {
 const PRIV_ORDER = ['vip','pro','proplus','helper','moder'];
 
 const ITEMS = {
-  candy:['🍬','Конфета','common',30], lolli:['🍭','Лоллипоп','common',35], cookie:['🍪','Печенька','common',40],
-  coffee:['☕','Кофе','common',50], balloon:['🎈','Шарик','common',50], soda:['🥤','Содовая','common',55],
-  donut:['🍩','Пончик','common',60], icecream:['🍦','Мороженое','common',65], pizza:['🍕','Пицца','common',70],
-  dice:['🎲','Кубик','common',75], cactus:['🌵','Кактус','common',80], key:['🔑','Ключик','common',85],
-  frog:['🐸','Жаба-мем','common',90], book:['📖','Книга','common',95], magnet:['🧲','Магнит','common',105], bulb:['💡','Лампочка','common',110],
-  heart:['❤️','Сердце','rare',140], rose:['🌹','Роза','rare',130], cake:['🎂','Торт','rare',160],
-  teddy:['🧸','Мишка Тедди','rare',170], shades:['🕶️','Очки','rare',200], pumpkin:['🎃','Тыква','rare',210],
-  headphones:['🎧','Наушники','rare',230], skate:['🛹','Скейт','rare',260], snow:['⛄','Снеговик','rare',280],
-  palm:['🌴','Пальма','rare',290], watch:['⌚','Часы','rare',300], cherry:['🌸','Сакура','rare',310],
-  champagne:['🍾','Шампанское','rare',340], rocket:['🚀','Ракета','rare',380], guitar:['🎸','Гитара','rare',420],
-  football:['⚽','Мяч','rare',440], plane:['✈️','Самолёт','rare',460], gift:['🎁','Подарок','rare',480],
-  anchor:['⚓','Якорь','rare',500], bell:['🔔','Колокол','rare',520], map:['🗺️','Карта сокровищ','rare',540], candle:['🕯️','Свеча','rare',560],
-  gamepad:['🎮','Геймпад','epic',620], robot:['🤖','Робот','epic',720], ring:['💍','Кольцо','epic',820],
-  diamond:['💎','Бриллиант','epic',950], moai:['🗿','Моаи','epic',1050], planet:['🪐','Планета','epic',1150],
-  crown:['👑','Корона','epic',1300], skull:['💀','Череп','epic',1350], target:['🎯','Мишень','epic',1400],
-  bomb:['💣','Бомба','epic',1450], camera:['📷','Камера','epic',1500], tophat:['🎩','Цилиндр','epic',1550],
-  nazar:['🧿','Амулет','epic',1600], treasure:['💰','Сундук золота','epic',1650], helicopter:['🚁','Вертолёт','epic',1700],
-  statue:['🗽','Статуя','epic',1750], magicball:['🔮','Хрустальный шар','epic',1800],
-  star:['🌟','Звезда','legendary',3200], unicorn:['🦄','Единорог','legendary',4500], dragon:['🐉','Дракон','legendary',6000],
-  trophy:['🏆','Кубок','legendary',7500], phoenix:['🔥','Феникс','legendary',9000], ufo:['👽','НЛО','legendary',12000],
-  thor:['⚡','Молот Тора','legendary',15000], rainbow:['🌈','Радуга','legendary',17000], sword:['🗡️','Клинок','legendary',18000],
-  comet:['☄️','Комета','legendary',20000], castle:['🏰','Замок','legendary',23000], moon:['🌙','Луна','legendary',26000],
+  candy:['🍡','Конфета','common',30], lolli:['🍥','Лоллипоп','common',35], cookie:['🥠','Печенька','common',40],
+  coffee:['🧋','Кофе','common',50], balloon:['🪁','Шарик','common',50], soda:['🧃','Содовая','common',55],
+  donut:['🥯','Пончик','common',60], icecream:['🍧','Мороженое','common',65], pizza:['🍕','Пицца','common',70],
+  dice:['🀄','Кубик','common',75], cactus:['🪴','Кактус','common',80], key:['🗝️','Ключик','common',85],
+  frog:['🐢','Жаба-мем','common',90], book:['📗','Книга','common',95], magnet:['🧲','Магнит','common',105], bulb:['🔋','Лампочка','common',110],
+  heart:['💕','Сердце','rare',140], rose:['🥀','Роза','rare',130], cake:['🧁','Торт','rare',160],
+  teddy:['🐻','Мишка Тедди','rare',170], shades:['🥽','Очки','rare',200], pumpkin:['👺','Тыква','rare',210],
+  headphones:['📻','Наушники','rare',230], skate:['🛼','Скейт','rare',260], snow:['🐧','Снеговик','rare',280],
+  palm:['🌾','Пальма','rare',290], watch:['⏰','Часы','rare',300], cherry:['🌸','Сакура','rare',310],
+  champagne:['🍹','Шампанское','rare',340], rocket:['🛫','Ракета','rare',380], guitar:['🪕','Гитара','rare',420],
+  football:['🏀','Мяч','rare',440], plane:['🛩️','Самолёт','rare',460], gift:['🎀','Подарок','rare',480],
+  anchor:['🪝','Якорь','rare',500], bell:['📯','Колокол','rare',520], map:['📜','Карта сокровищ','rare',540], candle:['🪔','Свеча','rare',560],
+  gamepad:['🕹️','Геймпад','epic',620], robot:['👾','Робот','epic',720], ring:['💍','Кольцо','epic',820],
+  diamond:['🔷','Бриллиант','epic',950], moai:['🗿','Моаи','epic',1050], planet:['🪐','Планета','epic',1150],
+  crown:['👑','Корона','epic',1300], skull:['☠️','Череп','epic',1350], target:['🎯','Мишень','epic',1400],
+  bomb:['🧨','Бомба','epic',1450], camera:['📸','Камера','epic',1500], tophat:['🪄','Цилиндр','epic',1550],
+  nazar:['🧿','Амулет','epic',1600], treasure:['🧰','Сундук золота','epic',1650], helicopter:['🚟','Вертолёт','epic',1700],
+  statue:['🗽','Статуя','epic',1750], magicball:['🔵','Хрустальный шар','epic',1800],
+  star:['✨','Звезда','legendary',3200], unicorn:['🦄','Единорог','legendary',4500], dragon:['🐉','Дракон','legendary',6000],
+  trophy:['🏆','Кубок','legendary',7500], phoenix:['🔥','Феникс','legendary',9000], ufo:['🛸','НЛО','legendary',12000],
+  thor:['🔨','Молот Тора','legendary',15000], rainbow:['🌈','Радуга','legendary',17000], sword:['⚔️','Клинок','legendary',18000],
+  comet:['☄️','Комета','legendary',20000], castle:['🏯','Замок','legendary',23000], moon:['🌘','Луна','legendary',26000],
   genie:['🧞','Джинн','legendary',28000], blackhole:['🕳️','Чёрная дыра','legendary',30000],
-  volcano:['🌋','Вулкан','mythic',45000], squid:['🦑','Кракен','mythic',50000], wolf:['🐺','Альфа-волк','mythic',55000],
+  volcano:['🌋','Вулкан','mythic',45000], squid:['🦑','Кракен','mythic',50000], wolf:['🐕‍🦺','Альфа-волк','mythic',55000],
   tornado:['🌪️','Торнадо','mythic',60000], shield:['🛡️','Щит титана','mythic',65000],
   dragonlord:['🐲','Повелитель драконов','mythic',70000], trex:['🦖','Ти-Рекс','mythic',75000], tsunami:['🌊','Цунами','mythic',80000],
-  trident:['🔱','Трезубец Посейдона','divine',100000], sun:['🌞','Солнце','divine',120000],
+  trident:['🔱','Трезубец Посейдона','divine',100000], sun:['☀️','Солнце','divine',120000],
   earth:['🌍','Планета Земля','divine',150000], angel:['👼','Ангел','divine',180000],
   dove:['🕊️','Голубь мира','divine',200000], infinity:['♾️','Бесконечность','divine',250000],
   joker:['🃏','Джокер','secret',300000], eye:['👁️','Всевидящее око','secret',400000],
@@ -55,20 +56,22 @@ const ITEMS = {
   sunflower:['🌻','Солнечный цветок','radiant',350000], lantern:['🏮','Сияющий фонарь','radiant',400000],
   shootingstar:['🌠','Астральный метеор','astral',480000], satellite:['🛰️','Звёздный спутник','astral',550000],
   hourglass:['⌛','Песочные веки','eternal',620000], clock:['🕰️','Часы вечности','eternal',700000],
-  wing:['🪽','Крыло серафима','celestial',780000], orb:['🔵','Небесная сфера','celestial',850000],
+  wing:['🪽','Крыло серафима','celestial',780000], orb:['🔮','Небесная сфера','celestial',850000],
   mammoth:['🦣','Мамонт','primal',950000], tiger:['🐅','Саблезубый тигр','primal',1050000],
   chrono:['⏱️','Хроносфера','chrono',1150000], timegate:['🚪','Врата времени','chrono',1250000],
-  archangel:['😇','Архангел','ascended',1350000], lightblade:['⚔️','Клинок света','ascended',1500000],
-  omega:['🅾️','Омега-ядро','omega',1700000], reaper:['☠️','Жнец','omega',1900000],
+  archangel:['😇','Архангел','ascended',1350000], lightblade:['🗡️','Клинок света','ascended',1500000],
+  omega:['🅾️','Омега-ядро','omega',1700000], reaper:['⚰️','Жнец','omega',1900000],
   voidcrystal:['⬛','Пустотный кристалл','void',2200000], darksun:['🌚','Тёмное солнце','void',2600000],
-  omnicube:['🧊','Куб Абсолюта','absolute',3000000], absheart:['🔆','Сердце Абсолюта','absolute',3500000],
+  omnicube:['🧊','Куб Абсолюта','absolute',3000000], absheart:['💗','Сердце Абсолюта','absolute',3500000],
   ticket:['🎟️','Золотой билет','limited',300000], goldcoin:['🪙','Золотая монета HC','limited',500000],
   medal:['🏅','Медаль основателя','limited',750000], order:['🎖️','Орден почёта','limited',1000000],
   feather:['🪶','Перо феникса','limited',1500000], gear:['⚙️','Механизм вечности','limited',2000000],
   genesis:['🧬','Генезис','limited',3000000], mirror:['🪞','Зеркало судьбы','limited',5000000],
-  novaburst:['🎆','Нова-вспышка','nova',4500000], novasalvo:['🎇','Салют вселенной','nova',5200000],
-  apexcrown:['♛','Корона Апекса','apex',6000000], apexsigil:['🔺','Знак Апекса','apex',7000000],
+  novaburst:['✴️','Нова-вспышка','nova',4500000], novasalvo:['🎇','Салют вселенной','nova',5200000],
+  apexcrown:['♛','Корона Апекса','apex',6000000], apexsigil:['🔻','Знак Апекса','apex',7000000],
   lotus:['🪷','Лотос просветления','transcend',8500000], transcendgate:['🛕','Врата трансцендента','transcend',10000000],
+  galacticcore:['🌀','Галактическое ядро','galactic',2000000000], stargate:['🔭','Звёздные врата','galactic',2600000000],
+  bigbang:['💥','Большой взрыв','universal',4000000000], multiverse:['🕸️','Мультивселенная','universal',6000000000],
 };
 const LIMITED = new Set(Object.keys(ITEMS).filter(id => ITEMS[id][2] === 'limited'));
 
@@ -165,7 +168,10 @@ const CASES = [
   {id:'novacore',name:'Nova Core',e:'🎆',price:2400000,c:['#B45309','#1A0A02'],drops:[['unicorn',900],['dragon',900],['trophy',900],['phoenix',900],['ufo',900],['thor',900],['comet',900],['blackhole',700],['volcano',400],['trex',300],['tsunami',180],['dragonlord',100],['ball8',60],['trident',180],['sun',120],['angel',60],['joker',40],['eye',25],['masks',12],['galaxy',6],['supernova',4],['sunflower',300],['shootingstar',260],['hourglass',180],['wing',120],['mammoth',80],['chrono',60],['archangel',40],['omega',25],['voidcrystal',12],['omnicube',6],['absheart',3],['novaburst',500],['novasalvo',220]]},
   {id:'apexthrone',name:'Apex Throne',e:'♛',price:3200000,c:['#831843','#2A0512'],drops:[['dragon',800],['trophy',800],['phoenix',800],['ufo',800],['thor',800],['comet',800],['blackhole',600],['volcano',350],['trex',280],['tsunami',160],['dragonlord',90],['ball8',55],['trident',160],['sun',110],['angel',55],['joker',35],['eye',22],['masks',11],['galaxy',5],['supernova',3],['shootingstar',280],['satellite',200],['hourglass',160],['clock',100],['wing',100],['orb',60],['mammoth',70],['tiger',40],['chrono',55],['timegate',30],['archangel',38],['lightblade',22],['omega',22],['reaper',12],['voidcrystal',10],['darksun',5],['omnicube',4],['absheart',2],['novaburst',300],['novasalvo',150],['apexcrown',450],['apexsigil',180]]},
   {id:'lotusgarden',name:'Lotus Garden',e:'🪷',price:4500000,c:['#134E4A','#031A17'],drops:[['trophy',700],['phoenix',700],['ufo',700],['thor',700],['comet',700],['blackhole',500],['volcano',300],['trex',240],['tsunami',140],['dragonlord',80],['ball8',50],['trident',140],['sun',95],['angel',48],['joker',30],['eye',19],['masks',10],['galaxy',4],['supernova',2],['hourglass',140],['clock',90],['wing',90],['orb',55],['mammoth',60],['tiger',35],['chrono',48],['timegate',26],['archangel',32],['lightblade',19],['omega',19],['reaper',10],['voidcrystal',9],['darksun',4],['omnicube',3],['absheart',1],['novaburst',240],['novasalvo',120],['apexcrown',260],['apexsigil',110],['lotus',450],['transcendgate',180]]},
-  {id:'creation',name:'Creation Forge',e:'🛕',price:6000000,featured:true,sub:'АБСОЛЮТНЫЙ ТОП · вплоть до Transcendent · Врата трансцендента 10 000 000 HC',c:['#713F12','#0D0701'],drops:[['phoenix',600],['ufo',600],['thor',600],['comet',600],['blackhole',450],['volcano',280],['trex',220],['tsunami',130],['dragonlord',75],['ball8',46],['trident',130],['sun',90],['angel',45],['joker',28],['eye',18],['masks',9],['galaxy',4],['supernova',2],['clock',85],['wing',85],['orb',52],['mammoth',55],['tiger',32],['chrono',45],['timegate',24],['archangel',30],['lightblade',18],['omega',18],['reaper',9],['voidcrystal',8],['darksun',4],['omnicube',2],['absheart',1],['novaburst',200],['novasalvo',100],['apexcrown',180],['apexsigil',80],['lotus',300],['transcendgate',120]]},
+  {id:'creation',name:'Creation Forge',e:'🛕',price:6000000,c:['#713F12','#0D0701'],drops:[['phoenix',600],['ufo',600],['thor',600],['comet',600],['blackhole',450],['volcano',280],['trex',220],['tsunami',130],['dragonlord',75],['ball8',46],['trident',130],['sun',90],['angel',45],['joker',28],['eye',18],['masks',9],['galaxy',4],['supernova',2],['clock',85],['wing',85],['orb',52],['mammoth',55],['tiger',32],['chrono',45],['timegate',24],['archangel',30],['lightblade',18],['omega',18],['reaper',9],['voidcrystal',8],['darksun',4],['omnicube',2],['absheart',1],['novaburst',200],['novasalvo',100],['apexcrown',180],['apexsigil',80],['lotus',300],['transcendgate',120]]},
+  {id:'billion',name:'Billionaire',e:'💠',price:1000000000,c:['#0EA5E9','#04121F'],drops:[['unicorn',900],['dragon',900],['trophy',900],['phoenix',900],['ufo',900],['thor',900],['comet',900],['blackhole',700],['volcano',400],['trex',300],['tsunami',200],['dragonlord',120],['ball8',80],['trident',200],['sun',130],['angel',70],['joker',50],['eye',30],['masks',15],['galaxy',8],['supernova',5],['omnicube',30],['absheart',15],['novaburst',200],['novasalvo',100],['apexcrown',120],['apexsigil',60],['lotus',40],['transcendgate',18],['galacticcore',260],['stargate',130]]},
+  {id:'galactic',name:'Galactic Empire',e:'🔭',price:3000000000,c:['#155E75','#03151E'],drops:[['dragon',700],['trophy',700],['phoenix',700],['ufo',700],['thor',700],['comet',700],['blackhole',500],['volcano',300],['trex',240],['tsunami',140],['dragonlord',80],['ball8',50],['trident',140],['sun',95],['angel',48],['joker',30],['eye',19],['masks',10],['galaxy',4],['supernova',2],['omnicube',12],['absheart',6],['novaburst',140],['novasalvo',70],['apexcrown',90],['apexsigil',40],['lotus',25],['transcendgate',11],['galacticcore',700],['stargate',350],['bigbang',40]]},
+  {id:'godsthrone',name:'Throne of Gods',e:'🌐',price:6000000 * 1000,featured:true,sub:'АБСОЛЮТНЫЙ ТОП v7 · Universal-редкость · Мультивселенная 6 000 000 000 HC',c:['#4C1D95','#05010F'],drops:[['trophy',500],['phoenix',500],['ufo',500],['thor',500],['comet',500],['blackhole',400],['volcano',220],['trex',180],['tsunami',100],['dragonlord',60],['ball8',36],['trident',100],['sun',70],['angel',34],['joker',22],['eye',14],['masks',7],['galaxy',3],['supernova',1],['clock',65],['wing',65],['orb',40],['mammoth',42],['tiger',24],['chrono',34],['timegate',18],['archangel',22],['lightblade',13],['omega',13],['reaper',7],['voidcrystal',6],['darksun',3],['omnicube',2],['absheart',1],['novaburst',150],['novasalvo',75],['apexcrown',130],['apexsigil',58],['lotus',220],['transcendgate',90],['galacticcore',520],['stargate',260],['bigbang',450],['multiverse',180]]},
 ];
 
 /* Статические промокоды. NERES — АДМИНКА. ⚠️ Смени перед раздачей! */
@@ -177,30 +183,35 @@ const PROMOS = {
   HC1000:{amount:1000}, HC5000:{amount:5000}, GIFT:{item:'randomRare'},
 };
 
-/* Настройки и константы игр */
+/* Константы */
 const AVATARS = ['🦊','🐼','🐸','🦁','🐯','🐙','🦄','🐨','🐺','🐵','🦉','🐳'];
 const START_BALANCE = 1000;
 const FREE_COOLDOWN = 600000;
-const TOPUP_MAX = 300;
-const TOPUP_COOLDOWN = 60000;
+const TOPUP_MAX = 1000000000000;   // лимит снят: до 1 триллиона за раз
+const TOPUP_COOLDOWN = 10000;      // 10 секунд между пополнениями
 const MULTI_MAX = 10;
-const WHEEL_SEGS = [{m:0,w:9},{m:0.5,w:4},{m:1.5,w:3},{m:2,w:2},{m:3,w:1},{m:5,w:1}];
-const PLINKO_MULTS = [10,3,1.8,1.3,1,0.8,0.6,0.8,1,1.3,1.8,3,10];
-const SLOTS_SYMS = [['🍒',35,4],['🍋',25,6],['🔔',18,10],['⭐',10,20],['💎',5,50],['7️⃣',2,100]];
+const BATTLE_PLAYERS = [2,4,6];
+const BATTLE_ROUNDS = 5;
+const BATTLE_EXPIRE = 180000;
+
+/* Экономика игр v7 — шансы и множители понижены */
+const WHEEL_SEGS = [{m:0,w:14},{m:0.5,w:5},{m:1.5,w:3},{m:2,w:1.5},{m:3,w:0.8},{m:5,w:0.5}];
+const PLINKO_MULTS = [8,2.5,1.5,1.1,0.9,0.7,0.5,0.7,0.9,1.1,1.5,2.5,8];
+const SLOTS_SYMS = [['🍒',35,2],['🍋',25,3],['🔔',18,5],['⭐',10,10],['💎',5,25],['7️⃣',2,50]];
 const ROULETTE_RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
-/* Keno: для каждого количества выбранных чисел — таблица «совпадений → множитель» */
 const KENO_PAY = {
-  1:{1:3.8},
-  2:{2:17},
-  3:{2:2.5,3:26},
-  4:{2:1.8,3:9,4:60},
-  5:{3:4,4:20,5:150},
-  6:{3:3,4:8,5:60,6:350},
-  7:{4:4,5:14,6:100,7:500},
-  8:{4:3,5:8,6:40,7:200,8:800},
-  9:{4:2,5:5,6:20,7:80,8:300,9:1000},
-  10:{5:2,6:6,7:25,8:100,9:400,10:1000},
+  1:{1:3},
+  2:{2:12},
+  3:{2:2,3:18},
+  4:{2:1.5,3:6,4:35},
+  5:{3:3,4:12,5:90},
+  6:{3:2.5,4:6,5:40,6:200},
+  7:{4:3,5:10,6:60,7:300},
+  8:{4:2.5,5:6,6:25,7:120,8:500},
+  9:{4:1.8,5:4,6:14,7:50,8:180,9:600},
+  10:{5:1.8,6:4,7:15,8:60,9:250,10:600},
 };
 
 module.exports = {RAR,PRIV,PRIV_ORDER,ITEMS,LIMITED,CASES,PROMOS,AVATARS,START_BALANCE,
-  FREE_COOLDOWN,TOPUP_MAX,TOPUP_COOLDOWN,MULTI_MAX,WHEEL_SEGS,PLINKO_MULTS,SLOTS_SYMS,ROULETTE_RED,KENO_PAY};
+  FREE_COOLDOWN,TOPUP_MAX,TOPUP_COOLDOWN,MULTI_MAX,WHEEL_SEGS,PLINKO_MULTS,SLOTS_SYMS,ROULETTE_RED,KENO_PAY,
+  BATTLE_PLAYERS,BATTLE_ROUNDS,BATTLE_EXPIRE};
