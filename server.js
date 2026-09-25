@@ -2,47 +2,40 @@ const express = require('express');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-
 const PORT = process.env.PORT || 3000;
 const DB_FILE = process.env.DATA_FILE || path.join(__dirname, 'data.json');
 
-/* ================= Редкости ================= */
 const RAR = {
-  common:    {label:'Common',    c:'#8B93A7'},
-  rare:      {label:'Rare',      c:'#38BDF8'},
-  epic:      {label:'Epic',      c:'#A855F7'},
-  legendary: {label:'Legendary', c:'#F5B544'},
-  mythic:    {label:'Mythic',    c:'#F43F5E'},
-  divine:    {label:'Divine',    c:'#67E8F9'},
-  secret:    {label:'Secret',    c:'#FFFFFF'},
+  common:{label:'Common',c:'#8B93A7'}, rare:{label:'Rare',c:'#38BDF8'}, epic:{label:'Epic',c:'#A855F7'},
+  legendary:{label:'Legendary',c:'#F5B544'}, mythic:{label:'Mythic',c:'#F43F5E'}, divine:{label:'Divine',c:'#67E8F9'},
+  secret:{label:'Secret',c:'#FFFFFF'}, radiant:{label:'Radiant',c:'#FDE68A'}, astral:{label:'Astral',c:'#818CF8'},
+  eternal:{label:'Eternal',c:'#F0ABFC'}, celestial:{label:'Celestial',c:'#2DD4BF'}, primal:{label:'Primal',c:'#84CC16'},
+  chrono:{label:'Chrono',c:'#CBD5E1'}, ascended:{label:'Ascended',c:'#E879F9'}, omega:{label:'Omega',c:'#EF4444'},
+  void:{label:'Void',c:'#7C3AED'}, absolute:{label:'Absolute',c:'#FFD700'}, limited:{label:'Limited',c:'#FF6B6B'},
 };
 
-/* ================= Привилегии ================= */
 const PRIV = {
-  vip:     {label:'VIP',    c:'#F5B544', topupMax:300,   cd:45, upg:0,  ban:0},
-  pro:     {label:'PRO',    c:'#38BDF8', topupMax:1000,  cd:35, upg:0,  ban:0},
-  proplus: {label:'PRO+',   c:'#A855F7', topupMax:1500,  cd:30, upg:25, ban:0},
-  helper:  {label:'Helper', c:'#34D399', topupMax:1500,  cd:30, upg:25, ban:5},
-  moder:   {label:'Moder',  c:'#F97316', topupMax:50000, cd:25, upg:25, ban:20},
+  vip:{label:'VIP',c:'#F5B544',topupMax:300,cd:45,upg:0,ban:0},
+  pro:{label:'PRO',c:'#38BDF8',topupMax:1000,cd:35,upg:0,ban:0},
+  proplus:{label:'PRO+',c:'#A855F7',topupMax:1500,cd:30,upg:25,ban:0},
+  helper:{label:'Helper',c:'#34D399',topupMax:1500,cd:30,upg:25,ban:5},
+  moder:{label:'Moder',c:'#F97316',topupMax:50000,cd:25,upg:25,ban:20},
 };
 const PRIV_ORDER = ['vip','pro','proplus','helper','moder'];
 
-/* ================= Предметы (89) ================= */
 const ITEMS = {
   candy:['🍬','Конфета','common',30], lolli:['🍭','Лоллипоп','common',35], cookie:['🍪','Печенька','common',40],
   coffee:['☕','Кофе','common',50], balloon:['🎈','Шарик','common',50], soda:['🥤','Содовая','common',55],
   donut:['🍩','Пончик','common',60], icecream:['🍦','Мороженое','common',65], pizza:['🍕','Пицца','common',70],
   dice:['🎲','Кубик','common',75], cactus:['🌵','Кактус','common',80], key:['🔑','Ключик','common',85],
-  frog:['🐸','Жаба-мем','common',90], book:['📖','Книга','common',95], magnet:['🧲','Магнит','common',105],
-  bulb:['💡','Лампочка','common',110],
+  frog:['🐸','Жаба-мем','common',90], book:['📖','Книга','common',95], magnet:['🧲','Магнит','common',105], bulb:['💡','Лампочка','common',110],
   heart:['❤️','Сердце','rare',140], rose:['🌹','Роза','rare',130], cake:['🎂','Торт','rare',160],
   teddy:['🧸','Мишка Тедди','rare',170], shades:['🕶️','Очки','rare',200], pumpkin:['🎃','Тыква','rare',210],
   headphones:['🎧','Наушники','rare',230], skate:['🛹','Скейт','rare',260], snow:['⛄','Снеговик','rare',280],
   palm:['🌴','Пальма','rare',290], watch:['⌚','Часы','rare',300], cherry:['🌸','Сакура','rare',310],
   champagne:['🍾','Шампанское','rare',340], rocket:['🚀','Ракета','rare',380], guitar:['🎸','Гитара','rare',420],
   football:['⚽','Мяч','rare',440], plane:['✈️','Самолёт','rare',460], gift:['🎁','Подарок','rare',480],
-  anchor:['⚓','Якорь','rare',500], bell:['🔔','Колокол','rare',520], map:['🗺️','Карта сокровищ','rare',540],
-  candle:['🕯️','Свеча','rare',560],
+  anchor:['⚓','Якорь','rare',500], bell:['🔔','Колокол','rare',520], map:['🗺️','Карта сокровищ','rare',540], candle:['🕯️','Свеча','rare',560],
   gamepad:['🎮','Геймпад','epic',620], robot:['🤖','Робот','epic',720], ring:['💍','Кольцо','epic',820],
   diamond:['💎','Бриллиант','epic',950], moai:['🗿','Моаи','epic',1050], planet:['🪐','Планета','epic',1150],
   crown:['👑','Корона','epic',1300], skull:['💀','Череп','epic',1350], target:['🎯','Мишень','epic',1400],
@@ -63,9 +56,23 @@ const ITEMS = {
   joker:['🃏','Джокер','secret',300000], eye:['👁️','Всевидящее око','secret',400000],
   masks:['🎭','Маски театра','secret',500000], ball8:['🎱','Магический шар','secret',600000],
   galaxy:['🌌','Галактика','secret',750000], supernova:['💫','Сверхновая','secret',1000000],
+  sunflower:['🌻','Солнечный цветок','radiant',350000], lantern:['🏮','Сияющий фонарь','radiant',400000],
+  shootingstar:['🌠','Астральный метеор','astral',480000], satellite:['🛰️','Звёздный спутник','astral',550000],
+  hourglass:['⌛','Песочные веки','eternal',620000], clock:['🕰️','Часы вечности','eternal',700000],
+  wing:['🪽','Крыло серафима','celestial',780000], orb:['🔵','Небесная сфера','celestial',850000],
+  mammoth:['🦣','Мамонт','primal',950000], tiger:['🐅','Саблезубый тигр','primal',1050000],
+  chrono:['⏱️','Хроносфера','chrono',1150000], timegate:['🚪','Врата времени','chrono',1250000],
+  archangel:['😇','Архангел','ascended',1350000], lightblade:['⚔️','Клинок света','ascended',1500000],
+  omega:['🅾️','Омега-ядро','omega',1700000], reaper:['☠️','Жнец','omega',1900000],
+  voidcrystal:['⬛','Пустотный кристалл','void',2200000], darksun:['🌚','Тёмное солнце','void',2600000],
+  omnicube:['🧊','Куб Абсолюта','absolute',3000000], absheart:['🔆','Сердце Абсолюта','absolute',3500000],
+  ticket:['🎟️','Золотой билет','limited',300000], goldcoin:['🪙','Золотая монета HC','limited',500000],
+  medal:['🏅','Медаль основателя','limited',750000], order:['🎖️','Орден почёта','limited',1000000],
+  feather:['🪶','Перо феникса','limited',1500000], gear:['⚙️','Механизм вечности','limited',2000000],
+  genesis:['🧬','Генезис','limited',3000000], mirror:['🪞','Зеркало судьбы','limited',5000000],
 };
+const LIMITED = new Set(Object.keys(ITEMS).filter(id => ITEMS[id][2] === 'limited'));
 
-/* ================= Кейсы (77) ================= */
 const CASES = [
   {id:'free',name:'Free Case',e:'🍀',price:0,free:true,c:['#1E3A34','#0F1A18'],drops:[['candy',2200],['lolli',2000],['coffee',1400],['balloon',1200],['donut',1000],['pizza',800],['cactus',500],['frog',400],['rose',350],['cake',100],['headphones',40],['gamepad',8],['star',1]]},
   {id:'sweet',name:'Sweet Case',e:'🍬',price:75,c:['#4A1F4E','#1C0F26'],drops:[['candy',2400],['lolli',2200],['coffee',1600],['balloon',1400],['donut',1000],['pizza',700],['cactus',300],['frog',180],['rose',140],['teddy',60],['star',2]]},
@@ -143,32 +150,36 @@ const CASES = [
   {id:'fortune',name:'Fortune Case',e:'🎰',price:75000,c:['#A16207','#2E1D02'],drops:[['star',1600],['unicorn',1500],['dragon',1450],['trophy',1300],['phoenix',1150],['ufo',950],['thor',650],['comet',320],['blackhole',80],['volcano',60],['trex',30],['trident',12],['joker',3]]},
   {id:'secretvault',name:'Secret Vault',e:'🎭',price:88000,c:['#1F2937','#000000'],drops:[['supernova',25],['galaxy',100],['masks',180],['eye',360],['joker',700],['ball8',80],['dragonlord',20],['infinity',2],['dove',700],['angel',1200],['earth',600],['sun',2600],['trident',4000],['genie',5000],['moon',7000],['rainbow',7000],['sword',5000],['castle',3000],['volcano',1800],['shield',1000],['tornado',2500],['wolf',3500],['squid',4500],['star',6000],['unicorn',5500],['dragon',5000],['trophy',4200],['phoenix',3600],['ufo',2000]]},
   {id:'eyeoffate',name:'Eye of Fate',e:'👁️',price:95000,c:['#292524','#0C0A09'],drops:[['supernova',60],['galaxy',240],['masks',460],['eye',900],['joker',1700],['ball8',300],['dragonlord',80],['infinity',6],['dove',1600],['angel',2800],['earth',1400],['sun',5000],['trident',7000],['genie',8500],['moon',11000],['rainbow',11000],['sword',8000],['castle',5000],['volcano',3000],['shield',1700],['tornado',4000],['wolf',5500],['squid',7000],['star',9000],['unicorn',8500],['dragon',8000],['trophy',6800],['phoenix',5800],['ufo',3200]]},
-  {id:'singularity',name:'Singularity',e:'⚫',price:100000,featured:true,sub:'ТОП-1 кейс · вплоть до Secret-редкости · Сверхновая 1 000 000 HC',c:['#181818','#000000'],drops:[['unicorn',1200],['dragon',1200],['trophy',1200],['phoenix',1200],['ufo',1200],['thor',1200],['comet',1200],['blackhole',900],['volcano',350],['trex',220],['tsunami',120],['dragonlord',60],['ball8',25],['trident',90],['sun',50],['angel',20],['joker',12],['eye',6],['masks',3],['galaxy',1]]},
+  {id:'singularity',name:'Singularity',e:'⚫',price:100000,c:['#181818','#000000'],drops:[['unicorn',1200],['dragon',1200],['trophy',1200],['phoenix',1200],['ufo',1200],['thor',1200],['comet',1200],['blackhole',900],['volcano',350],['trex',220],['tsunami',120],['dragonlord',60],['ball8',25],['trident',90],['sun',50],['angel',20],['joker',12],['eye',6],['masks',3],['galaxy',1]]},
+  {id:'radiant',name:'Radiant Bloom',e:'🌻',price:280000,c:['#B45309','#451A03'],drops:[['star',1400],['unicorn',1300],['dragon',1250],['trophy',1150],['phoenix',1050],['ufo',850],['thor',600],['rainbow',350],['sword',250],['comet',180],['castle',90],['moon',50],['genie',30],['blackhole',15],['sunflower',500],['lantern',300],['volcano',25],['trex',12],['tsunami',6],['dragonlord',3]]},
+  {id:'astral',name:'Astral Drift',e:'🌠',price:340000,c:['#3730A3','#0B0B2B'],drops:[['unicorn',1200],['dragon',1150],['trophy',1100],['phoenix',1000],['ufo',800],['thor',550],['rainbow',320],['sword',230],['comet',160],['castle',80],['moon',45],['genie',28],['blackhole',14],['sunflower',600],['shootingstar',700],['satellite',400],['volcano',30],['trex',14],['dragonlord',4],['infinity',2]]},
+  {id:'eternal',name:'Eternal Watch',e:'🕰️',price:400000,c:['#701A75','#2E0A33'],drops:[['dragon',1100],['trophy',1050],['phoenix',950],['ufo',750],['thor',500],['rainbow',300],['sword',210],['comet',150],['castle',75],['moon',42],['genie',26],['blackhole',13],['sunflower',500],['shootingstar',600],['satellite',350],['hourglass',800],['clock',450],['volcano',40],['tsunami',8],['dragonlord',5]]},
+  {id:'celestialgate',name:'Celestial Gate',e:'🪽',price:460000,c:['#0F766E','#04211E'],drops:[['trophy',1000],['phoenix',900],['ufo',700],['thor',450],['rainbow',280],['sword',190],['comet',140],['castle',70],['moon',40],['genie',24],['blackhole',12],['sunflower',450],['shootingstar',550],['satellite',320],['hourglass',700],['clock',400],['wing',800],['orb',450],['angel',10],['dove',4]]},
+  {id:'primal',name:'Primal Wilds',e:'🦣',price:520000,c:['#365314','#111B05'],drops:[['phoenix',850],['ufo',650],['thor',400],['rainbow',260],['sword',170],['comet',130],['castle',65],['moon',38],['genie',22],['blackhole',11],['shootingstar',500],['satellite',300],['hourglass',600],['clock',350],['wing',700],['orb',400],['mammoth',850],['tiger',400],['volcano',80],['trex',40]]},
+  {id:'chronolab',name:'Chrono Lab',e:'⏱️',price:580000,c:['#334155','#0B1220'],drops:[['ufo',600],['thor',360],['rainbow',240],['sword',150],['comet',120],['castle',60],['moon',35],['genie',20],['blackhole',10],['shootingstar',450],['satellite',280],['hourglass',550],['clock',320],['wing',650],['orb',370],['mammoth',750],['tiger',360],['chrono',850],['timegate',400],['volcano',60]]},
+  {id:'ascension',name:'Ascension',e:'😇',price:660000,c:['#86198F','#2E0837'],drops:[['thor',320],['rainbow',220],['sword',130],['comet',110],['castle',55],['moon',32],['genie',18],['blackhole',9],['shootingstar',400],['satellite',260],['hourglass',500],['clock',290],['wing',600],['orb',340],['mammoth',650],['tiger',320],['chrono',750],['timegate',360],['archangel',800],['lightblade',420]]},
+  {id:'omegaprotocol',name:'Omega Protocol',e:'🅾️',price:740000,c:['#7F1D1D','#260707'],drops:[['rainbow',200],['sword',120],['comet',100],['castle',50],['moon',30],['genie',16],['blackhole',8],['shootingstar',360],['satellite',240],['hourglass',450],['clock',260],['wing',550],['orb',310],['mammoth',580],['tiger',290],['chrono',680],['timegate',320],['archangel',720],['lightblade',380],['omega',850]]},
+  {id:'voidrift',name:'Void Rift',e:'⬛',price:820000,c:['#4C1D95','#12052E'],drops:[['sword',110],['comet',90],['castle',45],['moon',28],['genie',15],['blackhole',7],['shootingstar',320],['satellite',220],['hourglass',400],['clock',230],['wing',500],['orb',280],['mammoth',520],['tiger',260],['chrono',600],['timegate',290],['archangel',650],['lightblade',340],['omega',760],['reaper',380],['voidcrystal',850]]},
+  {id:'absolutezero',name:'Absolute Zero',e:'🔆',price:950000,c:['#155E75','#04161F'],drops:[['comet',80],['castle',40],['moon',26],['genie',14],['blackhole',7],['shootingstar',290],['satellite',200],['hourglass',360],['clock',210],['wing',450],['orb',250],['mammoth',470],['tiger',240],['chrono',540],['timegate',260],['archangel',580],['lightblade',300],['omega',680],['reaper',340],['voidcrystal',760],['darksun',380],['omnicube',850],['absheart',420]]},
+  {id:'abyss2',name:'Ultimate Abyss',e:'🕳️',price:1200000,c:['#082F49','#010814'],drops:[['moon',24],['genie',13],['blackhole',6],['shootingstar',260],['satellite',180],['hourglass',320],['clock',190],['wing',400],['orb',230],['mammoth',420],['tiger',220],['chrono',490],['timegate',240],['archangel',520],['lightblade',270],['omega',610],['reaper',300],['voidcrystal',680],['darksun',340],['omnicube',760],['absheart',380],['ball8',120],['joker',60]]},
+  {id:'grand',name:'Grand Finale',e:'👑',price:2000000,featured:true,sub:'Финальный кейс · вплоть до Absolute-редкости · Сердце Абсолюта 3 500 000 HC',c:['#713F12','#1C0D02'],drops:[['genie',12],['blackhole',6],['shootingstar',240],['satellite',170],['hourglass',300],['clock',180],['wing',370],['orb',215],['mammoth',390],['tiger',205],['chrono',455],['timegate',225],['archangel',485],['lightblade',250],['omega',565],['reaper',280],['voidcrystal',630],['darksun',315],['omnicube',700],['absheart',350],['masks',300],['eye',250],['joker',180],['galaxy',100],['supernova',60],['ball8',40]]},
 ];
 
-/* Статические промокоды. NERES — АДМИНКА. ⚠️ Смени перед раздачей! */
 const PROMOS = {
-  NERES:   {admin:true},
-  PYPSI:   {amount:200000, item:'any'},
-  RELEASE: {amount:80000},
-  GEI:     {case:'singularity'},
-  HC1000:  {amount:1000},
-  HC5000:  {amount:5000},
-  GIFT:    {item:'randomRare'},
+  NERES:{admin:true},
+  PYPSI:{amount:200000,item:'any'},
+  RELEASE:{amount:80000},
+  GEI:{case:'singularity'},
+  HC1000:{amount:1000}, HC5000:{amount:5000}, GIFT:{item:'randomRare'},
 };
 
 const AVATARS = ['🦊','🐼','🐸','🦁','🐯','🐙','🦄','🐨','🐺','🐵','🦉','🐳'];
-const START_BALANCE = 1000;
-const FREE_COOLDOWN = 10 * 60 * 1000;
-const TOPUP_MAX = 300;
-const TOPUP_COOLDOWN = 60 * 1000;
+const START_BALANCE = 1000, FREE_COOLDOWN = 600000, TOPUP_MAX = 300, TOPUP_COOLDOWN = 60000;
 
-/* ================= База ================= */
 let db;
-function freshDB(){ return { users:{}, tokens:{}, feed:[], promos:{}, nextId:1 }; }
-try { db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch(e){ db = freshDB(); }
+function freshDB(){ return {users:{},tokens:{},feed:[],promos:{},nextId:1}; }
+try { db = JSON.parse(fs.readFileSync(DB_FILE,'utf8')); } catch(e){ db = freshDB(); }
 if (!db.promos) db.promos = {};
-
 function migrateUser(u){
   if (u.banned === true){ u.banUntil = -1; u.banReason = u.banReason || 'Нарушение правил'; }
   delete u.banned;
@@ -176,111 +187,85 @@ function migrateUser(u){
   if (typeof u.banReason !== 'string') u.banReason = '';
   if (typeof u.topupAt !== 'number') u.topupAt = 0;
   if (typeof u.privilege === 'undefined') u.privilege = null;
-  if (!u.stats) u.stats = {opened:0, upgrades:0, best:null};
+  if (!u.stats) u.stats = {opened:0,upgrades:0,best:null};
   if (!Array.isArray(u.inventory)) u.inventory = [];
   if (!Array.isArray(u.history)) u.history = [];
   if (!Array.isArray(u.usedPromos)) u.usedPromos = [];
 }
 Object.values(db.users).forEach(migrateUser);
-
 let saveT = null;
-function save(){
-  clearTimeout(saveT);
-  saveT = setTimeout(() => { try { fs.writeFileSync(DB_FILE, JSON.stringify(db)); } catch(e){} }, 300);
-}
+function save(){ clearTimeout(saveT); saveT = setTimeout(() => { try { fs.writeFileSync(DB_FILE, JSON.stringify(db)); } catch(e){} }, 300); }
 process.on('SIGINT', () => { try { fs.writeFileSync(DB_FILE, JSON.stringify(db)); } catch(e){} process.exit(0); });
 
-/* ================= Утилиты ================= */
 const itV = id => ITEMS[id][3];
 const dropTotal = cs => cs.drops.reduce((s,d)=>s+d[1],0);
 function pickDrop(cs){ let r = Math.random()*dropTotal(cs); for (const [id,w] of cs.drops){ if ((r-=w) < 0) return id; } return cs.drops[0][0]; }
 const newUid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
-const hash = (pw, salt) => crypto.scryptSync(String(pw), salt, 64).toString('hex');
-function pubUser(u){ const {passHash, salt, nameLower, ...rest} = u; return rest; }
+const hash = (pw,salt) => crypto.scryptSync(String(pw),salt,64).toString('hex');
+function pubUser(u){ const {passHash,salt,nameLower,...rest} = u; return rest; }
 function findByName(n){ const l = String(n).toLowerCase(); return Object.values(db.users).find(u => u.nameLower === l); }
-function addHist(u, dir, title, amount){
-  u.history.unshift({dir, title, amount, ts:Date.now()});
-  if (u.history.length > 60) u.history.length = 60;
-}
-function credit(u, amount, title){ u.balance += amount; addHist(u, 'in', title, amount); }
-function addFeed(user, item){ db.feed.unshift({user, item, ts:Date.now()}); if (db.feed.length > 30) db.feed.length = 30; }
+function addHist(u,dir,title,amount){ u.history.unshift({dir,title,amount,ts:Date.now()}); if (u.history.length > 60) u.history.length = 60; }
+function credit(u,amount,title){ u.balance += amount; addHist(u,'in',title,amount); }
+function addFeed(user,item){ db.feed.unshift({user,item,ts:Date.now()}); if (db.feed.length > 30) db.feed.length = 30; }
 function isBanned(u){ return u.banUntil === -1 || (u.banUntil > 0 && Date.now() < u.banUntil); }
 function banRights(u){
-  if (u.admin) return {forever:true, max:Infinity};
+  if (u.admin) return {forever:true,max:Infinity};
   const p = PRIV[u.privilege];
-  if (p && p.ban > 0) return {forever:false, max:p.ban};
+  if (p && p.ban > 0) return {forever:false,max:p.ban};
   return null;
 }
 
-/* ================= Приложение ================= */
 const app = express();
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname,'public')));
+const minesGames = new Map(), crashGames = new Map(), towerGames = new Map();
 
-const minesGames = new Map();
-const crashGames = new Map();
-const towerGames = new Map();
-
-function auth(req, res, next){
-  const t = (req.headers.authorization || '').replace('Bearer ', '');
+function auth(req,res,next){
+  const t = (req.headers.authorization||'').replace('Bearer ','');
   const u = db.tokens[t] ? db.users[db.tokens[t]] : null;
   if (!u) return res.status(401).json({error:'Требуется вход'});
-  if (isBanned(u)) return res.status(403).json({banned:true, reason:u.banReason || 'Причина не указана', until:u.banUntil});
+  if (isBanned(u)) return res.status(403).json({banned:true,reason:u.banReason||'Причина не указана',until:u.banUntil});
   if (u.banUntil > 0){ u.banUntil = 0; u.banReason = ''; }
   req.user = u; next();
 }
 const admin = (req,res,next) => req.user.admin ? next() : res.status(403).json({error:'Нет прав администратора'});
 
-/* ---------- Конфиг ---------- */
 app.get('/api/config', (req,res) => {
-  res.json({rar:RAR, items:ITEMS, cases:CASES, priv:PRIV, privOrder:PRIV_ORDER,
-            topupMax:TOPUP_MAX, topupCooldown:TOPUP_COOLDOWN, startBalance:START_BALANCE});
+  res.json({rar:RAR,items:ITEMS,cases:CASES,priv:PRIV,privOrder:PRIV_ORDER,limited:[...LIMITED],
+            topupMax:TOPUP_MAX,topupCooldown:TOPUP_COOLDOWN,startBalance:START_BALANCE});
 });
 
-/* ---------- Регистрация / вход ---------- */
 app.post('/api/register', (req,res) => {
-  const name = String(req.body.name||'').trim();
-  const pass = String(req.body.password||'');
-  if (!/^[\wа-яё-]{2,16}$/i.test(name)) return res.status(400).json({error:'Ник: 2–16 символов (буквы, цифры, _ -)'});
+  const name = String(req.body.name||'').trim(), pass = String(req.body.password||'');
+  if (!/^[\wа-яё-]{2,16}$/i.test(name)) return res.status(400).json({error:'Ник: 2–16 символов'});
   if (pass.length < 3) return res.status(400).json({error:'Пароль минимум 3 символа'});
   if (findByName(name)) return res.status(400).json({error:'Ник уже занят'});
   const salt = crypto.randomBytes(16).toString('hex');
-  const u = {
-    id: 'u' + (db.nextId++), name, nameLower: name.toLowerCase(), salt, passHash: hash(pass, salt),
-    createdAt: Date.now(), admin:false, privilege:null,
-    banUntil: 0, banReason: '', topupAt: 0,
-    balance: START_BALANCE, freeAt: 0,
-    avatar: AVATARS[Math.floor(Math.random()*AVATARS.length)],
-    joined: Date.now(), ref: Math.random().toString(36).slice(2,10),
-    stats: {opened:0, upgrades:0, best:null},
-    inventory: [], history: [], usedPromos: [],
-  };
-  addHist(u, 'in', 'Стартовый бонус', START_BALANCE);
+  const u = {id:'u'+(db.nextId++),name,nameLower:name.toLowerCase(),salt,passHash:hash(pass,salt),
+    createdAt:Date.now(),admin:false,privilege:null,banUntil:0,banReason:'',topupAt:0,
+    balance:START_BALANCE,freeAt:0,avatar:AVATARS[Math.floor(Math.random()*AVATARS.length)],
+    joined:Date.now(),ref:Math.random().toString(36).slice(2,10),
+    stats:{opened:0,upgrades:0,best:null},inventory:[],history:[],usedPromos:[]};
+  addHist(u,'in','Стартовый бонус',START_BALANCE);
   db.users[u.id] = u;
   const token = crypto.randomBytes(24).toString('hex');
   db.tokens[token] = u.id; save();
-  res.json({token, user: pubUser(u)});
+  res.json({token,user:pubUser(u)});
 });
-
 app.post('/api/login', (req,res) => {
   const u = findByName(req.body.name);
   if (!u) return res.status(401).json({error:'Неверный ник или пароль'});
-  if (u.passHash !== hash(req.body.password||'', u.salt)) return res.status(401).json({error:'Неверный ник или пароль'});
-  if (isBanned(u)) return res.status(403).json({banned:true, reason:u.banReason || 'Причина не указана', until:u.banUntil});
+  if (u.passHash !== hash(req.body.password||'',u.salt)) return res.status(401).json({error:'Неверный ник или пароль'});
+  if (isBanned(u)) return res.status(403).json({banned:true,reason:u.banReason||'Причина не указана',until:u.banUntil});
   if (u.banUntil > 0){ u.banUntil = 0; u.banReason = ''; }
   const token = crypto.randomBytes(24).toString('hex');
   db.tokens[token] = u.id; save();
-  res.json({token, user: pubUser(u)});
+  res.json({token,user:pubUser(u)});
 });
+app.post('/api/me', auth, (req,res) => res.json({user:pubUser(req.user)}));
+app.post('/api/feed', auth, (req,res) => res.json({feed:db.feed}));
+app.post('/api/logout', auth, (req,res) => { const t = (req.headers.authorization||'').replace('Bearer ',''); delete db.tokens[t]; save(); res.json({ok:true}); });
 
-app.post('/api/me', auth, (req,res) => res.json({user: pubUser(req.user)}));
-app.post('/api/feed', auth, (req,res) => res.json({feed: db.feed}));
-app.post('/api/logout', auth, (req,res) => {
-  const t = (req.headers.authorization||'').replace('Bearer ','');
-  delete db.tokens[t]; save(); res.json({ok:true});
-});
-
-/* ---------- Кейсы ---------- */
 app.post('/api/open-case', auth, (req,res) => {
   const cs = CASES.find(c => c.id === req.body.caseId);
   if (!cs) return res.status(400).json({error:'Кейс не найден'});
@@ -288,90 +273,79 @@ app.post('/api/open-case', auth, (req,res) => {
     if (Date.now() < req.user.freeAt) return res.status(400).json({error:'Фри-кейс ещё не доступен'});
     req.user.freeAt = Date.now() + FREE_COOLDOWN;
   } else {
-    if (req.user.balance < cs.price) return res.status(400).json({error:'Недостаточно HC', need: cs.price - req.user.balance});
+    if (req.user.balance < cs.price) return res.status(400).json({error:'Недостаточно HC',need:cs.price-req.user.balance});
     req.user.balance -= cs.price;
-    addHist(req.user, 'out', 'Кейс «' + cs.name + '»', cs.price);
+    addHist(req.user,'out','Кейс «'+cs.name+'»',cs.price);
   }
   const item = pickDrop(cs);
-  const entry = {uid:newUid(), id:item, case:cs.id, ts:Date.now()};
+  const entry = {uid:newUid(),id:item,case:cs.id,ts:Date.now()};
   req.user.inventory.unshift(entry);
   req.user.stats.opened++;
   if (!req.user.stats.best || itV(item) > req.user.stats.best.v)
-    req.user.stats.best = {e:ITEMS[item][0], n:ITEMS[item][1], v:itV(item)};
-  addFeed(req.user.name, item);
-  save();
-  res.json({item, entry, balance:req.user.balance, freeAt:req.user.freeAt, opened:req.user.stats.opened});
+    req.user.stats.best = {e:ITEMS[item][0],n:ITEMS[item][1],v:itV(item)};
+  addFeed(req.user.name,item); save();
+  res.json({item,entry,balance:req.user.balance,freeAt:req.user.freeAt,opened:req.user.stats.opened});
 });
 
-/* ---------- Инвентарь / кошелёк ---------- */
 app.post('/api/sell', auth, (req,res) => {
   const i = req.user.inventory.findIndex(x => x.uid === req.body.uid);
   if (i < 0) return res.status(400).json({error:'Предмет не найден'});
+  if (LIMITED.has(req.user.inventory[i].id)) return res.status(400).json({error:'🔒 Лимитные предметы нельзя продать'});
   const inv = req.user.inventory.splice(i,1)[0];
-  credit(req.user, itV(inv.id), 'Продажа: ' + ITEMS[inv.id][1]);
+  credit(req.user,itV(inv.id),'Продажа: '+ITEMS[inv.id][1]);
   save(); res.json({balance:req.user.balance});
 });
 app.post('/api/sell-all', auth, (req,res) => {
-  const sum = req.user.inventory.reduce((s,x) => s + itV(x.id), 0);
-  req.user.inventory = [];
-  if (sum > 0) credit(req.user, sum, 'Продажа всего инвентаря');
-  save(); res.json({balance:req.user.balance});
+  const removed = [], keep = [];
+  let sum = 0;
+  for (const x of req.user.inventory){
+    if (LIMITED.has(x.id)) keep.push(x);
+    else { sum += itV(x.id); removed.push(x.uid); }
+  }
+  req.user.inventory = keep;
+  if (sum > 0) credit(req.user,sum,'Продажа всего инвентаря');
+  save(); res.json({balance:req.user.balance,removed,kept:keep.length});
 });
-
-/* Пополнение: лимиты и таймер зависят от привилегии; админ — без ограничений */
 app.post('/api/topup', auth, (req,res) => {
-  const v = Math.floor(+req.body.amount || 0);
+  const v = Math.floor(+req.body.amount||0);
   if (v < 1) return res.status(400).json({error:'Некорректная сумма'});
   if (v > 10000000) return res.status(400).json({error:'Слишком большая сумма'});
   if (!req.user.admin){
     const p = PRIV[req.user.privilege];
-    const maxV = p ? p.topupMax : TOPUP_MAX;
-    const cd = p ? p.cd * 1000 : TOPUP_COOLDOWN;
-    if (v > maxV) return res.status(400).json({error:'Максимум ' + maxV.toLocaleString('ru-RU') + ' HC за одно пополнение' + (p ? ' (привилегия ' + p.label + ')' : '')});
+    const maxV = p ? p.topupMax : TOPUP_MAX, cd = p ? p.cd*1000 : TOPUP_COOLDOWN;
+    if (v > maxV) return res.status(400).json({error:'Максимум '+maxV.toLocaleString('ru-RU')+' HC за одно пополнение'});
     const left = req.user.topupAt + cd - Date.now();
-    if (left > 0) return res.status(400).json({error:'Подожди ' + Math.ceil(left/1000) + ' сек до следующего пополнения'});
+    if (left > 0) return res.status(400).json({error:'Подожди '+Math.ceil(left/1000)+' сек'});
   }
   req.user.topupAt = Date.now();
-  credit(req.user, v, req.user.admin ? '👑 Админ: пополнение' : 'Пополнение (демо, бесплатно)');
-  save(); res.json({balance:req.user.balance, topupAt:req.user.topupAt});
+  credit(req.user,v,req.user.admin?'👑 Админ: пополнение':'Пополнение (демо)');
+  save(); res.json({balance:req.user.balance,topupAt:req.user.topupAt});
 });
-
 app.post('/api/withdraw', auth, (req,res) => {
-  const v = Math.floor(+req.body.amount || 0);
+  const v = Math.floor(+req.body.amount||0);
   if (v < 1) return res.status(400).json({error:'Некорректная сумма'});
   if (v > req.user.balance) return res.status(400).json({error:'Сумма превышает баланс'});
   req.user.balance -= v;
-  addHist(req.user, 'out', 'Вывод средств (заявка)', v);
+  addHist(req.user,'out','Вывод средств (заявка)',v);
   save(); res.json({balance:req.user.balance});
 });
 app.post('/api/reset', auth, (req,res) => {
-  const wasAdmin = req.user.admin, wasPriv = req.user.privilege;
-  Object.assign(req.user, {
-    balance: START_BALANCE, freeAt: 0, topupAt: 0,
-    stats: {opened:0, upgrades:0, best:null},
-    inventory: [], history: [], usedPromos: [], admin: wasAdmin, privilege: wasPriv,
-  });
-  addHist(req.user, 'in', 'Стартовый бонус', START_BALANCE);
-  save(); res.json({user: pubUser(req.user)});
+  const a = req.user.admin, pr = req.user.privilege;
+  Object.assign(req.user,{balance:START_BALANCE,freeAt:0,topupAt:0,stats:{opened:0,upgrades:0,best:null},
+    inventory:[],history:[],usedPromos:[],admin:a,privilege:pr});
+  addHist(req.user,'in','Стартовый бонус',START_BALANCE);
+  save(); res.json({user:pubUser(req.user)});
 });
-
-/* ---------- Топ игроков ---------- */
 app.post('/api/top', auth, (req,res) => {
-  const all = Object.values(db.users).sort((a,b) => b.balance - a.balance);
+  const all = Object.values(db.users).sort((a,b) => b.balance-a.balance);
   const myIdx = all.findIndex(u => u.id === req.user.id);
-  const top = all.slice(0, 50).map((u,i) => ({
-    place: i+1, name: u.name, avatar: u.avatar, balance: u.balance,
-    admin: !!u.admin, priv: u.privilege || null, isMe: u.id === req.user.id,
-  }));
-  res.json({top, me: myIdx >= 0 ? {place: myIdx+1, total: all.length} : null});
+  res.json({top:all.slice(0,50).map((u,i) => ({place:i+1,name:u.name,avatar:u.avatar,balance:u.balance,admin:!!u.admin,priv:u.privilege||null,isMe:u.id===req.user.id})),
+            me: myIdx >= 0 ? {place:myIdx+1,total:all.length} : null});
 });
 
-/* ---------- Промокоды (статические + созданные админом) ---------- */
 app.post('/api/promo', auth, (req,res) => {
   const code = String(req.body.code||'').trim().toUpperCase();
   if (!code) return res.status(400).json({error:'Введите промокод'});
-
-  /* --- Динамические (созданные в админке) --- */
   const dyn = db.promos[code];
   if (dyn){
     if (dyn.expiresAt && Date.now() > dyn.expiresAt) return res.status(400).json({error:'Срок действия промокода истёк'});
@@ -382,88 +356,53 @@ app.post('/api/promo', auth, (req,res) => {
     if (dyn.activatedBy.length > 50) dyn.activatedBy.shift();
     const entries = [];
     let msg = '🎁 Промокод активирован';
-    if (dyn.amount){ credit(req.user, dyn.amount, 'Промокод ' + code); msg = '🎁 +' + dyn.amount.toLocaleString('ru-RU') + ' HC'; }
-    const give = (id) => {
-      const e = {uid:newUid(), id, case:'promo', ts:Date.now()};
-      req.user.inventory.unshift(e); entries.push(e);
-      msg += ' · ' + ITEMS[id][0] + ' ' + ITEMS[id][1];
-    };
+    if (dyn.amount){ credit(req.user,dyn.amount,'Промокод '+code); msg = '🎁 +'+dyn.amount.toLocaleString('ru-RU')+' HC'; }
+    const give = id => { const e = {uid:newUid(),id,case:'promo',ts:Date.now()}; req.user.inventory.unshift(e); entries.push(e); msg += ' · '+ITEMS[id][0]+' '+ITEMS[id][1]; };
     if (dyn.itemId && ITEMS[dyn.itemId]) give(dyn.itemId);
     if (dyn.caseId){
       const cs = CASES.find(c => c.id === dyn.caseId);
-      if (cs){
-        const id = pickDrop(cs);
-        const e = {uid:newUid(), id, case:'promo', ts:Date.now()};
+      if (cs){ const id = pickDrop(cs); const e = {uid:newUid(),id,case:'promo',ts:Date.now()};
         req.user.inventory.unshift(e); entries.push(e);
-        msg += ' · кейс «' + cs.name + '» → ' + ITEMS[id][0] + ' ' + ITEMS[id][1];
-        addFeed(req.user.name, id);
-      }
+        msg += ' · кейс «'+cs.name+'» → '+ITEMS[id][0]+' '+ITEMS[id][1]; addFeed(req.user.name,id); }
     }
     if (dyn.privilege && PRIV[dyn.privilege]){
-      const curIdx = PRIV_ORDER.indexOf(req.user.privilege);
-      const newIdx = PRIV_ORDER.indexOf(dyn.privilege);
-      if (newIdx > curIdx){
+      if (PRIV_ORDER.indexOf(dyn.privilege) > PRIV_ORDER.indexOf(req.user.privilege)){
         req.user.privilege = dyn.privilege;
-        msg += ' · 🎖 Привилегия ' + PRIV[dyn.privilege].label + '!';
-      } else {
-        msg += ' · привилегия ' + PRIV[dyn.privilege].label + ' (у тебя уже есть равная или выше)';
-      }
+        msg += ' · 🎖 Привилегия '+PRIV[dyn.privilege].label+'!';
+      } else msg += ' · привилегия уже есть';
     }
     save();
-    return res.json({message:msg, entries, balance:req.user.balance, privilege:req.user.privilege});
+    return res.json({message:msg,entries,balance:req.user.balance,privilege:req.user.privilege});
   }
-
-  /* --- Статические --- */
   const p = PROMOS[code];
   if (!p) return res.status(400).json({error:'Промокод не найден'});
   if (p.admin){
     if (req.user.admin) return res.json({message:'👑 Админка уже активна'});
     req.user.admin = true; save();
-    return res.json({message:'👑 Админ-панель активирована', admin:true});
+    return res.json({message:'👑 Админ-панель активирована',admin:true});
   }
   if (req.user.usedPromos.includes(code)) return res.status(400).json({error:'Промокод уже использован'});
   req.user.usedPromos.push(code);
   const entries = [];
   let msg = '🎁 Промокод активирован';
-  if (p.amount){
-    credit(req.user, p.amount, 'Промокод ' + code);
-    msg = '🎁 +' + p.amount.toLocaleString('ru-RU') + ' HC';
-  }
-  const give = (id) => {
-    const e = {uid:newUid(), id, case:'promo', ts:Date.now()};
-    req.user.inventory.unshift(e); entries.push(e);
-    msg += ' · ' + ITEMS[id][0] + ' ' + ITEMS[id][1];
-  };
+  if (p.amount){ credit(req.user,p.amount,'Промокод '+code); msg = '🎁 +'+p.amount.toLocaleString('ru-RU')+' HC'; }
+  const give = id => { const e = {uid:newUid(),id,case:'promo',ts:Date.now()}; req.user.inventory.unshift(e); entries.push(e); msg += ' · '+ITEMS[id][0]+' '+ITEMS[id][1]; };
   if (p.item){
-    if (p.item === 'randomRare'){
-      const pool = Object.keys(ITEMS).filter(id => ITEMS[id][2] === 'rare');
-      give(pool[Math.floor(Math.random()*pool.length)]);
-    } else if (p.item === 'randomLegendary'){
-      const pool = Object.keys(ITEMS).filter(id => ITEMS[id][2] === 'legendary');
-      give(pool[Math.floor(Math.random()*pool.length)]);
-    } else if (p.item === 'any'){
-      const pool = Object.keys(ITEMS);
-      give(pool[Math.floor(Math.random()*pool.length)]);
-    } else if (ITEMS[p.item]){
-      give(p.item);
-    }
+    if (p.item === 'randomRare'){ const pool = Object.keys(ITEMS).filter(id => ITEMS[id][2]==='rare'); give(pick(pool)); }
+    else if (p.item === 'any'){ give(pick(Object.keys(ITEMS))); }
+    else if (ITEMS[p.item]) give(p.item);
   }
   if (p.case){
     const cs = CASES.find(c => c.id === p.case);
-    if (cs){
-      const id = pickDrop(cs);
-      const e = {uid:newUid(), id, case:'promo', ts:Date.now()};
+    if (cs){ const id = pickDrop(cs); const e = {uid:newUid(),id,case:'promo',ts:Date.now()};
       req.user.inventory.unshift(e); entries.push(e);
-      msg = '🎁 Кейс «' + cs.name + '» → ' + ITEMS[id][0] + ' ' + ITEMS[id][1] + (p.amount ? ' · +' + p.amount.toLocaleString('ru-RU') + ' HC' : '');
-      addFeed(req.user.name, id);
-    }
+      msg = '🎁 Кейс «'+cs.name+'» → '+ITEMS[id][0]+' '+ITEMS[id][1]; addFeed(req.user.name,id); }
   }
-  save(); res.json({message:msg, entries, balance:req.user.balance});
+  save(); res.json({message:msg,entries,balance:req.user.balance});
 });
 
-/* ---------- Апгрейдер (+25% шанс у PRO+/Helper/Moder) ---------- */
 app.post('/api/upgrade', auth, (req,res) => {
-  const uids = Array.isArray(req.body.uids) ? req.body.uids : [];
+  const uids = Array.isArray(req.body.uids)?req.body.uids:[];
   const target = String(req.body.target||'');
   if (!ITEMS[target]) return res.status(400).json({error:'Цель не найдена'});
   const items = [];
@@ -473,12 +412,12 @@ app.post('/api/upgrade', auth, (req,res) => {
     items.push(inv);
   }
   if (!items.length) return res.status(400).json({error:'Выберите предметы'});
-  const inVal = items.reduce((s,x) => s + itV(x.id), 0);
+  const inVal = items.reduce((s,x) => s+itV(x.id),0);
   if (itV(target) <= inVal) return res.status(400).json({error:'Цель должна быть дороже входа'});
-  let chance = Math.min(95, Math.max(1, inVal/itV(target)*90));
+  let chance = Math.min(95,Math.max(1,inVal/itV(target)*90));
   if (!req.user.admin){
     const p = PRIV[req.user.privilege];
-    if (p && p.upg) chance = Math.min(95, chance * (1 + p.upg/100));
+    if (p && p.upg) chance = Math.min(95,chance*(1+p.upg/100));
   }
   const win = Math.random()*100 < chance;
   const inNames = items.map(x => ITEMS[x.id][1]).join(' + ');
@@ -486,214 +425,199 @@ app.post('/api/upgrade', auth, (req,res) => {
   req.user.stats.upgrades++;
   let entry = null;
   if (win){
-    entry = {uid:newUid(), id:target, case:'upgrade', ts:Date.now()};
+    entry = {uid:newUid(),id:target,case:'upgrade',ts:Date.now()};
     req.user.inventory.unshift(entry);
     if (!req.user.stats.best || itV(target) > req.user.stats.best.v)
-      req.user.stats.best = {e:ITEMS[target][0], n:ITEMS[target][1], v:itV(target)};
-    addHist(req.user, 'in', 'Апгрейд: ' + inNames + ' → ' + ITEMS[target][1], itV(target));
-    addFeed(req.user.name, target);
-  } else {
-    addHist(req.user, 'out', 'Апгрейд не удался (' + inNames + ')', inVal);
-  }
-  save();
-  res.json({win, chance:+chance.toFixed(2), entry, balance:req.user.balance});
+      req.user.stats.best = {e:ITEMS[target][0],n:ITEMS[target][1],v:itV(target)};
+    addHist(req.user,'in','Апгрейд: '+inNames+' → '+ITEMS[target][1],itV(target));
+    addFeed(req.user.name,target);
+  } else addHist(req.user,'out','Апгрейд не удался ('+inNames+')',inVal);
+  save(); res.json({win,chance:+chance.toFixed(2),entry,balance:req.user.balance});
 });
 
-/* ---------- Мини-игры: Coin, Dice ---------- */
 app.post('/api/game/coin', auth, (req,res) => {
-  const bet = Math.floor(+req.body.bet || 0);
-  const side = req.body.side === 'tails' ? 'tails' : 'heads';
+  const bet = Math.floor(+req.body.bet||0), side = req.body.side==='tails'?'tails':'heads';
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
-  req.user.balance -= bet; addHist(req.user, 'out', 'Ставка: Coin Flip', bet);
-  const result = Math.random() < .5 ? 'heads' : 'tails';
-  const win = result === side;
+  req.user.balance -= bet; addHist(req.user,'out','Ставка: Coin Flip',bet);
+  const result = Math.random() < .5 ? 'heads' : 'tails', win = result === side;
   let payout = 0;
-  if (win){ payout = Math.round(bet*1.96); credit(req.user, payout, 'Coin Flip выигрыш'); }
-  save(); res.json({result, win, payout, balance:req.user.balance});
+  if (win){ payout = Math.round(bet*1.96); credit(req.user,payout,'Coin Flip выигрыш'); }
+  save(); res.json({result,win,payout,balance:req.user.balance});
 });
-
 app.post('/api/game/dice', auth, (req,res) => {
-  const bet = Math.floor(+req.body.bet || 0);
-  const target = Math.min(98, Math.max(2, Math.floor(+req.body.target || 50)));
+  const bet = Math.floor(+req.body.bet||0), target = Math.min(98,Math.max(2,Math.floor(+req.body.target||50)));
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
-  req.user.balance -= bet; addHist(req.user, 'out', 'Ставка: Dice', bet);
-  const roll = +(Math.random()*100).toFixed(2);
-  const win = roll < target;
+  req.user.balance -= bet; addHist(req.user,'out','Ставка: Dice',bet);
+  const roll = +(Math.random()*100).toFixed(2), win = roll < target;
   let payout = 0;
-  if (win){ payout = Math.round(bet*99/target); credit(req.user, payout, 'Dice выигрыш x' + (99/target).toFixed(2)); }
-  save(); res.json({roll, win, payout, balance:req.user.balance});
+  if (win){ payout = Math.round(bet*99/target); credit(req.user,payout,'Dice выигрыш x'+(99/target).toFixed(2)); }
+  save(); res.json({roll,win,payout,balance:req.user.balance});
 });
-
-/* ---------- Mines ---------- */
 app.post('/api/game/mines/start', auth, (req,res) => {
-  const bet = Math.floor(+req.body.bet || 0);
-  const count = [3,5,10].includes(+req.body.count) ? +req.body.count : 3;
+  const bet = Math.floor(+req.body.bet||0), count = [3,5,10].includes(+req.body.count)?+req.body.count:3;
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
-  req.user.balance -= bet; addHist(req.user, 'out', 'Ставка: Mines', bet);
+  req.user.balance -= bet; addHist(req.user,'out','Ставка: Mines',bet);
   const idx = [...Array(25).keys()];
-  for (let i = idx.length-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [idx[i],idx[j]] = [idx[j],idx[i]]; }
-  minesGames.set(req.user.id, {bet, count, mineSet:new Set(idx.slice(0,count)), opened:new Set(), mult:1, picks:0});
-  save(); res.json({ok:true, balance:req.user.balance});
+  for (let i = idx.length-1;i > 0;i--){ const j = Math.floor(Math.random()*(i+1)); [idx[i],idx[j]]=[idx[j],idx[i]]; }
+  minesGames.set(req.user.id,{bet,count,mineSet:new Set(idx.slice(0,count)),opened:new Set(),mult:1,picks:0});
+  save(); res.json({ok:true,balance:req.user.balance});
 });
 app.post('/api/game/mines/pick', auth, (req,res) => {
   const g = minesGames.get(req.user.id);
   if (!g) return res.status(400).json({error:'Нет активной игры'});
   const cell = +req.body.cell;
   if (!(cell >= 0 && cell < 25) || g.opened.has(cell)) return res.status(400).json({error:'Некорректная клетка'});
-  if (g.mineSet.has(cell)){
-    minesGames.delete(req.user.id);
-    save();
-    return res.json({boom:true, mines:[...g.mineSet], balance:req.user.balance});
-  }
+  if (g.mineSet.has(cell)){ minesGames.delete(req.user.id); save(); return res.json({boom:true,mines:[...g.mineSet],balance:req.user.balance}); }
   g.opened.add(cell);
-  g.mult *= (25 - g.picks) / (25 - g.count - g.picks);
-  g.picks++;
-  if (g.picks >= 25 - g.count){
-    const payout = Math.round(g.bet * g.mult * 0.97);
-    credit(req.user, payout, 'Mines выигрыш x' + (g.mult*0.97).toFixed(2));
+  g.mult *= (25-g.picks)/(25-g.count-g.picks); g.picks++;
+  if (g.picks >= 25-g.count){
+    const payout = Math.round(g.bet*g.mult*0.97);
+    credit(req.user,payout,'Mines выигрыш x'+(g.mult*0.97).toFixed(2));
     minesGames.delete(req.user.id); save();
-    return res.json({finished:true, win:true, payout, mult:g.mult*0.97, mines:[...g.mineSet], balance:req.user.balance});
+    return res.json({finished:true,win:true,payout,mult:g.mult*0.97,mines:[...g.mineSet],balance:req.user.balance});
   }
   save();
-  res.json({gem:true, mult:+(g.mult*0.97).toFixed(4), next:+(g.mult*(25-g.picks)/(25-g.count-g.picks)*0.97).toFixed(4)});
+  res.json({gem:true,mult:+(g.mult*0.97).toFixed(4),next:+(g.mult*(25-g.picks)/(25-g.count-g.picks)*0.97).toFixed(4)});
 });
 app.post('/api/game/mines/cash', auth, (req,res) => {
   const g = minesGames.get(req.user.id);
   if (!g) return res.status(400).json({error:'Нет активной игры'});
-  const payout = Math.round(g.bet * g.mult * 0.97);
-  credit(req.user, payout, 'Mines выигрыш x' + (g.mult*0.97).toFixed(2));
+  const payout = Math.round(g.bet*g.mult*0.97);
+  credit(req.user,payout,'Mines выигрыш x'+(g.mult*0.97).toFixed(2));
   const mines = [...g.mineSet];
   minesGames.delete(req.user.id); save();
-  res.json({win:true, payout, mult:+(g.mult*0.97).toFixed(4), mines, balance:req.user.balance});
+  res.json({win:true,payout,mult:+(g.mult*0.97).toFixed(4),mines,balance:req.user.balance});
 });
-
-/* ---------- Crash ---------- */
 app.post('/api/game/crash/start', auth, (req,res) => {
-  const bet = Math.floor(+req.body.bet || 0);
+  const bet = Math.floor(+req.body.bet||0);
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
-  req.user.balance -= bet; addHist(req.user, 'out', 'Ставка: Crash', bet);
-  const crashAt = Math.min(250, Math.max(1.01, 0.99/(1 - Math.random())));
-  crashGames.set(req.user.id, {startTs:Date.now(), crashAt, bet});
-  save(); res.json({ok:true, balance:req.user.balance});
+  req.user.balance -= bet; addHist(req.user,'out','Ставка: Crash',bet);
+  crashGames.set(req.user.id,{startTs:Date.now(),crashAt:Math.min(250,Math.max(1.01,0.99/(1-Math.random()))),bet});
+  save(); res.json({ok:true,balance:req.user.balance});
 });
 app.post('/api/game/crash/cash', auth, (req,res) => {
   const g = crashGames.get(req.user.id);
   if (!g) return res.status(400).json({error:'Нет активной игры'});
-  const mult = Math.exp(0.00019 * (Date.now() - g.startTs));
-  if (mult >= g.crashAt){
-    crashGames.delete(req.user.id); save();
-    return res.json({win:false, mult:+g.crashAt.toFixed(2), balance:req.user.balance});
-  }
-  const payout = Math.round(g.bet * mult);
-  credit(req.user, payout, 'Crash выигрыш x' + mult.toFixed(2));
+  const mult = Math.exp(0.00019*(Date.now()-g.startTs));
+  if (mult >= g.crashAt){ crashGames.delete(req.user.id); save(); return res.json({win:false,mult:+g.crashAt.toFixed(2),balance:req.user.balance}); }
+  const payout = Math.round(g.bet*mult);
+  credit(req.user,payout,'Crash выигрыш x'+mult.toFixed(2));
   crashGames.delete(req.user.id); save();
-  res.json({win:true, mult:+mult.toFixed(2), payout, balance:req.user.balance});
+  res.json({win:true,mult:+mult.toFixed(2),payout,balance:req.user.balance});
 });
-
-/* ---------- Wheel ---------- */
-const WHEEL_SEGS = [
-  {m:0, w:9}, {m:0.5, w:4}, {m:1.5, w:3},
-  {m:2, w:2}, {m:3, w:1}, {m:5, w:1},
-];
+const WHEEL_SEGS = [{m:0,w:9},{m:0.5,w:4},{m:1.5,w:3},{m:2,w:2},{m:3,w:1},{m:5,w:1}];
 app.post('/api/game/wheel', auth, (req,res) => {
-  const bet = Math.floor(+req.body.bet || 0);
+  const bet = Math.floor(+req.body.bet||0);
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
-  req.user.balance -= bet; addHist(req.user, 'out', 'Ставка: Wheel', bet);
+  req.user.balance -= bet; addHist(req.user,'out','Ставка: Wheel',bet);
   const total = WHEEL_SEGS.reduce((s,x)=>s+x.w,0);
   let r = Math.random()*total, seg = 0;
   for (let i = 0; i < WHEEL_SEGS.length; i++){ if ((r -= WHEEL_SEGS[i].w) < 0){ seg = i; break; } }
   const m = WHEEL_SEGS[seg].m;
   let payout = 0;
-  if (m > 0){ payout = Math.round(bet*m); credit(req.user, payout, 'Wheel выигрыш x' + m); }
-  save(); res.json({seg, mult:m, payout, balance:req.user.balance});
+  if (m > 0){ payout = Math.round(bet*m); credit(req.user,payout,'Wheel выигрыш x'+m); }
+  save(); res.json({seg,mult:m,payout,balance:req.user.balance});
 });
-
-/* ---------- Plinko ---------- */
 const PLINKO_MULTS = [10,3,1.8,1.3,1,0.8,0.6,0.8,1,1.3,1.8,3,10];
 app.post('/api/game/plinko', auth, (req,res) => {
-  const bet = Math.floor(+req.body.bet || 0);
+  const bet = Math.floor(+req.body.bet||0);
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
-  req.user.balance -= bet; addHist(req.user, 'out', 'Ставка: Plinko', bet);
+  req.user.balance -= bet; addHist(req.user,'out','Ставка: Plinko',bet);
   let k = 0;
   for (let i = 0; i < 12; i++) if (Math.random() < .5) k++;
-  const m = PLINKO_MULTS[k];
-  const payout = Math.round(bet*m);
-  if (payout > 0) credit(req.user, payout, 'Plinko выигрыш x' + m);
-  save(); res.json({slot:k, mult:m, payout, balance:req.user.balance});
+  const m = PLINKO_MULTS[k], payout = Math.round(bet*m);
+  if (payout > 0) credit(req.user,payout,'Plinko выигрыш x'+m);
+  save(); res.json({slot:k,mult:m,payout,balance:req.user.balance});
 });
-
-/* ---------- Tower ---------- */
 app.post('/api/game/tower/start', auth, (req,res) => {
-  const bet = Math.floor(+req.body.bet || 0);
+  const bet = Math.floor(+req.body.bet||0);
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
-  req.user.balance -= bet; addHist(req.user, 'out', 'Ставка: Tower', bet);
+  req.user.balance -= bet; addHist(req.user,'out','Ставка: Tower',bet);
   const bombs = [];
   for (let i = 0; i < 8; i++) bombs.push(Math.floor(Math.random()*3));
-  towerGames.set(req.user.id, {bet, floor:0, bombs});
-  save(); res.json({ok:true, balance:req.user.balance});
+  towerGames.set(req.user.id,{bet,floor:0,bombs});
+  save(); res.json({ok:true,balance:req.user.balance});
 });
 app.post('/api/game/tower/pick', auth, (req,res) => {
   const g = towerGames.get(req.user.id);
   if (!g) return res.status(400).json({error:'Нет активной игры'});
   const cell = +req.body.cell;
   if (!(cell >= 0 && cell < 3)) return res.status(400).json({error:'Некорректная клетка'});
-  if (g.bombs[g.floor] === cell){
-    const bombs = g.bombs;
-    towerGames.delete(req.user.id); save();
-    return res.json({boom:true, bombs, balance:req.user.balance});
-  }
+  if (g.bombs[g.floor] === cell){ const bombs = g.bombs; towerGames.delete(req.user.id); save(); return res.json({boom:true,bombs,balance:req.user.balance}); }
   g.floor++;
-  const mult = +Math.pow(1.42, g.floor).toFixed(2);
+  const mult = +Math.pow(1.42,g.floor).toFixed(2);
   if (g.floor >= 8){
-    const payout = Math.round(g.bet * mult * 0.98);
-    credit(req.user, payout, 'Tower выигрыш x' + mult);
+    const payout = Math.round(g.bet*mult*0.98);
+    credit(req.user,payout,'Tower выигрыш x'+mult);
     towerGames.delete(req.user.id); save();
-    return res.json({safe:true, floor:g.floor, mult, finished:true, payout, balance:req.user.balance});
+    return res.json({safe:true,floor:g.floor,mult,finished:true,payout,balance:req.user.balance});
   }
-  save();
-  res.json({safe:true, floor:g.floor, mult, next:+Math.pow(1.42, g.floor+1).toFixed(2)});
+  save(); res.json({safe:true,floor:g.floor,mult,next:+Math.pow(1.42,g.floor+1).toFixed(2)});
 });
 app.post('/api/game/tower/cash', auth, (req,res) => {
   const g = towerGames.get(req.user.id);
   if (!g || g.floor === 0) return res.status(400).json({error:'Нет активной игры'});
-  const mult = +Math.pow(1.42, g.floor).toFixed(2);
-  const payout = Math.round(g.bet * mult * 0.98);
-  credit(req.user, payout, 'Tower выигрыш x' + mult);
+  const mult = +Math.pow(1.42,g.floor).toFixed(2);
+  const payout = Math.round(g.bet*mult*0.98);
+  credit(req.user,payout,'Tower выигрыш x'+mult);
   towerGames.delete(req.user.id); save();
-  res.json({win:true, mult, payout, bombs:g.bombs, balance:req.user.balance});
+  res.json({win:true,mult,payout,bombs:g.bombs,balance:req.user.balance});
+});
+/* Slots */
+const SLOTS = [['🍒',35,4],['🍋',25,6],['🔔',18,10],['⭐',10,20],['💎',5,50],['7️⃣',2,100]];
+app.post('/api/game/slots', auth, (req,res) => {
+  const bet = Math.floor(+req.body.bet||0);
+  if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
+  req.user.balance -= bet; addHist(req.user,'out','Ставка: Slots',bet);
+  const total = SLOTS.reduce((s,x)=>s+x[1],0);
+  const pickOne = () => { let r = Math.random()*total; for (const s of SLOTS){ if ((r -= s[1]) < 0) return s; } return SLOTS[0]; };
+  const a = pickOne(), b = pickOne(), c = pickOne();
+  let mult = 0;
+  if (a[0] === b[0] && b[0] === c[0]) mult = a[2];
+  else if (a[0] === b[0] || b[0] === c[0] || a[0] === c[0]) mult = 2;
+  let payout = 0;
+  if (mult > 0){ payout = Math.round(bet*mult); credit(req.user,payout,'Slots выигрыш x'+mult); }
+  save(); res.json({reels:[a[0],b[0],c[0]],mult,payout,balance:req.user.balance});
+});
+/* Roulette */
+const RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+app.post('/api/game/roulette', auth, (req,res) => {
+  const bet = Math.floor(+req.body.bet||0);
+  const pick = ['red','black','green'].includes(req.body.pick) ? req.body.pick : 'red';
+  if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
+  req.user.balance -= bet; addHist(req.user,'out','Ставка: Roulette',bet);
+  const num = Math.floor(Math.random()*37);
+  const color = num === 0 ? 'green' : (RED.has(num) ? 'red' : 'black');
+  const win = color === pick;
+  const mult = pick === 'green' ? 14 : 2;
+  let payout = 0;
+  if (win){ payout = Math.round(bet*mult); credit(req.user,payout,'Roulette выигрыш x'+mult); }
+  save(); res.json({num,color,win,mult,payout,balance:req.user.balance});
 });
 
-/* ---------- Админ: игроки, монеты, предметы ---------- */
 app.post('/api/admin/users', auth, admin, (req,res) => {
-  const list = Object.values(db.users)
-    .map(u => ({id:u.id, name:u.name, avatar:u.avatar, balance:u.balance, items:u.inventory.length,
-                banUntil:u.banUntil, banReason:u.banReason, admin:u.admin, priv:u.privilege||null, joined:u.createdAt}))
-    .sort((a,b) => b.joined - a.joined);
-  res.json({users:list});
+  res.json({users:Object.values(db.users)
+    .map(u => ({id:u.id,name:u.name,avatar:u.avatar,balance:u.balance,items:u.inventory.length,
+      banUntil:u.banUntil,banReason:u.banReason,admin:u.admin,priv:u.privilege||null,joined:u.createdAt}))
+    .sort((a,b) => b.joined-a.joined)});
 });
-function getTarget(req,res){
-  const t = db.users[req.body.userId];
-  if (!t){ res.status(404).json({error:'Игрок не найден'}); return null; }
-  return t;
-}
+function getTarget(req,res){ const t = db.users[req.body.userId]; if (!t){ res.status(404).json({error:'Игрок не найден'}); return null; } return t; }
 app.post('/api/admin/give', auth, admin, (req,res) => {
   const t = getTarget(req,res); if (!t) return;
-  const amount = Math.floor(+req.body.amount || 0);
+  const amount = Math.floor(+req.body.amount||0);
   if (!amount) return res.status(400).json({error:'Укажите сумму'});
-  t.balance = Math.max(0, t.balance + amount);
-  addHist(t, amount > 0 ? 'in' : 'out', amount > 0 ? '👑 Админ: начисление' : '👑 Админ: списание', Math.abs(amount));
-  save(); res.json({ok:true, balance:t.balance});
+  t.balance = Math.max(0,t.balance+amount);
+  addHist(t,amount>0?'in':'out',amount>0?'👑 Админ: начисление':'👑 Админ: списание',Math.abs(amount));
+  save(); res.json({ok:true,balance:t.balance});
 });
 app.post('/api/admin/give-item', auth, admin, (req,res) => {
   const t = getTarget(req,res); if (!t) return;
   const id = req.body.itemId;
   if (!ITEMS[id]) return res.status(400).json({error:'Предмет не найден'});
-  t.inventory.unshift({uid:newUid(), id, case:'admin', ts:Date.now()});
-  addHist(t, 'in', '👑 Админ: выдан ' + ITEMS[id][1], itV(id));
+  t.inventory.unshift({uid:newUid(),id,case:'admin',ts:Date.now()});
+  addHist(t,'in','👑 Админ: выдан '+ITEMS[id][1],itV(id));
   save(); res.json({ok:true});
 });
-
-/* ---------- Бан (админ — любой срок; Helper — до 5 мин; Moder — до 20 мин) ---------- */
 app.post('/api/admin/ban', auth, (req,res) => {
   const t = getTarget(req,res); if (!t) return;
   if (t.id === req.user.id) return res.status(400).json({error:'Нельзя выдать бан самому себе'});
@@ -701,75 +625,51 @@ app.post('/api/admin/ban', auth, (req,res) => {
   if (!rights) return res.status(403).json({error:'У тебя нет прав на бан'});
   const minutes = +req.body.minutes;
   const reason = String(req.body.reason||'').trim().slice(0,200) || 'Причина не указана';
-  if (minutes === -1){
-    if (!rights.forever) return res.status(400).json({error:'Банить навсегда может только админ'});
-    t.banUntil = -1;
-  } else if (minutes > 0){
-    if (minutes > rights.max) return res.status(400).json({error:'Твой лимит бана: до ' + rights.max + ' мин'});
-    t.banUntil = Date.now() + minutes*60000;
-  } else return res.status(400).json({error:'Некорректный срок бана'});
+  if (minutes === -1){ if (!rights.forever) return res.status(400).json({error:'Банить навсегда может только админ'}); t.banUntil = -1; }
+  else if (minutes > 0){ if (minutes > rights.max) return res.status(400).json({error:'Твой лимит бана: до '+rights.max+' мин'}); t.banUntil = Date.now()+minutes*60000; }
+  else return res.status(400).json({error:'Некорректный срок бана'});
   if (t.admin && !req.user.admin) return res.status(400).json({error:'Нельзя забанить администратора'});
-  t.banReason = reason;
-  save(); res.json({ok:true, banUntil:t.banUntil, reason});
+  t.banReason = reason; save(); res.json({ok:true,banUntil:t.banUntil,reason});
 });
 app.post('/api/admin/unban', auth, (req,res) => {
   const t = getTarget(req,res); if (!t) return;
-  const rights = banRights(req.user);
-  if (!rights) return res.status(403).json({error:'У тебя нет прав на разбан'});
+  if (!banRights(req.user)) return res.status(403).json({error:'У тебя нет прав на разбан'});
   if (t.admin && !req.user.admin) return res.status(400).json({error:'Нельзя снимать бан с администратора'});
-  t.banUntil = 0; t.banReason = '';
-  save(); res.json({ok:true});
+  t.banUntil = 0; t.banReason = ''; save(); res.json({ok:true});
 });
 app.post('/api/admin/reset', auth, admin, (req,res) => {
   const t = getTarget(req,res); if (!t) return;
   t.balance = START_BALANCE; t.inventory = []; t.history = [];
-  t.stats = {opened:0, upgrades:0, best:null}; t.usedPromos = []; t.freeAt = 0; t.topupAt = 0;
-  addHist(t, 'in', 'Стартовый бонус', START_BALANCE);
+  t.stats = {opened:0,upgrades:0,best:null}; t.usedPromos = []; t.freeAt = 0; t.topupAt = 0;
+  addHist(t,'in','Стартовый бонус',START_BALANCE);
   save(); res.json({ok:true});
 });
-app.post('/api/admin/setfree', auth, admin, (req,res) => {
-  const t = getTarget(req,res); if (!t) return;
-  t.freeAt = 0; save(); res.json({ok:true});
-});
-
-/* ---------- Админ: привилегии ---------- */
 app.post('/api/admin/setpriv', auth, admin, (req,res) => {
   const t = getTarget(req,res); if (!t) return;
   const pv = req.body.privilege;
   t.privilege = PRIV[pv] ? pv : null;
-  save(); res.json({ok:true, privilege:t.privilege});
+  save(); res.json({ok:true,privilege:t.privilege});
 });
-
-/* ---------- Админ: менеджер промокодов ---------- */
-app.post('/api/admin/promos', auth, admin, (req,res) => {
-  res.json({promos: db.promos});
-});
+app.post('/api/admin/promos', auth, admin, (req,res) => res.json({promos:db.promos}));
 app.post('/api/admin/promo-create', auth, admin, (req,res) => {
   const code = String(req.body.code||'').trim().toUpperCase().replace(/\s+/g,'');
   if (!/^[A-Z0-9_]{3,20}$/.test(code)) return res.status(400).json({error:'Код: 3–20 символов (A-Z, 0-9, _)'});
   if (PROMOS[code] || db.promos[code]) return res.status(400).json({error:'Такой промокод уже существует'});
-  const amount = Math.max(0, Math.floor(+req.body.amount || 0));
-  const itemId = ITEMS[req.body.itemId] ? req.body.itemId : null;
-  const caseId = CASES.find(c => c.id === req.body.caseId) ? req.body.caseId : null;
-  const privilege = PRIV[req.body.privilege] ? req.body.privilege : null;
-  const maxUses = Math.max(0, Math.floor(+req.body.maxUses || 0));
-  const expiresDays = Math.max(0, Math.floor(+req.body.expiresDays || 0));
-  if (!amount && !itemId && !caseId && !privilege) return res.status(400).json({error:'Добавь хотя бы одну награду (HC, предмет, кейс или привилегия)'});
-  const pr = {
-    amount: amount || null, itemId, caseId, privilege,
-    maxUses, expiresDays, expiresAt: expiresDays > 0 ? Date.now() + expiresDays*86400000 : 0,
-    createdBy: req.user.name, createdAt: Date.now(), uses: 0, activatedBy: [],
-  };
-  db.promos[code] = pr; save();
-  res.json({ok:true});
+  const amount = Math.max(0,Math.floor(+req.body.amount||0));
+  const itemId = ITEMS[req.body.itemId]?req.body.itemId:null;
+  const caseId = CASES.find(c => c.id === req.body.caseId)?req.body.caseId:null;
+  const privilege = PRIV[req.body.privilege]?req.body.privilege:null;
+  const maxUses = Math.max(0,Math.floor(+req.body.maxUses||0));
+  const expiresDays = Math.max(0,Math.floor(+req.body.expiresDays||0));
+  if (!amount && !itemId && !caseId && !privilege) return res.status(400).json({error:'Добавь хотя бы одну награду'});
+  db.promos[code] = {amount:amount||null,itemId,caseId,privilege,maxUses,expiresDays,
+    expiresAt:expiresDays>0?Date.now()+expiresDays*86400000:0,createdBy:req.user.name,createdAt:Date.now(),uses:0,activatedBy:[]};
+  save(); res.json({ok:true});
 });
 app.post('/api/admin/promo-delete', auth, admin, (req,res) => {
   const code = String(req.body.code||'').trim().toUpperCase();
   if (!db.promos[code]) return res.status(400).json({error:'Промокод не найден'});
-  delete db.promos[code]; save();
-  res.json({ok:true});
+  delete db.promos[code]; save(); res.json({ok:true});
 });
-
-app.use('/api', (req,res) => res.status(404).json({error:'Не найдено'}));
-
-app.listen(PORT, () => console.log('✅ HC Gifts server v4.0 (привилегии + промокоды): http://localhost:' + PORT));
+app.use('/api',(req,res) => res.status(404).json({error:'Не найдено'}));
+app.listen(PORT, () => console.log('✅ HC Gifts v5.0 (17 редкостей, лимитки, 89 кейсов, 9 игр): http://localhost:'+PORT));
