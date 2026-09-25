@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0A0714">
 <title>HC Gifts</title>
 <style>
-:root{--bg:#0A0714;--surface:#141021;--surface2:#1B152D;--raise:#251C3E;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);--text:#F0EDF8;--muted:#928AA8;--muted2:#5F5880;--accent:#7C3AED;--accent-soft:rgba(124,58,237,.16);--accent-txt:#C4B5FD;--grad:linear-gradient(135deg,#8B5CF6,#4F46E5);--green:#34D399;--red:#F87171;--mono:ui-monospace,Menlo,Consolas,monospace}
+:root{--bg:#0A0714;--surface:#141021;--surface2:#1B152D;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);--text:#F0EDF8;--muted:#928AA8;--muted2:#5F5880;--accent:#7C3AED;--accent-soft:rgba(124,58,237,.16);--accent-txt:#C4B5FD;--grad:linear-gradient(135deg,#8B5CF6,#4F46E5);--green:#34D399;--red:#F87171;--gold:#F5B544;--mono:ui-monospace,Menlo,Consolas,monospace}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{min-height:100dvh;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.45;user-select:none}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
@@ -52,15 +52,22 @@ main{padding:14px 14px 132px}
 .feat-foot{display:flex;align-items:center;gap:10px}
 .price{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-weight:700;font-size:13px}
 .case-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.case-tile{position:relative;border-radius:18px;padding:12px;min-height:150px;display:flex;flex-direction:column;background:linear-gradient(150deg,var(--c1),var(--c2));border:1px solid rgba(255,255,255,.09);cursor:pointer;overflow:hidden}
+.case-tile{position:relative;border-radius:18px;padding:12px;min-height:150px;display:flex;flex-direction:column;background:linear-gradient(150deg,var(--c1),var(--c2));border:1px solid rgba(255,255,255,.09);cursor:pointer;overflow:hidden;transition:transform .15s}
 .case-tile:active{transform:scale(.95)}
 .ct-best{position:absolute;top:10px;right:10px;font-size:16px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}
 .ct-emoji{font-size:36px;margin:8px 0 auto;filter:drop-shadow(0 8px 16px rgba(0,0,0,.5))}
 .ct-name{font-weight:700;font-size:13.5px;margin-bottom:8px}
 .ct-price{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;background:rgba(0,0,0,.38);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:4px 10px 4px 5px;font-family:var(--mono);font-size:11.5px;font-weight:700}
 .ct-price.free{color:var(--green)}
+/* === Анимация открытия кейса (исправлено) === */
+.case-tile.armed{animation:caseArm .5s ease}
+@keyframes caseArm{0%,100%{transform:none}15%,45%,75%{transform:scale(1.07) rotate(-2.5deg)}30%,60%,90%{transform:scale(1.05) rotate(2.5deg)}}
+.case-tile.armed .ct-emoji{animation:emojiGlow .25s ease infinite alternate}
+@keyframes emojiGlow{from{filter:drop-shadow(0 0 3px rgba(139,92,246,.5))}to{filter:drop-shadow(0 0 16px rgba(167,139,250,1))}}
 .shake{animation:shake .4s}
 @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+.flash{position:fixed;inset:0;z-index:90;pointer-events:none;animation:flashFade 1.1s forwards}
+@keyframes flashFade{from{opacity:1}to{opacity:0}}
 .game-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .game-tile{border-radius:18px;padding:14px;min-height:112px;display:flex;flex-direction:column;background:linear-gradient(150deg,var(--c1),var(--c2));border:1px solid rgba(255,255,255,.09);cursor:pointer}
 .game-tile:active{transform:scale(.95)}
@@ -90,12 +97,10 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .crash-disp.crash{color:var(--red)}
 .crash-bar{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-bottom:14px}
 .crash-bar i{display:block;height:100%;width:0;background:var(--grad)}
-/* Wheel */
 .wheel-wrap{position:relative;width:200px;height:200px;margin:8px auto 6px}
 .wheel-dial{width:100%;height:100%;border-radius:50%;border:3px solid var(--border2);box-shadow:0 10px 30px rgba(0,0,0,.5);will-change:transform}
-.wheel-needle{position:absolute;top:-8px;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top:13px solid #fff;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.7))}
+.wheel-needle{position:absolute;top:-8px;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top:13px solid #fff;z-index:2}
 .wheel-legend{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
-/* Plinko */
 .plinko-board{position:relative;background:var(--bg);border:1px solid var(--border2);border-radius:14px;padding:10px 0 6px;margin-bottom:10px;overflow:hidden}
 .pl-row{display:flex;justify-content:center;gap:14px;height:20px;align-items:center}
 .pl-row i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.25)}
@@ -103,7 +108,6 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .pl-slots span{flex:1;text-align:center;font-family:var(--mono);font-size:8.5px;font-weight:800}
 .pl-slots span.hit{text-shadow:0 0 10px currentColor;transform:scale(1.2)}
 .pl-ball{position:absolute;top:0;left:0;width:11px;height:11px;border-radius:50%;background:var(--grad);box-shadow:0 0 10px rgba(139,92,246,.8);opacity:0;z-index:3}
-/* Tower */
 .tower-grid{display:flex;flex-direction:column-reverse;gap:6px;margin:10px 0}
 .tw-row{display:flex;gap:6px;align-items:center;opacity:.45}
 .tw-row.act{opacity:1}
@@ -314,7 +318,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
       <div class="gb"><div class="gb-in">
         <div class="wh-label">Баланс кошелька</div>
         <div class="wh-amount"><span class="hc-coin lg">HC</span><b data-bal>0</b></div>
-        <div class="wh-note">Демо-режим · HC виртуальные</div>
+        <div class="wh-note" id="whNote">Демо-режим · HC виртуальные</div>
         <div class="wh-actions">
           <button class="btn" id="wTopup">Пополнить</button>
           <button class="btn btn-ghost" id="wWithdraw">Вывести</button>
@@ -322,6 +326,12 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
       </div></div>
       <div class="section-title"><span class="tt">История операций</span></div>
       <div id="histList"></div>
+    </section>
+
+    <section class="pane" id="pane-top">
+      <div class="section-title"><span class="tt">🏆 Топ игроков по монетам</span></div>
+      <div class="ref-card" style="margin-bottom:12px;text-align:center"><div class="ref-sub" style="margin:0" id="topMe"></div></div>
+      <div id="topList"></div>
     </section>
 
     <section class="pane" id="pane-profile">
@@ -366,7 +376,20 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
             <button class="btn" id="admItemGo">Выдать</button>
           </div>
           <div class="adm-row">
-            <button class="btn btn-ghost" id="admBan" style="flex:1">🚫 Бан</button>
+            <select class="sel-inp" id="banDur">
+              <option value="30">⏱ 30 минут</option>
+              <option value="60">🕐 1 час</option>
+              <option value="240">🕓 4 часа</option>
+              <option value="1080">🕕 18 часов</option>
+              <option value="1440">🕛 24 часа</option>
+              <option value="-1">♾ Навсегда</option>
+            </select>
+          </div>
+          <div class="adm-row">
+            <input class="inp" id="banReason" placeholder="Причина бана" maxlength="200" style="font-family:inherit">
+            <button class="btn btn-danger" id="admBanGo">🚫 Бан</button>
+          </div>
+          <div class="adm-row">
             <button class="btn btn-ghost" id="admUnban" style="flex:1">✅ Разбан</button>
             <button class="btn btn-danger" id="admReset" style="flex:1">♻️ Сброс</button>
           </div>
@@ -389,6 +412,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
     <button class="tab" data-tab="games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7" width="19" height="11" rx="4.5"/><path d="M7 10.5v4M5 12.5h4"/><circle cx="15.8" cy="11" r=".9" fill="currentColor" stroke="none"/><circle cx="18.3" cy="13.5" r=".9" fill="currentColor" stroke="none"/></svg>Игры</button>
     <div class="tab-up"><button class="up-fab" data-tab="upgrade"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 12l6-6 6 6"/></svg></button>Апгрейд</div>
     <button class="tab" data-tab="wallet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13.5" rx="3"/><path d="M3 10h18"/><circle cx="17" cy="15" r="1.1" fill="currentColor" stroke="none"/></svg>Кошелёк</button>
+    <button class="tab" data-tab="top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v6a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/></svg>Топ</button>
     <button class="tab" data-tab="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c.9-3.6 3.7-5.3 7-5.3s6.1 1.7 7 5.3"/></svg>Профиль</button>
   </nav>
 </div>
@@ -480,7 +504,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 
 <div class="overlay" id="ovTopup"><div class="sheet">
   <div class="sheet-head"><div class="sheet-title">Пополнение баланса</div><button class="icon-btn" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-  <div class="field"><label>Сумма · демо-монеты, бесплатно</label><input class="inp" id="topupInp" type="text" inputmode="numeric" placeholder="Введите сумму" maxlength="9"><div class="field-err" id="topupErr">Введите корректную сумму</div></div>
+  <div class="field"><label id="topupLabel">Сумма</label><input class="inp" id="topupInp" type="text" inputmode="numeric" placeholder="Введите сумму" maxlength="9"><div class="field-err" id="topupErr"></div></div>
   <div class="chips" id="topupChips"></div>
   <button class="btn btn-block" id="topupGo">Зачислить на счёт</button>
 </div></div>
@@ -514,100 +538,6 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 </div></div>
 
 <script>
-/* ================= Данные (копия серверных для отрисовки) ================= */
-const RAR = {common:{label:'Common',c:'#8B93A7'},rare:{label:'Rare',c:'#38BDF8'},epic:{label:'Epic',c:'#A855F7'},legendary:{label:'Legendary',c:'#F5B544'}};
-const ITEMS = {
-  candy:['🍬','Конфета','common',30],lolli:['🍭','Лоллипоп','common',35],coffee:['☕','Кофе','common',50],
-  balloon:['🎈','Шарик','common',50],donut:['🍩','Пончик','common',60],pizza:['🍕','Пицца','common',70],
-  cactus:['🌵','Кактус','common',80],frog:['🐸','Жаба-мем','common',90],heart:['❤️','Сердце','rare',140],
-  rose:['🌹','Роза','rare',130],pumpkin:['🎃','Тыква','rare',210],cake:['🎂','Торт','rare',160],
-  teddy:['🧸','Мишка Тедди','rare',170],shades:['🕶️','Очки','rare',200],snow:['⛄','Снеговик','rare',280],
-  headphones:['🎧','Наушники','rare',230],skate:['🛹','Скейт','rare',260],palm:['🌴','Пальма','rare',290],
-  cherry:['🌸','Сакура','rare',310],watch:['⌚','Часы','rare',300],champagne:['🍾','Шампанское','rare',340],
-  rocket:['🚀','Ракета','rare',380],gamepad:['🎮','Геймпад','epic',620],robot:['🤖','Робот','epic',720],
-  ring:['💍','Кольцо','epic',820],diamond:['💎','Бриллиант','epic',950],moai:['🗿','Моаи','epic',1050],
-  planet:['🪐','Планета','epic',1150],crown:['👑','Корона','epic',1300],star:['🌟','Звезда','legendary',3200],
-  unicorn:['🦄','Единорог','legendary',4500],dragon:['🐉','Дракон','legendary',6000],trophy:['🏆','Кубок','legendary',7500],
-  phoenix:['🔥','Феникс','legendary',9000],ufo:['👽','НЛО','legendary',12000],thor:['⚡','Молот Тора','legendary',15000],
-  comet:['☄️','Комета','legendary',20000],blackhole:['🕳️','Чёрная дыра','legendary',30000],
-};
-const ITEM_IDS = Object.keys(ITEMS).sort((a,b)=>ITEMS[a][3]-ITEMS[b][3]);
-const itE=id=>ITEMS[id][0], itN=id=>ITEMS[id][1], itR=id=>ITEMS[id][2], itV=id=>ITEMS[id][3];
-
-const CASES = [
-  {id:'free',name:'Free Case',e:'🍀',price:0,free:true,c:['#1E3A34','#0F1A18'],drops:[['candy',2200],['lolli',2000],['coffee',1400],['balloon',1200],['donut',1000],['pizza',800],['cactus',500],['frog',400],['rose',350],['cake',100],['headphones',40],['gamepad',8],['star',1]]},
-  {id:'sweet',name:'Sweet Case',e:'🍬',price:75,c:['#4A1F4E','#1C0F26'],drops:[['candy',2400],['lolli',2200],['coffee',1600],['balloon',1400],['donut',1000],['pizza',700],['cactus',300],['frog',180],['rose',140],['teddy',60],['star',2]]},
-  {id:'coffee',name:'Coffee Break',e:'☕',price:100,c:['#5D4037','#241812'],drops:[['candy',1800],['lolli',1500],['coffee',1600],['balloon',900],['donut',1000],['pizza',600],['cactus',300],['frog',250],['rose',500],['cake',150],['headphones',60],['gamepad',15],['star',2]]},
-  {id:'starter',name:'Starter Case',e:'🎒',price:150,c:['#2F2C68','#161232'],drops:[['candy',900],['lolli',900],['coffee',800],['balloon',750],['donut',600],['pizza',500],['cactus',350],['frog',400],['rose',1100],['teddy',700],['cake',500],['shades',260],['headphones',140],['rocket',60],['gamepad',45],['robot',18],['star',2]]},
-  {id:'beach',name:'Beach Party',e:'🏖️',price:250,c:['#0E7490','#082830'],drops:[['balloon',1200],['donut',700],['pizza',600],['frog',500],['palm',1600],['cherry',700],['rose',700],['shades',600],['skate',350],['watch',180],['champagne',150],['rocket',60],['ring',12],['star',5]]},
-  {id:'party',name:'Party Case',e:'🎉',price:300,c:['#5E2347','#22102A'],drops:[['balloon',800],['donut',500],['pizza',400],['frog',350],['rose',1100],['teddy',950],['cake',850],['shades',700],['headphones',550],['skate',400],['watch',250],['champagne',200],['rocket',150],['gamepad',130],['robot',90],['ring',45],['diamond',20],['crown',8],['star',14],['unicorn',4]]},
-  {id:'music',name:'Music Case',e:'🎵',price:350,c:['#7C2D12','#2A0F06'],drops:[['balloon',900],['donut',600],['rose',800],['headphones',1700],['skate',600],['watch',350],['champagne',450],['rocket',250],['gamepad',350],['robot',120],['ring',50],['star',9]]},
-  {id:'retro',name:'Retro Arcade',e:'🕹️',price:450,c:['#3730A3','#151038'],drops:[['pizza',700],['frog',600],['shades',700],['headphones',900],['skate',800],['watch',450],['champagne',350],['rocket',300],['gamepad',1600],['robot',550],['ring',180],['diamond',50],['star',14]]},
-  {id:'gift',name:'Gift Case',e:'🎁',price:500,c:['#472A7A','#1B1236'],drops:[['rose',800],['teddy',750],['cake',700],['shades',650],['headphones',600],['skate',480],['watch',420],['champagne',400],['rocket',300],['gamepad',320],['robot',260],['ring',180],['diamond',110],['moai',60],['planet',55],['crown',35],['star',30],['unicorn',14],['dragon',6]]},
-  {id:'jungle',name:'Jungle Quest',e:'🌴',price:600,c:['#14532D','#0A1F10'],drops:[['cactus',1000],['frog',1300],['palm',1700],['cherry',900],['rose',700],['shades',450],['skate',350],['watch',300],['champagne',250],['rocket',180],['gamepad',220],['robot',140],['diamond',40],['star',12]]},
-  {id:'neon',name:'Neon City',e:'🌃',price:750,c:['#173B63','#101B33'],drops:[['shades',600],['headphones',700],['skate',650],['watch',550],['champagne',500],['rocket',420],['gamepad',520],['robot',430],['ring',340],['diamond',260],['moai',160],['planet',140],['crown',95],['star',85],['unicorn',45],['dragon',25],['trophy',8]]},
-  {id:'desert',name:'Desert Treasure',e:'🏜️',price:850,c:['#92400E','#3B1D05'],drops:[['cactus',1500],['frog',600],['palm',900],['rose',500],['shades',700],['watch',550],['champagne',400],['rocket',350],['moai',1000],['crown',120],['diamond',70],['star',16],['unicorn',4]]},
-  {id:'premium',name:'Premium Case',e:'💼',price:1000,c:['#3A2E85','#181238'],drops:[['rose',300],['teddy',280],['cake',260],['shades',250],['headphones',260],['skate',230],['watch',220],['champagne',210],['rocket',200],['gamepad',520],['robot',480],['ring',420],['diamond',360],['moai',260],['planet',240],['crown',180],['star',200],['unicorn',130],['dragon',90],['trophy',40]]},
-  {id:'ocean',name:'Ocean Deep',e:'🌊',price:1100,c:['#1E40AF','#0B1B3A'],drops:[['balloon',600],['frog',700],['palm',800],['cherry',600],['shades',550],['watch',650],['champagne',550],['rocket',400],['diamond',220],['planet',140],['crown',70],['star',20],['unicorn',6]]},
-  {id:'love',name:'Love Case',e:'💝',price:1200,c:['#7A1F3D','#2A0E1A'],drops:[['heart',900],['rose',800],['teddy',700],['cake',600],['cherry',500],['champagne',400],['ring',350],['diamond',150],['crown',60],['star',90],['unicorn',40],['dragon',18],['trophy',8],['phoenix',3]]},
-  {id:'sky',name:'Sky Clouds',e:'☁️',price:1300,c:['#475569','#1E2530'],drops:[['balloon',1000],['cherry',700],['snow',800],['shades',550],['watch',550],['champagne',450],['rocket',700],['planet',240],['crown',140],['star',50],['unicorn',14],['dragon',5]]},
-  {id:'cyber',name:'Cyber Case',e:'🤖',price:1600,c:['#16405E','#0F1A33'],drops:[['headphones',200],['champagne',150],['watch',260],['rocket',420],['gamepad',520],['robot',480],['ring',380],['diamond',340],['moai',240],['planet',220],['crown',170],['star',150],['unicorn',105],['dragon',75],['trophy',45],['phoenix',18],['ufo',4]]},
-  {id:'storm',name:'Thunder Storm',e:'⛈️',price:1700,c:['#334155','#111827'],drops:[['shades',500],['headphones',600],['watch',500],['champagne',450],['rocket',700],['gamepad',400],['robot',350],['ring',280],['diamond',240],['moai',160],['planet',200],['crown',140],['star',160],['unicorn',90],['dragon',50],['phoenix',12],['thor',4]]},
-  {id:'halloween',name:'Halloween',e:'🎃',price:1800,c:['#5E2A0A','#1D0E05'],drops:[['pumpkin',700],['cactus',300],['frog',400],['shades',500],['rocket',350],['moai',400],['planet',300],['crown',180],['star',200],['dragon',120],['phoenix',60],['ufo',20]]},
-  {id:'ice',name:'Ice Kingdom',e:'🧊',price:2000,c:['#155E75','#0A1C26'],drops:[['snow',1400],['cake',500],['watch',450],['champagne',400],['diamond',500],['planet',380],['crown',260],['star',320],['unicorn',200],['dragon',140],['trophy',90],['phoenix',40],['ufo',10]]},
-  {id:'royal',name:'Royal Case',e:'👑',price:2200,c:['#6B4E1B','#241A0E'],drops:[['rose',150],['champagne',120],['gamepad',250],['robot',220],['ring',420],['diamond',400],['moai',320],['planet',300],['crown',260],['star',240],['unicorn',170],['dragon',130],['trophy',90],['phoenix',55],['ufo',14]]},
-  {id:'ninja',name:'Ninja Shadow',e:'🥷',price:2400,c:['#1F2937','#0B0F14'],drops:[['shades',400],['headphones',350],['watch',300],['rocket',400],['gamepad',300],['robot',350],['ring',300],['diamond',300],['moai',250],['planet',280],['crown',220],['star',300],['unicorn',200],['dragon',150],['trophy',110],['phoenix',55],['ufo',14]]},
-  {id:'winter',name:'Winter Case',e:'❄️',price:2600,c:['#1D4A6E','#0E1B2E'],drops:[['snow',700],['cake',400],['watch',350],['champagne',300],['diamond',400],['planet',300],['crown',200],['star',260],['unicorn',160],['dragon',110],['trophy',70],['phoenix',30],['ufo',8]]},
-  {id:'samurai',name:'Samurai Honor',e:'⛩️',price:2800,c:['#7F1D1D','#2A0808'],drops:[['watch',300],['champagne',250],['rocket',350],['robot',300],['ring',320],['diamond',340],['moai',300],['planet',320],['crown',280],['star',320],['unicorn',240],['dragon',190],['trophy',150],['phoenix',90],['ufo',25],['thor',6]]},
-  {id:'space',name:'Space Case',e:'🚀',price:3000,c:['#252A6E','#12152F'],drops:[['champagne',150],['rocket',500],['gamepad',260],['robot',240],['diamond',440],['moai',420],['planet',560],['crown',380],['star',340],['unicorn',260],['dragon',210],['trophy',160],['phoenix',105],['ufo',30],['comet',6]]},
-  {id:'pirate',name:'Pirate Booty',e:'🏴‍☠️',price:3200,c:['#134E4A','#06201E'],drops:[['shades',300],['watch',250],['champagne',250],['rocket',300],['robot',260],['ring',380],['diamond',400],['moai',380],['planet',360],['crown',320],['star',340],['unicorn',260],['dragon',220],['trophy',180],['phoenix',120],['ufo',35],['thor',8]]},
-  {id:'pharaoh',name:'Pharaoh Tomb',e:'🏺',price:3800,c:['#78350F','#2B1404'],drops:[['watch',200],['champagne',150],['rocket',200],['robot',200],['ring',350],['diamond',450],['moai',600],['planet',550],['crown',450],['star',400],['unicorn',300],['dragon',250],['trophy',220],['phoenix',160],['ufo',50],['thor',12]]},
-  {id:'elite',name:'Elite Case',e:'💠',price:4000,c:['#48288C','#180F38'],drops:[['robot',180],['ring',220],['moai',340],['planet',400],['diamond',460],['crown',430],['star',380],['unicorn',300],['dragon',250],['trophy',200],['phoenix',150],['ufo',45],['comet',10]]},
-  {id:'viking',name:'Viking Saga',e:'🪓',price:4200,c:['#3F3F46','#18181B'],drops:[['rocket',200],['robot',220],['ring',300],['diamond',420],['moai',480],['planet',500],['crown',440],['star',400],['unicorn',320],['dragon',270],['trophy',220],['phoenix',170],['ufo',60],['thor',15]]},
-  {id:'wizard',name:'Wizard Tower',e:'🧙',price:4800,c:['#4C1D95','#160A33'],drops:[['champagne',120],['rocket',200],['ring',180],['diamond',280],['moai',300],['planet',340],['crown',320],['star',420],['unicorn',360],['dragon',320],['trophy',280],['phoenix',220],['ufo',70],['thor',18]]},
-  {id:'mythic',name:'Mythic Case',e:'🔮',price:5000,c:['#4C1D72','#170B2E'],drops:[['champagne',120],['rocket',260],['ring',140],['moai',230],['planet',260],['diamond',280],['crown',300],['star',420],['unicorn',360],['dragon',320],['trophy',270],['phoenix',210],['ufo',60],['comet',14]]},
-  {id:'knight',name:"Knight's Armor",e:'🛡️',price:5500,c:['#57534E','#1C1917'],drops:[['rocket',150],['robot',180],['ring',220],['diamond',360],['moai',380],['planet',420],['crown',400],['star',440],['unicorn',380],['dragon',330],['trophy',300],['phoenix',250],['ufo',90],['thor',24]]},
-  {id:'vampire',name:'Vampire Night',e:'🧛',price:6200,c:['#450A0A','#1A0303'],drops:[['rocket',120],['ring',140],['diamond',260],['moai',300],['planet',340],['crown',360],['star',440],['unicorn',400],['dragon',360],['trophy',330],['phoenix',280],['ufo',110],['thor',30]]},
-  {id:'golden',name:'Golden Case',e:'🥇',price:6500,c:['#6E5417','#23190C'],drops:[['rocket',80],['planet',170],['moai',140],['diamond',200],['crown',240],['star',380],['unicorn',320],['dragon',280],['trophy',280],['phoenix',230],['ufo',90],['comet',30]]},
-  {id:'zombie',name:'Zombie Outbreak',e:'🧟',price:7000,c:['#3F6212','#141B05'],drops:[['champagne',80],['rocket',100],['ring',120],['diamond',220],['moai',280],['planet',320],['crown',360],['star',460],['unicorn',420],['dragon',380],['trophy',350],['phoenix',300],['ufo',130],['thor',36]]},
-  {id:'dragon',name:"Dragon's Hoard",e:'🐉',price:7500,featured:false,c:['#77202F','#270D16'],drops:[['rocket',60],['moai',120],['planet',140],['diamond',160],['crown',190],['star',320],['unicorn',360],['dragon',520],['trophy',420],['phoenix',480],['ufo',180],['comet',80]]},
-  {id:'inferno',name:'Inferno Case',e:'🔥',price:8000,c:['#7A2610','#260B04'],drops:[['crown',350],['star',500],['unicorn',420],['dragon',380],['trophy',340],['phoenix',280],['ufo',130],['comet',40],['blackhole',6]]},
-  {id:'galaxy',name:'Galaxy Case',e:'🌌',price:8800,c:['#312E81','#0F0D2E'],drops:[['ring',90],['diamond',200],['moai',240],['planet',280],['crown',340],['star',480],['unicorn',440],['dragon',400],['trophy',380],['phoenix',320],['ufo',150],['thor',50],['comet',12]]},
-  {id:'legend',name:'Legend Case',e:'👽',price:9500,c:['#5B21B6','#160B2E'],drops:[['ring',70],['moai',110],['planet',130],['diamond',150],['crown',200],['star',420],['unicorn',400],['dragon',380],['trophy',360],['phoenix',340],['ufo',360],['comet',320]]},
-  {id:'volcano',name:'Volcano Core',e:'🌋',price:10500,c:['#7C2D12','#210A04'],drops:[['diamond',180],['moai',220],['planet',260],['crown',320],['star',500],['unicorn',460],['dragon',430],['trophy',400],['phoenix',350],['ufo',170],['thor',60],['comet',16]]},
-  {id:'quantum',name:'Quantum Case',e:'⚛️',price:11000,c:['#155E75','#08222B'],drops:[['star',520],['unicorn',460],['dragon',430],['trophy',400],['phoenix',330],['ufo',170],['comet',60],['blackhole',12]]},
-  {id:'nebula',name:'Nebula Mist',e:'🌫️',price:12500,c:['#5B21B6','#150A2E'],drops:[['diamond',150],['moai',180],['planet',220],['crown',280],['star',520],['unicorn',480],['dragon',460],['trophy',420],['phoenix',380],['ufo',190],['thor',70],['comet',20]]},
-  {id:'portal',name:'Portal Case',e:'🌀',price:14500,c:['#0E7490','#06222B'],drops:[['planet',180],['crown',240],['star',560],['unicorn',500],['dragon',480],['trophy',450],['phoenix',400],['ufo',220],['thor',85],['comet',26]]},
-  {id:'godlike',name:'Godlike Case',e:'🌠',price:15000,c:['#4C1D95','#1B0B3A'],drops:[['star',600],['unicorn',520],['dragon',500],['trophy',470],['phoenix',400],['ufo',230],['comet',90],['blackhole',25],['thor',40]]},
-  {id:'time',name:'Time Machine',e:'⏳',price:16500,c:['#713F12','#241503'],drops:[['planet',150],['crown',200],['star',600],['unicorn',540],['dragon',520],['trophy',480],['phoenix',430],['ufo',250],['thor',100],['comet',32]]},
-  {id:'titan',name:'Titan Case',e:'🏔️',price:19000,c:['#1E3A8A','#0B1338'],drops:[['crown',160],['star',640],['unicorn',580],['dragon',560],['trophy',520],['phoenix',460],['ufo',280],['thor',120],['comet',40],['blackhole',6]]},
-  {id:'aurora',name:'Aurora Borealis',e:'🌅',price:23000,c:['#0F766E','#052E2B'],drops:[['crown',130],['star',700],['unicorn',640],['dragon',620],['trophy',560],['phoenix',500],['ufo',320],['thor',150],['comet',55],['blackhole',9]]},
-  {id:'ultimate',name:'Ultimate Case',e:'🌈',price:25000,c:['#6D28D9','#2E1065'],drops:[['dragon',600],['trophy',550],['phoenix',500],['ufo',350],['comet',160],['blackhole',60],['thor',120]]},
-  {id:'eclipse',name:'Eclipse Case',e:'🌑',price:27000,c:['#312E81','#090714'],drops:[['crown',110],['star',760],['unicorn',700],['dragon',680],['trophy',600],['phoenix',540],['ufo',360],['thor',180],['comet',70],['blackhole',12]]},
-  {id:'supernova',name:'Supernova',e:'💥',price:32000,c:['#9A3412','#2A0B03'],drops:[['star',840],['unicorn',780],['dragon',760],['trophy',660],['phoenix',600],['ufo',420],['thor',220],['comet',90],['blackhole',18]]},
-  {id:'throne',name:'Iron Throne',e:'⚜️',price:38000,c:['#71717A','#18181B'],drops:[['star',950],['unicorn',900],['dragon',860],['trophy',760],['phoenix',680],['ufo',500],['thor',280],['comet',120],['blackhole',26]]},
-  {id:'infinity',name:'Infinity Case',e:'♾️',price:45000,c:['#6D28D9','#1E0A45'],drops:[['star',1100],['unicorn',1050],['dragon',1000],['trophy',880],['phoenix',780],['ufo',600],['thor',360],['comet',160],['blackhole',38]]},
-  {id:'cosmic',name:'Cosmic Case',e:'🛸',price:55000,c:['#1E1B4B','#07061A'],drops:[['star',1300],['unicorn',1250],['dragon',1200],['trophy',1050],['phoenix',950],['ufo',750],['thor',480],['comet',220],['blackhole',55]]},
-  {id:'fortune',name:'Fortune Case',e:'🎰',price:75000,c:['#A16207','#2E1D02'],drops:[['star',1600],['unicorn',1500],['dragon',1450],['trophy',1300],['phoenix',1150],['ufo',950],['thor',650],['comet',320],['blackhole',80]]},
-  {id:'singularity',name:'Singularity',e:'⚫',price:100000,featured:true,sub:'ТОП-1 кейс · только легендарки · Чёрная дыра 30 000 HC',c:['#181818','#000000'],drops:[['unicorn',1400],['dragon',1400],['trophy',1400],['phoenix',1400],['ufo',1400],['thor',1400],['comet',1400],['blackhole',200]]},
-];
-
-const GAMES = [
-  {id:'coin',e:'🪙',n:'Coin Flip',s:'50/50 · x1.96',c:['#3A2E85','#181238']},
-  {id:'dice',e:'🎲',n:'Dice',s:'Roll under · до x49.5',c:['#173B63','#101B33']},
-  {id:'mines',e:'💣',n:'Mines',s:'Поле 5×5 · до x8+',c:['#5E2347','#22102A']},
-  {id:'crash',e:'📈',n:'Crash',s:'Забери до взрыва',c:['#1E3A34','#0F1A18']},
-  {id:'wheel',e:'🎡',n:'Wheel',s:'Колесо · до x5',c:['#4C1D72','#170B2E']},
-  {id:'plinko',e:'🎯',n:'Plinko',s:'Шарик · до x10',c:['#155E75','#08222B']},
-  {id:'tower',e:'🏰',n:'Tower',s:'8 этажей · до x16',c:['#6B4E1B','#241A0E']},
-];
-const AVATARS = ['🦊','🐼','🐸','🦁','🐯','🐙','🦄','🐨','🐺','🐵','🦉','🐳'];
-const NAME_A = ['Neon','Ghost','Pixel','Lucky','Turbo','Cyber','Hyper','Risky','Shadow','Nova'];
-const NAME_B = ['Wolf','Fox','Bear','Hawk','Shark','Cat','Viper','Bull','Owl','Ape'];
-const TOPUP_PRESETS = [250,500,1000,2500,5000,10000,25000,50000];
-const LS_TOKEN = 'hc_gifts_token_v1', LS_SOUND = 'hc_gifts_sound_v1';
-const CELL = 86, GAP = 9, STEP = CELL + GAP;
-
 /* ================= Утилиты ================= */
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -615,21 +545,30 @@ const fmt = n => Math.round(n).toLocaleString('ru-RU');
 const esc = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const hexA = (hex,a) => { const n = parseInt(hex.slice(1),16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; };
 const pick = a => a[Math.floor(Math.random()*a.length)];
-const dropTotal = cs => cs.drops.reduce((s,d)=>s+d[1],0);
-function chancePct(w,total){ const p = w/total*100; return p >= 10 ? p.toFixed(0) : p >= 1 ? p.toFixed(1) : p.toFixed(2); }
-function fmtTime(ts){ const d = new Date(ts), p = x => String(x).padStart(2,'0'); return `${p(d.getDate())}.${p(d.getMonth()+1)} ${p(d.getHours())}:${p(d.getMinutes())}`; }
-function vib(p){ try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} }
+const fmtTime = ts => { const d = new Date(ts), p = x => String(x).padStart(2,'0'); return `${p(d.getDate())}.${p(d.getMonth()+1)} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+const vib = p => { try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} };
+const NAME_A = ['Neon','Ghost','Pixel','Lucky','Turbo','Cyber','Hyper','Risky','Shadow','Nova'];
+const NAME_B = ['Wolf','Fox','Bear','Hawk','Shark','Cat','Viper','Bull','Owl','Ape'];
 const nick = () => pick(NAME_A) + pick(NAME_B) + (Math.random() < .55 ? Math.floor(Math.random()*99) : '');
+const AVATARS = ['🦊','🐼','🐸','🦁','🐯','🐙','🦄','🐨','🐺','🐵','🦉','🐳'];
+const LS_TOKEN = 'hc_gifts_token_v1', LS_SOUND = 'hc_gifts_sound_v1';
+const CELL = 86, GAP = 9, STEP = CELL + GAP;
+
+/* ================= Конфиг с сервера ================= */
+let CFG = null, ITEMS = null, CASES = null, ITEM_IDS = null, caseById = null;
+let TOKEN = localStorage.getItem(LS_TOKEN) || '';
+let S = null;
+const itE = id => ITEMS[id][0], itN = id => ITEMS[id][1], itR = id => ITEMS[id][2], itV = id => ITEMS[id][3];
+const RARC = r => CFG.rar[r] || CFG.rar.common;
 function pickLocal(drops){
   let r = Math.random()*drops.reduce((s,d)=>s+d[1],0);
   for (const [id,w] of drops){ if ((r-=w) < 0) return id; }
   return drops[0][0];
 }
+const dropTotal = cs => cs.drops.reduce((s,d)=>s+d[1],0);
+function chancePct(w,total){ const p = w/total*100; return p >= 10 ? p.toFixed(0) : p >= 1 ? p.toFixed(1) : p.toFixed(2); }
 
 /* ================= API ================= */
-let TOKEN = localStorage.getItem(LS_TOKEN) || '';
-let S = null;
-
 async function api(path, body){
   const r = await fetch('/api/' + path, {
     method:'POST',
@@ -638,11 +577,12 @@ async function api(path, body){
   });
   let d; try { d = await r.json(); } catch(e){ d = {error:'Ошибка сервера'}; }
   if (!r.ok){
-    if (r.status === 401) showAuth();
-    if (d.banned) showBan();
+    if (d.banned) showBanScreen(d.reason, d.until);
+    else if (r.status === 401) showAuth();
     throw d;
   }
   if (d.balance !== undefined){ S.balance = d.balance; animateBalance(); }
+  if (d.topupAt !== undefined) S.topupAt = d.topupAt;
   return d;
 }
 
@@ -661,15 +601,35 @@ function beep(freq,dur,type='square',vol=0.06,when=0){
   }catch(e){}
 }
 const tickSnd = () => beep(1900+Math.random()*400,.035,'square',.045);
-function winSnd(r){ const notes = r==='legendary'?[523,659,784,1046,1318]:[659,830,988]; notes.forEach((f,i)=>beep(f,.16,'sine',.09,i*.09)); }
+function winSnd(r){ const notes = (r==='legendary'||r==='mythic'||r==='divine'||r==='secret')?[523,659,784,1046,1318]:[659,830,988]; notes.forEach((f,i)=>beep(f,.16,'sine',.09,i*.09)); }
 
-/* ================= Тосты ================= */
+/* ================= Тосты / вспышки ================= */
 function toast(msg){
   const box = $('#toasts'), el = document.createElement('div');
   el.className = 'toast'; el.innerHTML = `<span>${msg}</span>`;
   box.append(el);
   while (box.children.length > 3) box.firstChild.remove();
   setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 320); }, 2800);
+}
+function screenFlash(color){
+  const f = document.createElement('div');
+  f.className = 'flash';
+  f.style.background = `radial-gradient(circle at 50% 42%, ${hexA(color,.4)}, transparent 70%)`;
+  document.body.append(f);
+  setTimeout(() => f.remove(), 1150);
+}
+function burst(container, colors){
+  for (let i = 0; i < 18; i++){
+    const p = document.createElement('span');
+    p.className = 'burst-p';
+    const ang = Math.random()*Math.PI*2, dist = 60+Math.random()*90;
+    p.style.setProperty('--tx', Math.cos(ang)*dist+'px');
+    p.style.setProperty('--ty', Math.sin(ang)*dist+'px');
+    p.style.background = pick(colors);
+    p.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
+    container.append(p);
+    setTimeout(() => p.remove(), 1000);
+  }
 }
 
 /* ================= Баланс ================= */
@@ -696,13 +656,29 @@ function closeOv(ov){ if (typeof ov === 'string') ov = $(ov); if (ovHooks[ov.id]
   ov.querySelectorAll('[data-close]').forEach(b => b.onclick = () => closeOv(ov));
 });
 
-/* ================= Вход / регистрация ================= */
+/* ================= Вход / бан ================= */
 let authMode = 'login';
 function showAuth(){ $('#authScreen').classList.add('show'); $('#appRoot').style.visibility = 'hidden'; }
-function showBan(){
-  document.body.innerHTML = `<div style="min-height:100dvh;display:grid;place-items:center;text-align:center;padding:20px">
-    <div><div style="font-size:60px">🚫</div><div style="font-size:20px;font-weight:800;margin:10px 0">Аккаунт заблокирован</div>
-    <div style="color:var(--muted)">Обратись к администратору</div></div></div>`;
+function showBanScreen(reason, until){
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;inset:0;z-index:200;background:#0A0714;display:flex;align-items:center;justify-content:center;padding:20px';
+  el.innerHTML = `<div style="text-align:center;max-width:340px">
+    <div style="font-size:60px">🚫</div>
+    <div style="font-size:20px;font-weight:800;margin:10px 0">Аккаунт заблокирован</div>
+    <div style="color:#928AA8;margin-bottom:8px">Причина: <b style="color:#F0EDF8">${esc(reason||'Причина не указана')}</b></div>
+    <div id="banTimer" style="font-family:var(--mono);font-weight:700;color:var(--red)"></div></div>`;
+  document.body.append(el);
+  const tEl = el.querySelector('#banTimer');
+  if (until === -1){ tEl.textContent = 'Бан: навсегда'; }
+  else if (until > 0){
+    const tick = () => {
+      const left = until - Date.now();
+      if (left <= 0){ location.reload(); return; }
+      const s = Math.floor(left/1000), d = Math.floor(s/86400), h = Math.floor(s%86400/3600), m = Math.floor(s%3600/60), sec = s%60;
+      tEl.textContent = `Осталось: ${d?d+'д ':''}${h?h+'ч ':''}${m}м ${sec}с`;
+    };
+    tick(); setInterval(tick, 1000);
+  }
 }
  $('#tabLogin').onclick = () => setAuthMode('login');
  $('#tabReg').onclick = () => setAuthMode('register');
@@ -723,7 +699,7 @@ function setAuthMode(m){
     });
     const d = await r.json();
     if (d.error){ err.textContent = d.error; err.classList.add('show'); return; }
-    if (d.banned){ showBan(); return; }
+    if (d.banned){ showBanScreen(d.reason, d.until); return; }
     TOKEN = d.token; localStorage.setItem(LS_TOKEN, TOKEN);
     S = d.user;
     bootApp();
@@ -741,6 +717,7 @@ function switchTab(name){
   if (name === 'wallet') renderWallet();
   if (name === 'profile') renderProfile();
   if (name === 'upgrade') renderUpgrader();
+  if (name === 'top') renderTop();
   window.scrollTo({top:0});
 }
  $$('.tabbar [data-tab]').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
@@ -754,7 +731,7 @@ function fakeEvent(){
   return {user:nick(), item:pickLocal(cs.drops)};
 }
 function makeFeedNode(ev){
-  const c = RAR[itR(ev.item)].c, el = document.createElement('span');
+  const c = RARC(itR(ev.item)).c, el = document.createElement('span');
   el.className = 'fp';
   el.innerHTML = `<i style="background:${c}"></i><b>${esc(ev.user)}</b> выиграл <em>${itE(ev.item)}</em><u style="color:${c}">${itN(ev.item)}</u>`;
   return el;
@@ -786,9 +763,7 @@ function feedInit(){
   setInterval(async () => {
     try {
       const d = await api('feed');
-      for (const f of d.feed) if (f.ts > feed.lastReal){
-        feedPush(f.user, f.item); feed.lastReal = f.ts;
-      }
+      for (const f of d.feed) if (f.ts > feed.lastReal){ feedPush(f.user, f.item); feed.lastReal = f.ts; }
     } catch(e){}
   }, 8000);
 }
@@ -830,11 +805,11 @@ setInterval(() => {
   else el.textContent = 'FREE';
 }, 1000);
 
-/* ================= Рулетка ================= */
+/* ================= Рулетка (с исправленной анимацией) ================= */
 const roll = {raf:null, spinning:false, cs:null, winner:null, prizeUid:null, sold:false};
 
 async function tryOpen(caseId, rowEl){
-  const cs = CASES.find(c => c.id === caseId);
+  const cs = caseById(caseId);
   let d;
   try { d = await api('open-case', {caseId}); }
   catch(e){
@@ -854,8 +829,14 @@ async function tryOpen(caseId, rowEl){
   $('#rollSub').textContent = cs.free ? 'Бесплатный кейс · следующий через 10 минут' : `Списано ${fmt(cs.price)} HC`;
   $('#rollResult').classList.remove('show');
   renderContents(cs);
-  openOv('#ovRoll');
-  startSpin();
+  /* Анимация подготовки: кейс трясётся и светится, потом едет лента */
+  if (rowEl){ rowEl.classList.remove('armed'); void rowEl.offsetWidth; rowEl.classList.add('armed'); }
+  beep(300,.12,'sine',.06); beep(450,.12,'sine',.06,.13);
+  setTimeout(() => {
+    if (rowEl) rowEl.classList.remove('armed');
+    openOv('#ovRoll');
+    startSpin();
+  }, 520);
 }
 
 function startSpin(){
@@ -865,7 +846,7 @@ function startSpin(){
   strip.innerHTML = ''; strip.style.transform = 'translateX(0px)';
   for (let i = 0; i < N; i++){
     const id = i === WIN ? roll.winner : pickLocal(roll.cs.drops);
-    const c = RAR[itR(id)].c, el = document.createElement('div');
+    const c = RARC(itR(id)).c, el = document.createElement('div');
     el.className = 'rl-cell';
     el.style.setProperty('--c', c);
     el.style.setProperty('--bc', hexA(c,.38));
@@ -896,7 +877,7 @@ function startSpin(){
 }
 
 function finishSpin(winIdx){
-  const id = roll.winner, r = RAR[itR(id)];
+  const id = roll.winner, r = RARC(itR(id));
   const cell = $('#rlStrip').children[winIdx];
   if (cell) cell.classList.add('won');
   roll.spinning = false;
@@ -910,28 +891,18 @@ function finishSpin(winIdx){
   sellBtn.disabled = false;
   sellBtn.textContent = `Продать +${fmt(itV(id))}`;
   rr.classList.add('show');
-  winSnd(itR(id)); vib(itR(id)==='legendary'?[40,60,80]:30);
-  if (itR(id) === 'legendary' || itR(id) === 'epic')
-    burst($('#rollResult'), itR(id)==='legendary'?['#F5B544','#A855F7','#fff','#7C3AED']:['#A855F7','#C4B5FD','#fff']);
-}
-function burst(container, colors){
-  for (let i = 0; i < 18; i++){
-    const p = document.createElement('span');
-    p.className = 'burst-p';
-    const ang = Math.random()*Math.PI*2, dist = 60+Math.random()*90;
-    p.style.setProperty('--tx', Math.cos(ang)*dist+'px');
-    p.style.setProperty('--ty', Math.sin(ang)*dist+'px');
-    p.style.background = pick(colors);
-    p.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
-    container.append(p);
-    setTimeout(() => p.remove(), 1000);
+  winSnd(itR(id)); vib(itR(id)==='legendary'||itR(id)==='mythic'||itR(id)==='divine'||itR(id)==='secret'?[40,60,80]:30);
+  if (itR(id) === 'epic') burst($('#rollResult'), ['#A855F7','#C4B5FD','#fff']);
+  if (['legendary','mythic','divine','secret'].includes(itR(id))){
+    screenFlash(r.c);
+    burst($('#rollResult'), itR(id)==='legendary'?['#F5B544','#A855F7','#fff','#7C3AED']:['#F43F5E','#67E8F9','#F5B544','#fff']);
   }
 }
 function renderContents(cs){
   const total = dropTotal(cs);
   const sorted = [...cs.drops].sort((a,b)=>itV(b[0])-itV(a[0]));
   $('#cntList').innerHTML = sorted.map(([id,w]) => {
-    const r = RAR[itR(id)];
+    const r = RARC(itR(id));
     return `<div class="cnt-row">
       <div class="cnt-e" style="--bc:${hexA(r.c,.45)}">${itE(id)}</div>
       <div class="cnt-n">${itN(id)}</div>
@@ -979,7 +950,7 @@ function renderUpgrader(){
     inv.innerHTML = `<div class="upg-empty">Инвентарь пуст — открой кейс</div>`;
   } else {
     inv.innerHTML = S.inventory.map(x => {
-      const r = RAR[itR(x.id)];
+      const r = RARC(itR(x.id));
       return `<button class="upg-it ${upg.inputs.has(x.uid)?'sel':''}" data-uid="${x.uid}" style="--bc:${hexA(r.c,.5)}">
         <span class="e">${itE(x.id)}</span><b>${fmt(itV(x.id))}</b></button>`;
     }).join('');
@@ -1011,12 +982,12 @@ function renderUpgrader(){
   const tg = $('#upgTargets');
   if (!inV){
     tg.innerHTML = ITEM_IDS.slice(-12).map(id => {
-      const r = RAR[itR(id)];
+      const r = RARC(itR(id));
       return `<button class="upg-it dim" style="--bc:${hexA(r.c,.5)}"><span class="e">${itE(id)}</span><b>${fmt(itV(id))}</b></button>`;
     }).join('');
   } else {
     tg.innerHTML = ITEM_IDS.filter(id => itV(id) > inV).map(id => {
-      const r = RAR[itR(id)];
+      const r = RARC(itR(id));
       const ch = Math.min(95, Math.max(1, inV/itV(id)*90));
       return `<button class="upg-it ${upg.target===id?'sel':''}" data-id="${id}" style="--bc:${hexA(r.c,.5)}">
         <span class="e">${itE(id)}</span><b>${fmt(itV(id))}</b><span class="p">${ch >= 10 ? Math.round(ch) : ch.toFixed(1)}%</span></button>`;
@@ -1051,9 +1022,7 @@ function renderUpgrader(){
   const win = d.win;
   const Z = Math.max(d.chance*3.6, 2);
   const m = Math.min(4, Z*0.25);
-  const final = win
-    ? (Math.random()*(Z-2*m)) - (Z/2 - m)
-    : (Z/2 + 6) + Math.random()*(360 - Z - 12);
+  const final = win ? (Math.random()*(Z-2*m)) - (Z/2 - m) : (Z/2 + 6) + Math.random()*(360 - Z - 12);
   const cur = ((upg.angle%360)+360)%360;
   const delta = ((final-cur)%360+360)%360;
   const targetA = upg.angle + 360*5 + delta;
@@ -1110,7 +1079,7 @@ function openItem(uid){
   const inv = S.inventory.find(x => x.uid === uid);
   if (!inv) return;
   itemModalUid = uid;
-  const r = RAR[itR(inv.id)], cs = CASES.find(c => c.id === inv.case);
+  const r = RARC(itR(inv.id)), cs = caseById(inv.case);
   $('#itEmoji').textContent = itE(inv.id);
   $('#itName').textContent = itN(inv.id);
   $('#itName').style.color = r.c;
@@ -1139,26 +1108,43 @@ function renderWallet(){
       <div class="h-amt ${h.dir}">${h.dir==='in'?'+':'−'}${fmt(h.amount)}</div>
     </div>`).join('');
 }
-let topupSel = 1000;
-function openTopup(){
-  topupSel = 1000;
-  $('#topupInp').value = ''; $('#topupErr').classList.remove('show');
-  renderTopupChips(); openOv('#ovTopup');
-}
+/* Пополнение: до 300 HC раз в минуту; админ — без лимитов и без задержки */
 function renderTopupChips(){
-  $('#topupChips').innerHTML = TOPUP_PRESETS.map(v =>
-    `<button data-v="${v}" class="${v===topupSel?'sel':''}">+${fmt(v)}</button>`).join('');
+  $('#topupChips').innerHTML = [50,100,150,200,250,300].map(v =>
+    `<button data-v="${v}">+${fmt(v)}</button>`).join('');
   $$('#topupChips button').forEach(b => b.onclick = () => {
-    topupSel = +b.dataset.v; $('#topupInp').value = topupSel;
-    $('#topupErr').classList.remove('show'); renderTopupChips();
+    $('#topupInp').value = b.dataset.v;
+    $('#topupErr').classList.remove('show');
+    topupTick();
   });
+}
+function topupTick(){
+  const btn = $('#topupGo');
+  if (!btn || !$('#ovTopup').classList.contains('show')) return;
+  if (S.admin){ btn.disabled = false; btn.textContent = '👑 Зачислить (админ: без лимита и задержки)'; return; }
+  const v = parseInt($('#topupInp').value,10)||0;
+  if (v > CFG.topupMax){ btn.disabled = true; btn.textContent = `Максимум ${CFG.topupMax} HC за раз`; return; }
+  const left = (S.topupAt||0) + CFG.topupCooldown - Date.now();
+  if (left > 0){ btn.disabled = true; btn.textContent = `⏳ Подожди ${Math.ceil(left/1000)} сек`; }
+  else { btn.disabled = false; btn.textContent = `Зачислить (до ${CFG.topupMax} HC)`; }
+}
+setInterval(topupTick, 500);
+function openTopup(){
+  $('#topupInp').value = ''; $('#topupErr').classList.remove('show');
+  $('#topupLabel').textContent = S.admin
+    ? 'Сумма · 👑 админ: любой размер, без задержки'
+    : `Сумма · максимум ${CFG.topupMax} HC, следующее пополнение через 1 минуту`;
+  renderTopupChips();
+  openOv('#ovTopup');
+  topupTick();
 }
  $('#hTopup').onclick = openTopup;
  $('#wTopup').onclick = openTopup;
  $('#topupGo').onclick = async () => {
   const v = parseInt($('#topupInp').value, 10);
-  if (!v || v <= 0){ $('#topupErr').classList.add('show'); return; }
-  try { await api('topup', {amount:v}); } catch(e){ if (e.error) toast(e.error); return; }
+  if (!v || v <= 0){ $('#topupErr').textContent = 'Введите корректную сумму'; $('#topupErr').classList.add('show'); return; }
+  try { await api('topup', {amount:v}); }
+  catch(e){ $('#topupErr').textContent = e.error||'Ошибка'; $('#topupErr').classList.add('show'); return; }
   closeOv($('#ovTopup'));
   beep(880,.1,'sine',.08); beep(1174,.14,'sine',.08,.09);
   toast(`+${fmt(v)} HC зачислено`);
@@ -1175,7 +1161,34 @@ function renderTopupChips(){
   renderWallet();
 };
 
-/* ================= Мини-игры: сетка ================= */
+/* ================= Топ игроков ================= */
+async function renderTop(){
+  const box = $('#topList');
+  box.innerHTML = '<div class="empty">Загрузка…</div>';
+  try {
+    const d = await api('top');
+    const medals = ['🥇','🥈','🥉'];
+    $('#topMe').textContent = d.me ? `Твоё место: ${d.me.place} из ${d.me.total}` : '';
+    box.innerHTML = d.top.map((u,i) => `
+      <div class="h-item" style="${u.isMe?'background:var(--accent-soft);border-radius:12px':''}">
+        <div style="width:30px;text-align:center;font-weight:800;font-size:${i<3?'18px':'13px'};color:${i<3?'var(--gold)':'var(--muted2)'};flex:none">${medals[i]||i+1}</div>
+        <div style="font-size:20px;flex:none">${u.avatar}</div>
+        <div class="h-main"><div class="h-title">${esc(u.name)}${u.admin?'<span class="adm-badge">ADMIN</span>':''}${u.isMe?' <span class="st-action">(ты)</span>':''}</div></div>
+        <div class="h-amt in">${fmt(u.balance)}</div>
+      </div>`).join('');
+  } catch(e){ box.innerHTML = '<div class="empty">Не удалось загрузить</div>'; }
+}
+
+/* ================= Мини-игры ================= */
+const GAMES = [
+  {id:'coin',e:'🪙',n:'Coin Flip',s:'50/50 · x1.96',c:['#3A2E85','#181238']},
+  {id:'dice',e:'🎲',n:'Dice',s:'Roll under · до x49.5',c:['#173B63','#101B33']},
+  {id:'mines',e:'💣',n:'Mines',s:'Поле 5×5 · до x8+',c:['#5E2347','#22102A']},
+  {id:'crash',e:'📈',n:'Crash',s:'Забери до взрыва',c:['#1E3A34','#0F1A18']},
+  {id:'wheel',e:'🎡',n:'Wheel',s:'Колесо · до x5',c:['#4C1D72','#170B2E']},
+  {id:'plinko',e:'🎯',n:'Plinko',s:'Шарик · до x10',c:['#155E75','#08222B']},
+  {id:'tower',e:'🏰',n:'Tower',s:'8 этажей · до x16',c:['#6B4E1B','#241A0E']},
+];
 function renderGames(){
   $('#gameGrid').innerHTML = GAMES.map(g => `
     <div class="game-tile" data-game="${g.id}" style="--c1:${g.c[0]};--c2:${g.c[1]}">
@@ -1189,8 +1202,7 @@ function takeBet(inp){
   if (v > S.balance){ toast('Не хватает HC на ставку'); return null; }
   return v;
 }
-
-/* ---- Coin Flip ---- */
+/* Coin */
 const coin = {side:'heads', busy:false};
 function coinSetSide(s){
   coin.side = s;
@@ -1212,18 +1224,12 @@ function coinSetSide(s){
   setTimeout(() => {
     disp.textContent = d.result === 'heads' ? '🦅' : '🌙';
     const cr = $('#coinRes');
-    if (d.win){
-      cr.className = 'game-res win'; cr.textContent = `🎉 +${fmt(d.payout)} HC`;
-      winSnd('rare'); vib(30);
-    } else {
-      cr.className = 'game-res lose'; cr.textContent = '💨 Проигрыш';
-      beep(150,.25,'sawtooth',.07); vib(50);
-    }
+    if (d.win){ cr.className='game-res win'; cr.textContent=`🎉 +${fmt(d.payout)} HC`; winSnd('rare'); vib(30); }
+    else { cr.className='game-res lose'; cr.textContent='💨 Проигрыш'; beep(150,.25,'sawtooth',.07); vib(50); }
     coin.busy = false;
   }, 950);
 };
-
-/* ---- Dice ---- */
+/* Dice */
 const dice = {busy:false};
 function diceMeta(){
   const t = +$('#diceRange').value;
@@ -1246,20 +1252,12 @@ function diceMeta(){
     clearInterval(iv);
     disp.textContent = d.roll.toFixed(2);
     const cr = $('#diceRes');
-    if (d.win){
-      disp.classList.add('win');
-      cr.className = 'game-res win'; cr.textContent = `🎉 +${fmt(d.payout)} HC`;
-      winSnd('rare'); vib(30);
-    } else {
-      disp.classList.add('lose');
-      cr.className = 'game-res lose'; cr.textContent = '💨 Проигрыш';
-      beep(150,.25,'sawtooth',.07); vib(50);
-    }
+    if (d.win){ disp.classList.add('win'); cr.className='game-res win'; cr.textContent=`🎉 +${fmt(d.payout)} HC`; winSnd('rare'); vib(30); }
+    else { disp.classList.add('lose'); cr.className='game-res lose'; cr.textContent='💨 Проигрыш'; beep(150,.25,'sawtooth',.07); vib(50); }
     dice.busy = false;
   }, 700);
 };
-
-/* ---- Mines ---- */
+/* Mines */
 const mines = {active:false, busy:false};
 function minesRender(){
   const g = $('#minesGrid');
@@ -1286,8 +1284,7 @@ function minesReset(){
   try { await api('game/mines/start', {bet, count:+$('#minesCount').value}); }
   catch(e){ if (e.error) toast(e.error); return; }
   mines.active = true;
-  $('#minesStart').disabled = true;
-  $('#minesBet').disabled = true; $('#minesCount').disabled = true;
+  $('#minesStart').disabled = true; $('#minesBet').disabled = true; $('#minesCount').disabled = true;
   $('#minesRes').className = 'game-res'; $('#minesRes').textContent = '';
   $('#minesCur').textContent = 'x1.00';
   minesRender();
@@ -1336,8 +1333,7 @@ async function minesCash(){
 }
  $('#minesCash').onclick = () => minesCash();
 ovHooks.ovMines = () => { minesReset(); };
-
-/* ---- Crash ---- */
+/* Crash */
 const crash = {raf:null, running:false, t0:0};
 function crashStop(){ cancelAnimationFrame(crash.raf); crash.running = false; }
  $('#crashStart').onclick = async () => {
@@ -1369,14 +1365,12 @@ function crashStop(){ cancelAnimationFrame(crash.raf); crash.running = false; }
   catch(e){ if (e.error) toast(e.error); return; }
   const disp = $('#crashDisp'), cr = $('#crashRes');
   if (d.win){
-    cr.className = 'game-res win';
-    cr.textContent = `🎉 +${fmt(d.payout)} HC (x${d.mult.toFixed(2)})`;
+    cr.className = 'game-res win'; cr.textContent = `🎉 +${fmt(d.payout)} HC (x${d.mult.toFixed(2)})`;
     winSnd('epic'); vib([30,40,60]);
   } else {
     disp.textContent = '💥 x' + d.mult.toFixed(2);
     disp.classList.add('crash');
-    cr.className = 'game-res lose';
-    cr.textContent = '💨 Взрыв! Ставка потеряна';
+    cr.className = 'game-res lose'; cr.textContent = '💨 Взрыв! Ставка потеряна';
     beep(150,.4,'sawtooth',.08); vib([80,50,80]);
   }
   $('#crashStart').disabled = false; $('#crashCash').disabled = true; $('#crashBet').disabled = false;
@@ -1390,8 +1384,7 @@ ovHooks.ovCrash = () => {
     }).catch(() => {});
   }
 };
-
-/* ---- Wheel ---- */
+/* Wheel */
 const WHEEL_SEGS = [
   {m:0, w:9, c:'#F87171'}, {m:0.5, w:4, c:'#F5B544'}, {m:1.5, w:3, c:'#38BDF8'},
   {m:2, w:2, c:'#A855F7'}, {m:3, w:1, c:'#34D399'}, {m:5, w:1, c:'#F97316'},
@@ -1399,8 +1392,7 @@ const WHEEL_SEGS = [
 const wheel = {busy:false, angle:0, stops:[]};
 function wheelBuild(){
   const total = WHEEL_SEGS.reduce((s,x)=>s+x.w,0);
-  let acc = 0; wheel.stops = [];
-  let css = '';
+  let acc = 0; wheel.stops = []; let css = '';
   WHEEL_SEGS.forEach(s => {
     const a = acc/total*360, b = (acc+s.w)/total*360;
     wheel.stops.push([a, b]);
@@ -1420,8 +1412,7 @@ function wheelBuild(){
   try { d = await api('game/wheel', {bet}); }
   catch(e){ wheel.busy = false; if (e.error) toast(e.error); return; }
   const [a, b] = wheel.stops[d.seg];
-  const span = b - a;
-  const center = a + span/2;
+  const span = b - a, center = a + span/2;
   const jitter = (Math.random() - .5) * span * 0.6;
   const cur = ((wheel.angle % 360) + 360) % 360;
   const target = ((360 - center + jitter) % 360 + 360) % 360;
@@ -1436,19 +1427,13 @@ function wheelBuild(){
     else {
       wheel.angle = targetA; wheel.busy = false;
       const cr = $('#wheelRes');
-      if (d.mult > 0){
-        cr.className = 'game-res win'; cr.textContent = `🎉 +${fmt(d.payout)} HC (x${d.mult})`;
-        winSnd('rare'); vib(30);
-      } else {
-        cr.className = 'game-res lose'; cr.textContent = '💨 Пусто — попробуй ещё';
-        beep(150,.25,'sawtooth',.07); vib(50);
-      }
+      if (d.mult > 0){ cr.className='game-res win'; cr.textContent=`🎉 +${fmt(d.payout)} HC (x${d.mult})`; winSnd('rare'); vib(30); }
+      else { cr.className='game-res lose'; cr.textContent='💨 Пусто — попробуй ещё'; beep(150,.25,'sawtooth',.07); vib(50); }
     }
   };
   requestAnimationFrame(step);
 };
-
-/* ---- Plinko ---- */
+/* Plinko */
 const plinko = {busy:false};
 function plinkoBuild(){
   const board = $('#plinkoBoard');
@@ -1464,9 +1449,7 @@ function plinkoBuild(){
   const cols = ['#F87171','#FB923C','#F5B544','#FDE68A','#34D399','#38BDF8','#A855F7','#38BDF8','#34D399','#FDE68A','#F5B544','#FB923C','#F87171'];
   [10,3,1.8,1.3,1,0.8,0.6,0.8,1,1.3,1.8,3,10].forEach((m,i) => {
     const s = document.createElement('span');
-    s.textContent = 'x' + m;
-    s.style.color = cols[i];
-    s.dataset.slot = i;
+    s.textContent = 'x' + m; s.style.color = cols[i]; s.dataset.slot = i;
     slots.append(s);
   });
   board.append(slots);
@@ -1516,8 +1499,7 @@ function plinkoBuild(){
     }
   }, 110);
 };
-
-/* ---- Tower ---- */
+/* Tower */
 const tower = {active:false, busy:false, floor:0, picked:new Set(), boomCells:new Set()};
 function towerRender(){
   const g = $('#towerGrid');
@@ -1614,8 +1596,6 @@ ovHooks.ovTower = () => {
   }
   towerReset();
 };
-
-/* ================= Открытие игры ================= */
 function openGame(id){
   if (id === 'coin'){ $('#coinDisp').textContent='🪙'; $('#coinRes').textContent=''; $('#coinRes').className='game-res'; coinSetSide('heads'); coin.busy=false; openOv('#ovCoin'); }
   if (id === 'dice'){ $('#diceDisp').textContent='50.00'; $('#diceDisp').className='dice-disp'; $('#diceRes').textContent=''; $('#diceRes').className='game-res'; $('#diceRange').value=50; diceMeta(); dice.busy=false; openOv('#ovDice'); }
@@ -1629,7 +1609,7 @@ function openGame(id){
 /* ================= Промокод ================= */
  $('#promoOpen').onclick = () => { $('#promoInp').value = ''; openOv('#ovPromo'); setTimeout(()=>$('#promoInp').focus(),250); };
  $('#promoGo').onclick = async () => {
-  const code = $('#promoInp').value.trim().toUpperCase();
+  const code = $('#promoInp').value.trim();
   if (!code){ toast('Введите промокод'); return; }
   let d;
   try { d = await api('promo', {code}); }
@@ -1659,15 +1639,17 @@ async function renderAdminPanel(){
 function fillAdmPlayers(){
   const sel = $('#admPlayer');
   const cur = sel.value;
-  sel.innerHTML = admUsers.map(u =>
-    `<option value="${u.id}">${u.banned?'🚫 ':''}${u.admin?'👑 ':''}${esc(u.name)} — ${fmt(u.balance)} HC</option>`).join('');
+  sel.innerHTML = admUsers.map(u => {
+    const b = u.banUntil === -1 ? '♾ ' : (u.banUntil > Date.now() ? '⏳ ' : '');
+    return `<option value="${u.id}">${b}${u.admin?'👑 ':''}${esc(u.name)} — ${fmt(u.balance)} HC</option>`;
+  }).join('');
   if (cur && admUsers.some(u => u.id === cur)) sel.value = cur;
   admInfoUpdate();
 }
 function admInfoUpdate(){
   const u = admUsers.find(x => x.id === $('#admPlayer').value);
   $('#admInfo').innerHTML = u
-    ? `<b>${esc(u.name)}</b> · Баланс: <b>${fmt(u.balance)} HC</b> · Предметов: <b>${u.items}</b> ${u.banned?'· 🚫 забанен':''} ${u.admin?'· 👑 админ':''}`
+    ? `<b>${esc(u.name)}</b> · Баланс: <b>${fmt(u.balance)} HC</b> · Предметов: <b>${u.items}</b>${u.banUntil===-1?' · <b style="color:var(--red)">♾ забанен навсегда</b>':(u.banUntil>Date.now()?' · <b style="color:var(--red)">⏳ забанен</b>':'')}${u.admin?' · 👑 админ':''}`
     : 'Выбери игрока из списка';
 }
  $('#admPlayer').onchange = admInfoUpdate;
@@ -1695,12 +1677,18 @@ function admInfoUpdate(){
   toast(`Выдан ${itE(id)} ${itN(id)}`);
   renderAdminPanel();
 };
- $('#admBan').onclick = async () => {
-  try { await api('admin/ban', {userId:$('#admPlayer').value, banned:true}); } catch(e){ toast(e.error||'Ошибка'); return; }
-  toast('Игрок забанен'); renderAdminPanel();
+ $('#admBanGo').onclick = async () => {
+  const minutes = +$('#banDur').value;
+  const reason = $('#banReason').value.trim();
+  if (!reason){ toast('Напиши причину бана'); return; }
+  try { await api('admin/ban', {userId:$('#admPlayer').value, minutes, reason}); }
+  catch(e){ toast(e.error||'Ошибка'); return; }
+  toast(minutes === -1 ? 'Игрок забанен навсегда' : `Игрок забанен на ${minutes} мин`);
+  $('#banReason').value = '';
+  renderAdminPanel();
 };
  $('#admUnban').onclick = async () => {
-  try { await api('admin/ban', {userId:$('#admPlayer').value, banned:false}); } catch(e){ toast(e.error||'Ошибка'); return; }
+  try { await api('admin/unban', {userId:$('#admPlayer').value}); } catch(e){ toast(e.error||'Ошибка'); return; }
   toast('Игрок разбанен'); renderAdminPanel();
 };
  $('#admReset').onclick = async () => {
@@ -1727,7 +1715,7 @@ function renderProfile(){
     grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><span class="e">🎁</span>Инвентарь пуст — открой кейс</div>`;
   } else {
     grid.innerHTML = S.inventory.map(x => {
-      const r = RAR[itR(x.id)];
+      const r = RARC(itR(x.id));
       return `<button class="inv-tile" data-uid="${x.uid}" style="--bc:${hexA(r.c,.45)};--vc:${r.c}">
         <span class="e">${itE(x.id)}</span><span class="v">${fmt(itV(x.id))}</span></button>`;
     }).join('');
@@ -1755,7 +1743,7 @@ function renderAvaGrid(){
   S.name = n;
   if (editAva) S.avatar = editAva;
   renderProfile(); closeOv($('#ovEdit'));
-  toast('Профиль обновлён (отображение локальное)');
+  toast('Профиль обновлён');
 };
  $('#sndSwitch').onclick = () => {
   const on = !soundOn();
@@ -1774,18 +1762,30 @@ function bootApp(){
   $('#appRoot').style.visibility = 'visible';
   shownBal = S.balance;
   paintBal();
+  $('#whNote').textContent = S.admin
+    ? '👑 Режим админа · пополнение без лимитов и задержки'
+    : `Демо-режим · пополнение до ${CFG.topupMax} HC раз в минуту`;
   renderCases(); renderGames(); renderUpgrader(); renderProfile(); renderWallet();
   $('#sndSwitch').classList.toggle('on', soundOn());
   feedInit();
   setTimeout(() => toast(`С возвращением, ${esc(S.name)}!`), 400);
 }
 (async () => {
+  try {
+    CFG = await fetch('/api/config').then(r => r.json());
+  } catch(e){
+    document.body.innerHTML = '<div style="min-height:100dvh;display:grid;place-items:center;text-align:center;color:#928AA8"><div><div style="font-size:50px">📡</div><div style="margin-top:10px">Нет связи с сервером.<br>Убедись, что сервер запущен, и обнови страницу.</div></div></div>';
+    return;
+  }
+  ITEMS = CFG.items; CASES = CFG.cases;
+  ITEM_IDS = Object.keys(ITEMS).sort((a,b)=>ITEMS[a][3]-ITEMS[b][3]);
+  caseById = id => CASES.find(c => c.id === id);
   if (!TOKEN){ showAuth(); return; }
   try {
     const d = await api('me');
     S = d.user;
     bootApp();
-  } catch(e){ /* showAuth вызван внутри api() */ }
+  } catch(e){ /* showAuth/showBan вызван внутри api() */ }
 })();
 </script>
 </body>
