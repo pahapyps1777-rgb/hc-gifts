@@ -183,10 +183,16 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .switch i{position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:#fff;transition:left .2s}
 .switch.on i{left:20px}
 .adm-badge{display:inline-flex;font-size:9px;font-weight:800;letter-spacing:.12em;background:linear-gradient(135deg,#F5B544,#F97316);color:#1A1005;border-radius:99px;padding:2px 8px;margin-left:7px;vertical-align:2px}
+.priv-badge{display:inline-flex;font-size:9px;font-weight:800;letter-spacing:.1em;border-radius:99px;padding:2px 8px;margin-left:5px;vertical-align:2px}
 .adm-row{display:flex;gap:8px;margin-bottom:9px;align-items:center}
 .adm-row .inp,.adm-row select{flex:1;min-width:0;padding:10px}
 .adm-uinfo{font-size:12px;color:var(--muted);margin-bottom:10px}
 .adm-uinfo b{color:var(--text);font-family:var(--mono)}
+.adm-sec{border-top:1px solid var(--border);padding-top:12px;margin-top:4px}
+.adm-sec-t{font-weight:700;font-size:12.5px;margin-bottom:8px}
+.promo-item{display:flex;align-items:center;gap:9px;padding:9px;border:1px solid var(--border);border-radius:12px;margin-bottom:7px;background:var(--bg)}
+.promo-item b{font-family:var(--mono);font-size:12.5px}
+.promo-item .meta{font-size:10.5px;color:var(--muted2)}
 .tabbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:460px;z-index:30;display:flex;align-items:flex-end;background:rgba(13,10,22,.94);backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:7px 4px max(9px,env(safe-area-inset-bottom))}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 0;color:var(--muted2);font-size:9.5px;font-weight:650}
 .tab svg{width:21px;height:21px}.tab.active{color:var(--accent-txt)}
@@ -234,8 +240,8 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .sel-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:12px;padding:12px;font-size:14px;outline:none}
 .field-err{display:none;font-size:11.5px;color:var(--red);margin-top:6px}
 .field-err.show{display:block}
-.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-.chips button{padding:12px 4px;border-radius:11px;background:var(--surface2);border:1px solid var(--border2);font-family:var(--mono);font-size:13px;font-weight:700}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.chips button{padding:11px 4px;border-radius:11px;background:var(--surface2);border:1px solid var(--border2);font-family:var(--mono);font-size:12.5px;font-weight:700}
 .chips button.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-txt)}
 .ava-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:15px}
 .ava-grid button{aspect-ratio:1;border-radius:14px;font-size:26px;background:var(--surface2);border:1px solid var(--border2);display:grid;place-items:center}
@@ -304,7 +310,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
         </div>
         <div class="upg-res" id="upgRes"></div>
         <div class="upg-chips" id="upgChips"></div>
-        <div class="upg-hint">Шанс = 90% × (стоимость входа / стоимость цели)</div>
+        <div class="upg-hint" id="upgHint">Шанс = 90% × (стоимость входа / стоимость цели)</div>
       </div>
       <div class="section-title"><span class="tt">Ваши предметы</span><span class="st-action" id="upgInSum"></span></div>
       <div class="upg-strip" id="upgInv"></div>
@@ -365,6 +371,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
             <button class="btn btn-ghost" id="admRefresh" style="flex:none">🔄</button>
           </div>
           <div class="adm-uinfo" id="admInfo">Выбери игрока из списка</div>
+
           <div class="adm-row">
             <input class="inp" id="admBal" type="text" inputmode="numeric" placeholder="Сумма HC" maxlength="9">
             <button class="btn" id="admGive">Выдать</button>
@@ -372,25 +379,56 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
           </div>
           <div class="adm-row">
             <select class="sel-inp" id="admItem"></select>
-            <button class="btn" id="admItemGo">Выдать</button>
+            <button class="btn" id="admItemGo">🎁 Предмет</button>
           </div>
-          <div class="adm-row">
-            <select class="sel-inp" id="banDur">
-              <option value="30">⏱ 30 минут</option>
-              <option value="60">🕐 1 час</option>
-              <option value="240">🕓 4 часа</option>
-              <option value="1080">🕕 18 часов</option>
-              <option value="1440">🕛 24 часа</option>
-              <option value="-1">♾ Навсегда</option>
-            </select>
+
+          <div class="adm-sec">
+            <div class="adm-sec-t">🎖 Привилегия игроку</div>
+            <div class="adm-row">
+              <select class="sel-inp" id="admPriv"></select>
+              <button class="btn" id="admPrivGo">Выдать</button>
+              <button class="btn btn-ghost" id="admPrivOff">Снять</button>
+            </div>
           </div>
-          <div class="adm-row">
-            <input class="inp" id="banReason" placeholder="Причина бана" maxlength="200" style="font-family:inherit">
-            <button class="btn btn-danger" id="admBanGo">🚫 Бан</button>
+
+          <div class="adm-sec">
+            <div class="adm-sec-t">🚫 Бан</div>
+            <div class="adm-row">
+              <select class="sel-inp" id="banDur"></select>
+            </div>
+            <div class="adm-row">
+              <input class="inp" id="banReason" placeholder="Причина бана" maxlength="200" style="font-family:inherit">
+              <button class="btn btn-danger" id="admBanGo">Бан</button>
+            </div>
+            <div class="adm-row">
+              <button class="btn btn-ghost" id="admUnban" style="flex:1">✅ Разбан</button>
+              <button class="btn btn-danger" id="admReset" style="flex:1">♻️ Сброс</button>
+            </div>
           </div>
-          <div class="adm-row">
-            <button class="btn btn-ghost" id="admUnban" style="flex:1">✅ Разбан</button>
-            <button class="btn btn-danger" id="admReset" style="flex:1">♻️ Сброс</button>
+
+          <div class="adm-sec">
+            <div class="adm-sec-t">🎟️ Промокоды <span class="st-action" id="promoCount"></span></div>
+            <div class="adm-row">
+              <input class="inp" id="pcCode" placeholder="КОД" maxlength="20" style="text-transform:uppercase;width:110px;flex:none">
+            </div>
+            <div class="adm-row">
+              <input class="inp" id="pcAmount" type="text" inputmode="numeric" placeholder="HC (0)" maxlength="9">
+            </div>
+            <div class="adm-row">
+              <select class="sel-inp" id="pcItem"></select>
+            </div>
+            <div class="adm-row">
+              <select class="sel-inp" id="pcCase"></select>
+            </div>
+            <div class="adm-row">
+              <select class="sel-inp" id="pcPriv"></select>
+            </div>
+            <div class="adm-row">
+              <input class="inp" id="pcMax" type="text" inputmode="numeric" placeholder="Лимит активаций (0=∞)" maxlength="6">
+              <input class="inp" id="pcDays" type="text" inputmode="numeric" placeholder="Дней (0=∞)" maxlength="5">
+            </div>
+            <button class="btn btn-block" id="pcCreate">➕ Создать промокод</button>
+            <div id="pcList" style="margin-top:10px"></div>
           </div>
         </div>
       </div>
@@ -489,7 +527,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
   <div class="wheel-legend" id="wheelLegend"></div>
   <div class="game-res" id="wheelRes"></div>
   <div class="field"><label>Ставка</label><input class="inp" id="wheelBet" type="text" inputmode="numeric" placeholder="100" maxlength="9"></div>
-  <button class="btn btn-block" id="wheelPlay">Крутить колесо</button>
+  <button class="btn btn-block" id="wheelPlay">Крутить колесo</button>
 </div></div>
 
 <div class="overlay" id="ovPlinko"><div class="sheet">
@@ -577,6 +615,12 @@ function pickLocal(drops){
 }
 const dropTotal = cs => cs.drops.reduce((s,d)=>s+d[1],0);
 function chancePct(w,total){ const p = w/total*100; return p >= 10 ? p.toFixed(0) : p >= 1 ? p.toFixed(1) : p.toFixed(2); }
+function privBadge(priv){
+  if (!priv || !CFG.priv[priv]) return '';
+  const p = CFG.priv[priv];
+  return `<span class="priv-badge" style="background:${hexA(p.c,.2)};color:${p.c};border:1px solid ${hexA(p.c,.5)}">🎖 ${p.label}</span>`;
+}
+function myPriv(){ return (S && S.privilege && CFG.priv[S.privilege]) ? CFG.priv[S.privilege] : null; }
 
 /* ================= API ================= */
 async function api(path, body){
@@ -593,6 +637,7 @@ async function api(path, body){
   }
   if (S && d.balance !== undefined){ S.balance = d.balance; animateBalance(); }
   if (S && d.topupAt !== undefined) S.topupAt = d.topupAt;
+  if (S && d.privilege !== undefined) S.privilege = d.privilege;
   return d;
 }
 
@@ -839,7 +884,6 @@ async function tryOpen(caseId, rowEl){
   $('#rollSub').textContent = cs.free ? 'Бесплатный кейс · следующий через 10 минут' : `Списано ${fmt(cs.price)} HC`;
   $('#rollResult').classList.remove('show');
   renderContents(cs);
-  /* Анимация: кейс трясётся и светится, потом лента */
   if (rowEl){ rowEl.classList.remove('armed'); void rowEl.offsetWidth; rowEl.classList.add('armed'); }
   beep(300,.12,'sine',.06); beep(450,.12,'sine',.06,.13);
   setTimeout(() => {
@@ -940,10 +984,17 @@ function upgInputVal(){
   });
   return s;
 }
+function myUpgBonus(){
+  if (S.admin) return 0;
+  const p = myPriv();
+  return p ? p.upg : 0;
+}
 function upgChanceVal(){
   if (!upg.target) return 0;
   const v = upgInputVal(); if (!v) return 0;
-  return Math.min(95, Math.max(1, v/itV(upg.target)*90));
+  const base = Math.min(95, Math.max(1, v/itV(upg.target)*90));
+  const bonus = myUpgBonus();
+  return Math.min(95, base * (1 + bonus/100));
 }
 function updateWheel(){
   const ch = upg.busy ? upg.lastChance : upgChanceVal();
@@ -955,6 +1006,9 @@ function updateWheel(){
   $('#upgGo').disabled = upg.busy || !upg.target || !upg.inputs.size;
 }
 function renderUpgrader(){
+  const bonus = myUpgBonus();
+  $('#upgHint').innerHTML = 'Шанс = 90% × (вход / цель)' +
+    (bonus > 0 ? ` · <b style="color:var(--green)">🎖 +${bonus}% от привилегии</b>` : '');
   const inv = $('#upgInv');
   if (!S.inventory.length){
     inv.innerHTML = `<div class="upg-empty">Инвентарь пуст — открой кейс</div>`;
@@ -998,7 +1052,7 @@ function renderUpgrader(){
   } else {
     tg.innerHTML = ITEM_IDS.filter(id => itV(id) > inV).map(id => {
       const r = RARC(itR(id));
-      const ch = Math.min(95, Math.max(1, inV/itV(id)*90));
+      const ch = Math.min(95, Math.max(1, inV/itV(id)*90) * (1 + myUpgBonus()/100));
       return `<button class="upg-it ${upg.target===id?'sel':''}" data-id="${id}" style="--bc:${hexA(r.c,.5)}">
         <span class="e">${itE(id)}</span><b>${fmt(itV(id))}</b><span class="p">${ch >= 10 ? Math.round(ch) : ch.toFixed(1)}%</span></button>`;
     }).join('');
@@ -1118,9 +1172,18 @@ function renderWallet(){
       <div class="h-amt ${h.dir}">${h.dir==='in'?'+':'−'}${fmt(h.amount)}</div>
     </div>`).join('');
 }
+/* Пополнение: чипы и таймер под привилегию */
+function myTopupLimits(){
+  if (S.admin) return {max:Infinity, cd:0};
+  const p = myPriv();
+  if (p) return {max:p.topupMax, cd:p.cd*1000};
+  return {max:CFG.topupMax, cd:CFG.topupCooldown};
+}
 function renderTopupChips(){
-  $('#topupChips').innerHTML = [50,100,150,200,250,300].map(v =>
-    `<button data-v="${v}">+${fmt(v)}</button>`).join('');
+  const lim = myTopupLimits();
+  const vals = lim.max === Infinity ? [1000,5000,10000,50000,100000,500000]
+    : [50,100,150,200,250,300].filter(v => v <= lim.max);
+  $('#topupChips').innerHTML = vals.map(v => `<button data-v="${v}">+${fmt(v)}</button>`).join('');
   $$('#topupChips button').forEach(b => b.onclick = () => {
     $('#topupInp').value = b.dataset.v;
     $('#topupErr').classList.remove('show');
@@ -1130,19 +1193,23 @@ function renderTopupChips(){
 function topupTick(){
   const btn = $('#topupGo');
   if (!btn || !$('#ovTopup').classList.contains('show')) return;
-  if (S.admin){ btn.disabled = false; btn.textContent = '👑 Зачислить (админ: без лимита и задержки)'; return; }
+  const lim = myTopupLimits();
+  if (lim.cd === 0){ btn.disabled = false; btn.textContent = '👑 Зачислить (без лимита и задержки)'; return; }
   const v = parseInt($('#topupInp').value,10)||0;
-  if (v > CFG.topupMax){ btn.disabled = true; btn.textContent = `Максимум ${CFG.topupMax} HC за раз`; return; }
-  const left = (S.topupAt||0) + CFG.topupCooldown - Date.now();
+  if (v > lim.max){ btn.disabled = true; btn.textContent = `Максимум ${fmt(lim.max)} HC за раз`; return; }
+  const left = (S.topupAt||0) + lim.cd - Date.now();
   if (left > 0){ btn.disabled = true; btn.textContent = `⏳ Подожди ${Math.ceil(left/1000)} сек`; }
-  else { btn.disabled = false; btn.textContent = `Зачислить (до ${CFG.topupMax} HC)`; }
+  else { btn.disabled = false; btn.textContent = `Зачислить (до ${fmt(lim.max)} HC)`; }
 }
 setInterval(topupTick, 500);
 function openTopup(){
+  const lim = myTopupLimits();
   $('#topupInp').value = ''; $('#topupErr').classList.remove('show');
-  $('#topupLabel').textContent = S.admin
-    ? 'Сумма · 👑 админ: любой размер, без задержки'
-    : `Сумма · максимум ${CFG.topupMax} HC, следующее через 1 минуту`;
+  if (lim.cd === 0) $('#topupLabel').textContent = 'Сумма · 👑 админ: любой размер, без задержки';
+  else {
+    const p = myPriv();
+    $('#topupLabel').textContent = `Сумма · до ${fmt(lim.max)} HC` + (p ? ` · 🎖 ${p.label}` : '') + ` · раз в ${Math.round(lim.cd/1000)} сек`;
+  }
   renderTopupChips();
   openOv('#ovTopup');
   topupTick();
@@ -1182,7 +1249,7 @@ async function renderTop(){
       <div class="h-item" style="${u.isMe?'background:var(--accent-soft);border-radius:12px':''}">
         <div style="width:30px;text-align:center;font-weight:800;font-size:${i<3?'18px':'13px'};color:${i<3?'var(--gold)':'var(--muted2)'};flex:none">${medals[i]||i+1}</div>
         <div style="font-size:20px;flex:none">${u.avatar}</div>
-        <div class="h-main"><div class="h-title">${esc(u.name)}${u.admin?'<span class="adm-badge">ADMIN</span>':''}${u.isMe?' <span class="st-action">(ты)</span>':''}</div></div>
+        <div class="h-main"><div class="h-title">${esc(u.name)}${u.admin?'<span class="adm-badge">ADMIN</span>':''}${privBadge(u.priv)}${u.isMe?' <span class="st-action">(ты)</span>':''}</div></div>
         <div class="h-amt in">${fmt(u.balance)}</div>
       </div>`).join('');
   } catch(e){ box.innerHTML = '<div class="empty">Не удалось загрузить</div>'; }
@@ -1624,6 +1691,7 @@ function openGame(id){
   try { d = await api('promo', {code}); }
   catch(e){ toast(e.error || 'Ошибка'); return; }
   if (d.admin){ S.admin = true; renderProfile(); }
+  if (d.privilege){ renderProfile(); }
   if (d.entries && d.entries.length){
     d.entries.forEach(e => S.inventory.unshift(e));
     renderProfile();
@@ -1634,23 +1702,49 @@ function openGame(id){
 
 /* ================= Админ-панель ================= */
 let admUsers = [];
+let myBanRights = () => {
+  if (S.admin) return {forever:true, max:Infinity};
+  const p = myPriv();
+  if (p && p.ban > 0) return {forever:false, max:p.ban};
+  return null;
+};
 async function renderAdminPanel(){
   $('#adminWrap').hidden = !S.admin;
   if (!S.admin) return;
   $('#admItem').innerHTML = ITEM_IDS.map(id =>
     `<option value="${id}">${itE(id)} ${itN(id)} — ${fmt(itV(id))} HC</option>`).join('');
+  /* Привилегии */
+  $('#admPriv').innerHTML = '<option value="">— нет —</option>' +
+    CFG.privOrder.map(p => `<option value="${p}">🎖 ${CFG.priv[p].label}</option>`).join('');
+  /* Сроки бана по правам */
+  const br = myBanRights();
+  if (br.forever){
+    $('#banDur').innerHTML = `<option value="30">⏱ 30 минут</option><option value="60">🕐 1 час</option><option value="240">🕓 4 часа</option><option value="1080">🕕 18 часов</option><option value="1440">🕛 24 часа</option><option value="-1">♾ Навсегда</option>`;
+  } else if (br){
+    $('#banDur').innerHTML = [...Array(br.max).keys()].map(i => `<option value="${i+1}">⏱ ${i+1} мин</option>`).join('');
+  } else {
+    $('#banDur').innerHTML = '<option>— нет прав —</option>';
+  }
+  /* Промо-конструктор */
+  $('#pcItem').innerHTML = '<option value="">— без предмета —</option>' + ITEM_IDS.map(id =>
+    `<option value="${id}">${itE(id)} ${itN(id)}</option>`).join('');
+  $('#pcCase').innerHTML = '<option value="">— без кейса —</option>' + CASES.map(c =>
+    `<option value="${c.id}">${c.e} ${c.name}</option>`).join('');
+  $('#pcPriv').innerHTML = '<option value="">— без привилегии —</option>' + CFG.privOrder.map(p =>
+    `<option value="${p}">🎖 ${CFG.priv[p].label}</option>`).join('');
   try {
     const d = await api('admin/users');
     admUsers = d.users;
     fillAdmPlayers();
   } catch(e){ if (e.error) toast(e.error); }
+  loadPromoList();
 }
 function fillAdmPlayers(){
   const sel = $('#admPlayer');
   const cur = sel.value;
   sel.innerHTML = admUsers.map(u => {
     const b = u.banUntil === -1 ? '♾ ' : (u.banUntil > Date.now() ? '⏳ ' : '');
-    return `<option value="${u.id}">${b}${u.admin?'👑 ':''}${esc(u.name)} — ${fmt(u.balance)} HC</option>`;
+    return `<option value="${u.id}">${b}${u.admin?'👑 ':''}${esc(u.name)}${u.priv?' 🎖'+CFG.priv[u.priv].label:''} — ${fmt(u.balance)} HC</option>`;
   }).join('');
   if (cur && admUsers.some(u => u.id === cur)) sel.value = cur;
   admInfoUpdate();
@@ -1658,7 +1752,7 @@ function fillAdmPlayers(){
 function admInfoUpdate(){
   const u = admUsers.find(x => x.id === $('#admPlayer').value);
   $('#admInfo').innerHTML = u
-    ? `<b>${esc(u.name)}</b> · Баланс: <b>${fmt(u.balance)} HC</b> · Предметов: <b>${u.items}</b>${u.banUntil===-1?' · <b style="color:var(--red)">♾ навсегда</b>':(u.banUntil>Date.now()?' · <b style="color:var(--red)">⏳ забанен</b>':'')}${u.admin?' · 👑 админ':''}`
+    ? `<b>${esc(u.name)}</b> · Баланс: <b>${fmt(u.balance)} HC</b> · Предметов: <b>${u.items}</b>${u.priv?' · '+privBadge(u.priv):''}${u.banUntil===-1?' · <b style="color:var(--red)">♾ навсегда</b>':(u.banUntil>Date.now()?' · <b style="color:var(--red)">⏳ забанен</b>':'')}${u.admin?' · 👑 админ':''}`
     : 'Выбери игрока из списка';
 }
  $('#admPlayer').onchange = admInfoUpdate;
@@ -1686,6 +1780,20 @@ function admInfoUpdate(){
   toast(`Выдан ${itE(id)} ${itN(id)}`);
   renderAdminPanel();
 };
+ $('#admPrivGo').onclick = async () => {
+  const pv = $('#admPriv').value;
+  if (!pv){ toast('Выбери привилегию в списке'); return; }
+  try { await api('admin/setpriv', {userId:$('#admPlayer').value, privilege:pv}); }
+  catch(e){ toast(e.error||'Ошибка'); return; }
+  toast(`Привилегия ${CFG.priv[pv].label} выдана`);
+  renderAdminPanel();
+};
+ $('#admPrivOff').onclick = async () => {
+  try { await api('admin/setpriv', {userId:$('#admPlayer').value, privilege:null}); }
+  catch(e){ toast(e.error||'Ошибка'); return; }
+  toast('Привилегия снята');
+  renderAdminPanel();
+};
  $('#admBanGo').onclick = async () => {
   const minutes = +$('#banDur').value;
   const reason = $('#banReason').value.trim();
@@ -1704,6 +1812,54 @@ function admInfoUpdate(){
   try { await api('admin/reset', {userId:$('#admPlayer').value}); } catch(e){ toast(e.error||'Ошибка'); return; }
   toast('Прогресс игрока сброшен'); renderAdminPanel();
 };
+/* Менеджер промокодов */
+async function loadPromoList(){
+  try {
+    const d = await api('admin/promos');
+    const keys = Object.keys(d.promos);
+    $('#promoCount').textContent = keys.length ? `${keys.length} шт` : '';
+    $('#pcList').innerHTML = keys.length ? keys.map(code => {
+      const p = d.promos[code];
+      const rewards = [];
+      if (p.amount) rewards.push(fmt(p.amount)+' HC');
+      if (p.itemId) rewards.push(ITEMS[p.itemId][0]+' '+ITEMS[p.itemId][1]);
+      if (p.caseId) rewards.push('кейс '+(caseById(p.caseId)||{name:p.caseId}).name);
+      if (p.privilege) rewards.push('🎖 '+CFG.priv[p.privilege].label);
+      const lim = p.maxUses > 0 ? `${p.uses}/${p.maxUses}` : `${p.uses}/∞`;
+      const exp = p.expiresAt ? `до ${fmtTime(p.expiresAt)}` : 'бессрочно';
+      return `<div class="promo-item">
+        <div style="flex:1;min-width:0">
+          <b>${esc(code)}</b> <span class="meta">· ${lim} · ${exp}</span>
+          <div class="meta">${rewards.join(' · ')||'—'}</div>
+        </div>
+        <button class="btn btn-danger" data-delcode="${esc(code)}" style="padding:6px 10px;font-size:11px">🗑</button>
+      </div>`;
+    }).join('') : '<div class="ref-sub" style="margin:0">Промокодов пока нет</div>';
+    $$('#pcList [data-delcode]').forEach(b => b.onclick = async () => {
+      try { await api('admin/promo-delete', {code:b.dataset.delcode}); }
+      catch(e){ toast(e.error||'Ошибка'); return; }
+      toast('Промокод ' + b.dataset.delcode + ' удалён');
+      loadPromoList();
+    });
+  } catch(e){}
+}
+ $('#pcCreate').onclick = async () => {
+  const body = {
+    code: $('#pcCode').value,
+    amount: +$('#pcAmount').value || 0,
+    itemId: $('#pcItem').value || null,
+    caseId: $('#pcCase').value || null,
+    privilege: $('#pcPriv').value || null,
+    maxUses: +$('#pcMax').value || 0,
+    expiresDays: +$('#pcDays').value || 0,
+  };
+  try { await api('admin/promo-create', body); }
+  catch(e){ toast(e.error||'Ошибка'); return; }
+  toast('Промокод ' + body.code.toUpperCase() + ' создан');
+  $('#pcCode').value = ''; $('#pcAmount').value = ''; $('#pcMax').value = ''; $('#pcDays').value = '';
+  $('#pcItem').value = ''; $('#pcCase').value = ''; $('#pcPriv').value = '';
+  loadPromoList();
+};
 
 /* ================= Профиль ================= */
 function renderProfile(){
@@ -1711,7 +1867,7 @@ function renderProfile(){
   $('#hName').textContent = S.name;
   $('#hId').textContent = 'ID ' + S.id;
   $('#pAvaE').textContent = S.avatar;
-  $('#pName').innerHTML = esc(S.name) + (S.admin ? '<span class="adm-badge">👑 ADMIN</span>' : '');
+  $('#pName').innerHTML = esc(S.name) + (S.admin ? '<span class="adm-badge">👑 ADMIN</span>' : '') + privBadge(S.privilege);
   $('#pMeta').textContent = `В игре с ${new Date(S.joined).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})} · ID ${S.id}`;
   $('#stOpened').textContent = fmt(S.stats.opened||0);
   $('#stUpg').textContent = fmt(S.stats.upgrades||0);
@@ -1773,9 +1929,10 @@ function bootApp(){
   $('#appRoot').style.visibility = 'visible';
   shownBal = S.balance;
   paintBal();
+  const lim = myTopupLimits();
   $('#whNote').textContent = S.admin
     ? '👑 Режим админа · пополнение без лимитов и задержки'
-    : `Демо-режим · пополнение до ${CFG.topupMax} HC раз в минуту`;
+    : lim.cd > 0 ? `Пополнение до ${fmt(lim.max)} HC раз в ${Math.round(lim.cd/1000)} сек${myPriv()?' · 🎖 '+myPriv().label:''}` : 'Демо-режим';
   renderCases();
   renderGames();
   renderUpgrader();
@@ -1789,7 +1946,7 @@ function bootApp(){
   try {
     CFG = await fetch('/api/config').then(r => r.json());
   } catch(e){
-    document.body.innerHTML = '<div style="min-height:100dvh;display:grid;place-items:center;text-align:center;color:#928AA8"><div><div style="font-size:50px">📡</div><div style="margin-top:10px">Нет связи с сервером.<br>Убедись, что запущен новый server.js (v3),<br>и обнови страницу (Ctrl+Shift+R).</div></div></div>';
+    document.body.innerHTML = '<div style="min-height:100dvh;display:grid;place-items:center;text-align:center;color:#928AA8"><div><div style="font-size:50px">📡</div><div style="margin-top:10px">Нет связи с сервером.<br>Убедись, что запущен server.js v4,<br>и обнови страницу (Ctrl+Shift+R).</div></div></div>';
     return;
   }
   ITEMS = CFG.items; CASES = CFG.cases;

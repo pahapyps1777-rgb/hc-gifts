@@ -17,6 +17,16 @@ const RAR = {
   secret:    {label:'Secret',    c:'#FFFFFF'},
 };
 
+/* ================= Привилегии ================= */
+const PRIV = {
+  vip:     {label:'VIP',    c:'#F5B544', topupMax:300,   cd:45, upg:0,  ban:0},
+  pro:     {label:'PRO',    c:'#38BDF8', topupMax:1000,  cd:35, upg:0,  ban:0},
+  proplus: {label:'PRO+',   c:'#A855F7', topupMax:1500,  cd:30, upg:25, ban:0},
+  helper:  {label:'Helper', c:'#34D399', topupMax:1500,  cd:30, upg:25, ban:5},
+  moder:   {label:'Moder',  c:'#F97316', topupMax:50000, cd:25, upg:25, ban:20},
+};
+const PRIV_ORDER = ['vip','pro','proplus','helper','moder'];
+
 /* ================= Предметы (89) ================= */
 const ITEMS = {
   candy:['🍬','Конфета','common',30], lolli:['🍭','Лоллипоп','common',35], cookie:['🍪','Печенька','common',40],
@@ -136,8 +146,7 @@ const CASES = [
   {id:'singularity',name:'Singularity',e:'⚫',price:100000,featured:true,sub:'ТОП-1 кейс · вплоть до Secret-редкости · Сверхновая 1 000 000 HC',c:['#181818','#000000'],drops:[['unicorn',1200],['dragon',1200],['trophy',1200],['phoenix',1200],['ufo',1200],['thor',1200],['comet',1200],['blackhole',900],['volcano',350],['trex',220],['tsunami',120],['dragonlord',60],['ball8',25],['trident',90],['sun',50],['angel',20],['joker',12],['eye',6],['masks',3],['galaxy',1]]},
 ];
 
-/* Промокоды. NERES — выдаёт АДМИНКУ (баны, монеты, предметы).
-   ⚠️ Перед раздачей игры смени NERES на свой секретный код! */
+/* Статические промокоды. NERES — АДМИНКА. ⚠️ Смени перед раздачей! */
 const PROMOS = {
   NERES:   {admin:true},
   PYPSI:   {amount:200000, item:'any'},
@@ -151,13 +160,14 @@ const PROMOS = {
 const AVATARS = ['🦊','🐼','🐸','🦁','🐯','🐙','🦄','🐨','🐺','🐵','🦉','🐳'];
 const START_BALANCE = 1000;
 const FREE_COOLDOWN = 10 * 60 * 1000;
-const TOPUP_MAX = 300;            // обычный игрок: максимум за одно пополнение
-const TOPUP_COOLDOWN = 60 * 1000; // обычный игрок: 1 минута между пополнениями
+const TOPUP_MAX = 300;
+const TOPUP_COOLDOWN = 60 * 1000;
 
-/* ================= База (JSON-файл) ================= */
+/* ================= База ================= */
 let db;
-function freshDB(){ return { users:{}, tokens:{}, feed:[], nextId:1 }; }
+function freshDB(){ return { users:{}, tokens:{}, feed:[], promos:{}, nextId:1 }; }
 try { db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch(e){ db = freshDB(); }
+if (!db.promos) db.promos = {};
 
 function migrateUser(u){
   if (u.banned === true){ u.banUntil = -1; u.banReason = u.banReason || 'Нарушение правил'; }
@@ -165,6 +175,7 @@ function migrateUser(u){
   if (typeof u.banUntil !== 'number') u.banUntil = 0;
   if (typeof u.banReason !== 'string') u.banReason = '';
   if (typeof u.topupAt !== 'number') u.topupAt = 0;
+  if (typeof u.privilege === 'undefined') u.privilege = null;
   if (!u.stats) u.stats = {opened:0, upgrades:0, best:null};
   if (!Array.isArray(u.inventory)) u.inventory = [];
   if (!Array.isArray(u.history)) u.history = [];
@@ -194,6 +205,12 @@ function addHist(u, dir, title, amount){
 function credit(u, amount, title){ u.balance += amount; addHist(u, 'in', title, amount); }
 function addFeed(user, item){ db.feed.unshift({user, item, ts:Date.now()}); if (db.feed.length > 30) db.feed.length = 30; }
 function isBanned(u){ return u.banUntil === -1 || (u.banUntil > 0 && Date.now() < u.banUntil); }
+function banRights(u){
+  if (u.admin) return {forever:true, max:Infinity};
+  const p = PRIV[u.privilege];
+  if (p && p.ban > 0) return {forever:false, max:p.ban};
+  return null;
+}
 
 /* ================= Приложение ================= */
 const app = express();
@@ -208,17 +225,16 @@ function auth(req, res, next){
   const t = (req.headers.authorization || '').replace('Bearer ', '');
   const u = db.tokens[t] ? db.users[db.tokens[t]] : null;
   if (!u) return res.status(401).json({error:'Требуется вход'});
-  if (isBanned(u)){
-    return res.status(403).json({banned:true, reason:u.banReason || 'Причина не указана', until:u.banUntil});
-  }
-  if (u.banUntil > 0){ u.banUntil = 0; u.banReason = ''; } // срок бана истёк
+  if (isBanned(u)) return res.status(403).json({banned:true, reason:u.banReason || 'Причина не указана', until:u.banUntil});
+  if (u.banUntil > 0){ u.banUntil = 0; u.banReason = ''; }
   req.user = u; next();
 }
 const admin = (req,res,next) => req.user.admin ? next() : res.status(403).json({error:'Нет прав администратора'});
 
-/* ---------- Публичный конфиг (клиент качает при старте) ---------- */
+/* ---------- Конфиг ---------- */
 app.get('/api/config', (req,res) => {
-  res.json({rar:RAR, items:ITEMS, cases:CASES, topupMax:TOPUP_MAX, topupCooldown:TOPUP_COOLDOWN, startBalance:START_BALANCE});
+  res.json({rar:RAR, items:ITEMS, cases:CASES, priv:PRIV, privOrder:PRIV_ORDER,
+            topupMax:TOPUP_MAX, topupCooldown:TOPUP_COOLDOWN, startBalance:START_BALANCE});
 });
 
 /* ---------- Регистрация / вход ---------- */
@@ -231,7 +247,7 @@ app.post('/api/register', (req,res) => {
   const salt = crypto.randomBytes(16).toString('hex');
   const u = {
     id: 'u' + (db.nextId++), name, nameLower: name.toLowerCase(), salt, passHash: hash(pass, salt),
-    createdAt: Date.now(), admin:false,
+    createdAt: Date.now(), admin:false, privilege:null,
     banUntil: 0, banReason: '', topupAt: 0,
     balance: START_BALANCE, freeAt: 0,
     avatar: AVATARS[Math.floor(Math.random()*AVATARS.length)],
@@ -302,14 +318,17 @@ app.post('/api/sell-all', auth, (req,res) => {
   save(); res.json({balance:req.user.balance});
 });
 
-/* Пополнение: обычным до 300 HC раз в минуту, админу — без лимитов */
+/* Пополнение: лимиты и таймер зависят от привилегии; админ — без ограничений */
 app.post('/api/topup', auth, (req,res) => {
   const v = Math.floor(+req.body.amount || 0);
   if (v < 1) return res.status(400).json({error:'Некорректная сумма'});
   if (v > 10000000) return res.status(400).json({error:'Слишком большая сумма'});
   if (!req.user.admin){
-    if (v > TOPUP_MAX) return res.status(400).json({error:'Максимум ' + TOPUP_MAX + ' HC за одно пополнение'});
-    const left = req.user.topupAt + TOPUP_COOLDOWN - Date.now();
+    const p = PRIV[req.user.privilege];
+    const maxV = p ? p.topupMax : TOPUP_MAX;
+    const cd = p ? p.cd * 1000 : TOPUP_COOLDOWN;
+    if (v > maxV) return res.status(400).json({error:'Максимум ' + maxV.toLocaleString('ru-RU') + ' HC за одно пополнение' + (p ? ' (привилегия ' + p.label + ')' : '')});
+    const left = req.user.topupAt + cd - Date.now();
     if (left > 0) return res.status(400).json({error:'Подожди ' + Math.ceil(left/1000) + ' сек до следующего пополнения'});
   }
   req.user.topupAt = Date.now();
@@ -326,30 +345,75 @@ app.post('/api/withdraw', auth, (req,res) => {
   save(); res.json({balance:req.user.balance});
 });
 app.post('/api/reset', auth, (req,res) => {
-  const wasAdmin = req.user.admin;
+  const wasAdmin = req.user.admin, wasPriv = req.user.privilege;
   Object.assign(req.user, {
     balance: START_BALANCE, freeAt: 0, topupAt: 0,
     stats: {opened:0, upgrades:0, best:null},
-    inventory: [], history: [], usedPromos: [], admin: wasAdmin,
+    inventory: [], history: [], usedPromos: [], admin: wasAdmin, privilege: wasPriv,
   });
   addHist(req.user, 'in', 'Стартовый бонус', START_BALANCE);
   save(); res.json({user: pubUser(req.user)});
 });
 
-/* ---------- Топ игроков по монетам ---------- */
+/* ---------- Топ игроков ---------- */
 app.post('/api/top', auth, (req,res) => {
   const all = Object.values(db.users).sort((a,b) => b.balance - a.balance);
   const myIdx = all.findIndex(u => u.id === req.user.id);
   const top = all.slice(0, 50).map((u,i) => ({
     place: i+1, name: u.name, avatar: u.avatar, balance: u.balance,
-    admin: !!u.admin, isMe: u.id === req.user.id,
+    admin: !!u.admin, priv: u.privilege || null, isMe: u.id === req.user.id,
   }));
   res.json({top, me: myIdx >= 0 ? {place: myIdx+1, total: all.length} : null});
 });
 
-/* ---------- Промокоды ---------- */
+/* ---------- Промокоды (статические + созданные админом) ---------- */
 app.post('/api/promo', auth, (req,res) => {
   const code = String(req.body.code||'').trim().toUpperCase();
+  if (!code) return res.status(400).json({error:'Введите промокод'});
+
+  /* --- Динамические (созданные в админке) --- */
+  const dyn = db.promos[code];
+  if (dyn){
+    if (dyn.expiresAt && Date.now() > dyn.expiresAt) return res.status(400).json({error:'Срок действия промокода истёк'});
+    if (dyn.maxUses > 0 && dyn.uses >= dyn.maxUses) return res.status(400).json({error:'Лимит активаций исчерпан'});
+    if (req.user.usedPromos.includes(code)) return res.status(400).json({error:'Промокод уже использован'});
+    req.user.usedPromos.push(code);
+    dyn.uses++; dyn.activatedBy.push(req.user.name);
+    if (dyn.activatedBy.length > 50) dyn.activatedBy.shift();
+    const entries = [];
+    let msg = '🎁 Промокод активирован';
+    if (dyn.amount){ credit(req.user, dyn.amount, 'Промокод ' + code); msg = '🎁 +' + dyn.amount.toLocaleString('ru-RU') + ' HC'; }
+    const give = (id) => {
+      const e = {uid:newUid(), id, case:'promo', ts:Date.now()};
+      req.user.inventory.unshift(e); entries.push(e);
+      msg += ' · ' + ITEMS[id][0] + ' ' + ITEMS[id][1];
+    };
+    if (dyn.itemId && ITEMS[dyn.itemId]) give(dyn.itemId);
+    if (dyn.caseId){
+      const cs = CASES.find(c => c.id === dyn.caseId);
+      if (cs){
+        const id = pickDrop(cs);
+        const e = {uid:newUid(), id, case:'promo', ts:Date.now()};
+        req.user.inventory.unshift(e); entries.push(e);
+        msg += ' · кейс «' + cs.name + '» → ' + ITEMS[id][0] + ' ' + ITEMS[id][1];
+        addFeed(req.user.name, id);
+      }
+    }
+    if (dyn.privilege && PRIV[dyn.privilege]){
+      const curIdx = PRIV_ORDER.indexOf(req.user.privilege);
+      const newIdx = PRIV_ORDER.indexOf(dyn.privilege);
+      if (newIdx > curIdx){
+        req.user.privilege = dyn.privilege;
+        msg += ' · 🎖 Привилегия ' + PRIV[dyn.privilege].label + '!';
+      } else {
+        msg += ' · привилегия ' + PRIV[dyn.privilege].label + ' (у тебя уже есть равная или выше)';
+      }
+    }
+    save();
+    return res.json({message:msg, entries, balance:req.user.balance, privilege:req.user.privilege});
+  }
+
+  /* --- Статические --- */
   const p = PROMOS[code];
   if (!p) return res.status(400).json({error:'Промокод не найден'});
   if (p.admin){
@@ -397,7 +461,7 @@ app.post('/api/promo', auth, (req,res) => {
   save(); res.json({message:msg, entries, balance:req.user.balance});
 });
 
-/* ---------- Апгрейдер ---------- */
+/* ---------- Апгрейдер (+25% шанс у PRO+/Helper/Moder) ---------- */
 app.post('/api/upgrade', auth, (req,res) => {
   const uids = Array.isArray(req.body.uids) ? req.body.uids : [];
   const target = String(req.body.target||'');
@@ -411,7 +475,11 @@ app.post('/api/upgrade', auth, (req,res) => {
   if (!items.length) return res.status(400).json({error:'Выберите предметы'});
   const inVal = items.reduce((s,x) => s + itV(x.id), 0);
   if (itV(target) <= inVal) return res.status(400).json({error:'Цель должна быть дороже входа'});
-  const chance = Math.min(95, Math.max(1, inVal/itV(target)*90));
+  let chance = Math.min(95, Math.max(1, inVal/itV(target)*90));
+  if (!req.user.admin){
+    const p = PRIV[req.user.privilege];
+    if (p && p.upg) chance = Math.min(95, chance * (1 + p.upg/100));
+  }
   const win = Math.random()*100 < chance;
   const inNames = items.map(x => ITEMS[x.id][1]).join(' + ');
   req.user.inventory = req.user.inventory.filter(x => !uids.includes(x.uid));
@@ -428,7 +496,7 @@ app.post('/api/upgrade', auth, (req,res) => {
     addHist(req.user, 'out', 'Апгрейд не удался (' + inNames + ')', inVal);
   }
   save();
-  res.json({win, chance, entry, balance:req.user.balance});
+  res.json({win, chance:+chance.toFixed(2), entry, balance:req.user.balance});
 });
 
 /* ---------- Мини-игры: Coin, Dice ---------- */
@@ -595,11 +663,11 @@ app.post('/api/game/tower/cash', auth, (req,res) => {
   res.json({win:true, mult, payout, bombs:g.bombs, balance:req.user.balance});
 });
 
-/* ---------- Админ-панель ---------- */
+/* ---------- Админ: игроки, монеты, предметы ---------- */
 app.post('/api/admin/users', auth, admin, (req,res) => {
   const list = Object.values(db.users)
     .map(u => ({id:u.id, name:u.name, avatar:u.avatar, balance:u.balance, items:u.inventory.length,
-                banUntil:u.banUntil, banReason:u.banReason, admin:u.admin, joined:u.createdAt}))
+                banUntil:u.banUntil, banReason:u.banReason, admin:u.admin, priv:u.privilege||null, joined:u.createdAt}))
     .sort((a,b) => b.joined - a.joined);
   res.json({users:list});
 });
@@ -624,21 +692,31 @@ app.post('/api/admin/give-item', auth, admin, (req,res) => {
   addHist(t, 'in', '👑 Админ: выдан ' + ITEMS[id][1], itV(id));
   save(); res.json({ok:true});
 });
-/* Бан: minutes = 30/60/240/1080/1440 или -1 (навсегда) + причина */
-app.post('/api/admin/ban', auth, admin, (req,res) => {
+
+/* ---------- Бан (админ — любой срок; Helper — до 5 мин; Moder — до 20 мин) ---------- */
+app.post('/api/admin/ban', auth, (req,res) => {
   const t = getTarget(req,res); if (!t) return;
   if (t.id === req.user.id) return res.status(400).json({error:'Нельзя выдать бан самому себе'});
-  if (t.admin) return res.status(400).json({error:'Нельзя забанить администратора'});
+  const rights = banRights(req.user);
+  if (!rights) return res.status(403).json({error:'У тебя нет прав на бан'});
   const minutes = +req.body.minutes;
   const reason = String(req.body.reason||'').trim().slice(0,200) || 'Причина не указана';
-  if (minutes === -1) t.banUntil = -1;
-  else if (minutes > 0) t.banUntil = Date.now() + minutes*60000;
-  else return res.status(400).json({error:'Некорректный срок бана'});
+  if (minutes === -1){
+    if (!rights.forever) return res.status(400).json({error:'Банить навсегда может только админ'});
+    t.banUntil = -1;
+  } else if (minutes > 0){
+    if (minutes > rights.max) return res.status(400).json({error:'Твой лимит бана: до ' + rights.max + ' мин'});
+    t.banUntil = Date.now() + minutes*60000;
+  } else return res.status(400).json({error:'Некорректный срок бана'});
+  if (t.admin && !req.user.admin) return res.status(400).json({error:'Нельзя забанить администратора'});
   t.banReason = reason;
   save(); res.json({ok:true, banUntil:t.banUntil, reason});
 });
-app.post('/api/admin/unban', auth, admin, (req,res) => {
+app.post('/api/admin/unban', auth, (req,res) => {
   const t = getTarget(req,res); if (!t) return;
+  const rights = banRights(req.user);
+  if (!rights) return res.status(403).json({error:'У тебя нет прав на разбан'});
+  if (t.admin && !req.user.admin) return res.status(400).json({error:'Нельзя снимать бан с администратора'});
   t.banUntil = 0; t.banReason = '';
   save(); res.json({ok:true});
 });
@@ -654,6 +732,44 @@ app.post('/api/admin/setfree', auth, admin, (req,res) => {
   t.freeAt = 0; save(); res.json({ok:true});
 });
 
+/* ---------- Админ: привилегии ---------- */
+app.post('/api/admin/setpriv', auth, admin, (req,res) => {
+  const t = getTarget(req,res); if (!t) return;
+  const pv = req.body.privilege;
+  t.privilege = PRIV[pv] ? pv : null;
+  save(); res.json({ok:true, privilege:t.privilege});
+});
+
+/* ---------- Админ: менеджер промокодов ---------- */
+app.post('/api/admin/promos', auth, admin, (req,res) => {
+  res.json({promos: db.promos});
+});
+app.post('/api/admin/promo-create', auth, admin, (req,res) => {
+  const code = String(req.body.code||'').trim().toUpperCase().replace(/\s+/g,'');
+  if (!/^[A-Z0-9_]{3,20}$/.test(code)) return res.status(400).json({error:'Код: 3–20 символов (A-Z, 0-9, _)'});
+  if (PROMOS[code] || db.promos[code]) return res.status(400).json({error:'Такой промокод уже существует'});
+  const amount = Math.max(0, Math.floor(+req.body.amount || 0));
+  const itemId = ITEMS[req.body.itemId] ? req.body.itemId : null;
+  const caseId = CASES.find(c => c.id === req.body.caseId) ? req.body.caseId : null;
+  const privilege = PRIV[req.body.privilege] ? req.body.privilege : null;
+  const maxUses = Math.max(0, Math.floor(+req.body.maxUses || 0));
+  const expiresDays = Math.max(0, Math.floor(+req.body.expiresDays || 0));
+  if (!amount && !itemId && !caseId && !privilege) return res.status(400).json({error:'Добавь хотя бы одну награду (HC, предмет, кейс или привилегия)'});
+  const pr = {
+    amount: amount || null, itemId, caseId, privilege,
+    maxUses, expiresDays, expiresAt: expiresDays > 0 ? Date.now() + expiresDays*86400000 : 0,
+    createdBy: req.user.name, createdAt: Date.now(), uses: 0, activatedBy: [],
+  };
+  db.promos[code] = pr; save();
+  res.json({ok:true});
+});
+app.post('/api/admin/promo-delete', auth, admin, (req,res) => {
+  const code = String(req.body.code||'').trim().toUpperCase();
+  if (!db.promos[code]) return res.status(400).json({error:'Промокод не найден'});
+  delete db.promos[code]; save();
+  res.json({ok:true});
+});
+
 app.use('/api', (req,res) => res.status(404).json({error:'Не найдено'}));
 
-app.listen(PORT, () => console.log('✅ HC Gifts server v3.0: http://localhost:' + PORT));
+app.listen(PORT, () => console.log('✅ HC Gifts server v4.0 (привилегии + промокоды): http://localhost:' + PORT));
