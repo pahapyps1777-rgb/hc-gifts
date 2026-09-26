@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const {
-  RAR, PRIV, PRIV_ORDER, ITEMS, LIMITED, CASES, PROMOS,
+  RAR, PRIV, PRIV_ORDER, ITEMS, LIMITED, CASES, PROMOS, COSMETICS,
   AVATARS, START_BALANCE, FREE_COOLDOWN, TOPUP_MAX, TOPUP_COOLDOWN,
   MULTI_MAX, BATTLE_PLAYERS, BATTLE_ROUNDS, BATTLE_EXPIRE,
 } = require('./data');
@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 const DB_FILE = process.env.DATA_FILE || path.join(__dirname, 'data.json');
 const LUCK_MAX = 1000000;
 
-/* ================= Экономика игр v8 (пониженная) ================= */
+/* ===== Экономика игр v9 ===== */
 const GAME_WHEEL = [{m:0,w:12},{m:0.5,w:6},{m:1.5,w:4},{m:2,w:2},{m:3,w:1},{m:5,w:0.5}];
 const GAME_PLINKO = [6,2,1.2,1,0.8,0.6,0.5,0.6,0.8,1,1.2,2,6];
 const GAME_SLOTS = [['🍒',40,4],['🍋',28,6],['🔔',16,10],['⭐',8,20],['💎',3,50],['7️⃣',1,120]];
@@ -26,34 +26,14 @@ const GAME_KENO = {
 const COIN_MULT = 1.85, DICE_FAIR = 90, CRASH_EDGE = 0.88, MINES_FEE = 0.85;
 const TOWER_STEP = 1.26, TOWER_FEE = 0.93;
 const ROULETTE_COLOR = 1.95, ROULETTE_ZERO = 10, LIMBO_EDGE = 0.90, HILO_EDGE = 0.85;
+/* Апгрейдер: старый механика — колесо, макс 95% */
+const UPGRADE_BASE = 90, UPGRADE_MAX = 95;
 
-/* ================= Апгрейдер v8: возврат 25% при провале, макс 97% ================= */
-const UPGRADE_BASE = 90;
-const UPGRADE_MAX = 97;
-const UPGRADE_REFUND = 0.25;
-
-/* ================= Косметика курицы ================= */
-const COSMETICS = [
-  {id:'hat_cap',   type:'hat',     name:'🧢 Кепка',              price:1000000000000},
-  {id:'hat_fedora',type:'hat',     name:'🎩 Шляпа мафиози',      price:2000000000000},
-  {id:'hat_crown', type:'hat',     name:'👑 Золотая корона',     price:5000000000000},
-  {id:'hat_halo',  type:'hat',     name:'😇 Нимб',               price:10000000000000},
-  {id:'gl_red',    type:'glasses', name:'👓 Красные очки',       price:1500000000000},
-  {id:'gl_vip',    type:'glasses', name:'🕶 VIP-очки',           price:5000000000000},
-  {id:'gl_space',  type:'glasses', name:'🛸 Космический визор',  price:8000000000000},
-  {id:'gun_dual',  type:'gun',     name:'🔫 Два пистолета',      price:3000000000000},
-  {id:'gun_gold',  type:'gun',     name:'🔫 Золотые пистолеты',  price:15000000000000},
-  {id:'aura_gold', type:'aura',    name:'✨ Золотая аура',       price:30000000000000},
-  {id:'aura_fire', type:'aura',    name:'🔥 Огненная аура',      price:60000000000000},
-  {id:'aura_rainbow',type:'aura',  name:'🌈 Радужная аура',      price:100000000000000},
-];
-
-/* ================= База ================= */
+/* ===== База ===== */
 let db;
 function freshDB(){ return {users:{},tokens:{},feed:[],promos:{},nextId:1}; }
 try { db = JSON.parse(fs.readFileSync(DB_FILE,'utf8')); } catch(e){ db = freshDB(); }
 if (!db.promos) db.promos = {};
-
 function migrateUser(u){
   if (u.banned === true){ u.banUntil = -1; u.banReason = u.banReason || 'Нарушение правил'; }
   delete u.banned;
@@ -70,12 +50,11 @@ function migrateUser(u){
   if (!Array.isArray(u.usedPromos)) u.usedPromos = [];
 }
 Object.values(db.users).forEach(migrateUser);
-
 let saveT = null;
 function save(){ clearTimeout(saveT); saveT = setTimeout(() => { try { fs.writeFileSync(DB_FILE, JSON.stringify(db)); } catch(e){} }, 300); }
 process.on('SIGINT', () => { try { fs.writeFileSync(DB_FILE, JSON.stringify(db)); } catch(e){} process.exit(0); });
 
-/* ================= Утилиты ================= */
+/* ===== Утилиты ===== */
 const itV = id => ITEMS[id][3];
 const dropTotal = cs => cs.drops.reduce((s,d)=>s+d[1],0);
 function bestItem(cs){ let b = cs.drops[0][0]; for (const [id] of cs.drops) if (itV(id) > itV(b)) b = id; return b; }
@@ -115,7 +94,7 @@ function luckWin(u){
   return Math.random() < Math.min(1, l / LUCK_MAX);
 }
 
-/* ================= Приложение ================= */
+/* ===== Приложение ===== */
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname,'public')));
@@ -123,6 +102,9 @@ app.use(express.static(path.join(__dirname,'public')));
 const minesGames = new Map();
 const crashGames = new Map();
 const towerGames = new Map();
+const bjGames = new Map();
+const zombieGames = new Map();
+const rainGames = new Map();
 const battles = new Map();
 
 function sweepBattles(){
@@ -136,7 +118,6 @@ function sweepBattles(){
     }
   }
 }
-
 function auth(req,res,next){
   const t = (req.headers.authorization||'').replace('Bearer ','');
   const u = db.tokens[t] ? db.users[db.tokens[t]] : null;
@@ -147,18 +128,18 @@ function auth(req,res,next){
 }
 const admin = (req,res,next) => req.user.admin ? next() : res.status(403).json({error:'Нет прав администратора'});
 
-/* ---------- Конфиг ---------- */
+/* ===== Конфиг ===== */
 app.get('/api/config', (req,res) => {
   res.json({rar:RAR,items:ITEMS,cases:CASES,priv:PRIV,privOrder:PRIV_ORDER,limited:[...LIMITED],
     topupMax:TOPUP_MAX,topupCooldown:TOPUP_COOLDOWN,startBalance:START_BALANCE,multiMax:MULTI_MAX,
     wheelSegs:GAME_WHEEL,plinkoMults:GAME_PLINKO,slotsSyms:GAME_SLOTS,kenoPay:GAME_KENO,
     battlePlayers:BATTLE_PLAYERS,battleRounds:BATTLE_ROUNDS,luckMax:LUCK_MAX,
-    cosmetics:COSMETICS, upgrade:{base:UPGRADE_BASE,max:UPGRADE_MAX,refund:UPGRADE_REFUND},
+    cosmetics:COSMETICS,
     eco:{coin:COIN_MULT,dice:DICE_FAIR,crash:CRASH_EDGE,mines:MINES_FEE,tower:TOWER_STEP,
          rouletteColor:ROULETTE_COLOR,rouletteZero:ROULETTE_ZERO,limbo:LIMBO_EDGE,hilo:HILO_EDGE}});
 });
 
-/* ---------- Регистрация / вход ---------- */
+/* ===== Регистрация / вход ===== */
 app.post('/api/register', (req,res) => {
   const name = String(req.body.name||'').trim(), pass = String(req.body.password||'');
   if (!/^[\wа-яё-]{2,16}$/i.test(name)) return res.status(400).json({error:'Ник: 2–16 символов (буквы, цифры, _ -)'});
@@ -194,7 +175,7 @@ app.post('/api/logout', auth, (req,res) => {
   delete db.tokens[t]; save(); res.json({ok:true});
 });
 
-/* ---------- Кейсы ---------- */
+/* ===== Кейсы ===== */
 app.post('/api/open-case', auth, (req,res) => {
   const cs = CASES.find(c => c.id === req.body.caseId);
   if (!cs) return res.status(400).json({error:'Кейс не найден'});
@@ -224,7 +205,7 @@ app.post('/api/open-case', auth, (req,res) => {
             freeAt:req.user.freeAt,opened:req.user.stats.opened,count});
 });
 
-/* ---------- Инвентарь / кошелёк ---------- */
+/* ===== Инвентарь / кошелёк ===== */
 app.post('/api/sell', auth, (req,res) => {
   const i = req.user.inventory.findIndex(x => x.uid === req.body.uid);
   if (i < 0) return res.status(400).json({error:'Предмет не найден'});
@@ -274,8 +255,6 @@ app.post('/api/reset', auth, (req,res) => {
   addHist(req.user,'in','Стартовый бонус',START_BALANCE);
   save(); res.json({user:pubUser(req.user)});
 });
-
-/* ---------- Топ ---------- */
 app.post('/api/top', auth, (req,res) => {
   const all = Object.values(db.users).sort((a,b) => b.balance-a.balance);
   const myIdx = all.findIndex(u => u.id === req.user.id);
@@ -284,7 +263,7 @@ app.post('/api/top', auth, (req,res) => {
     me: myIdx >= 0 ? {place:myIdx+1,total:all.length} : null});
 });
 
-/* ---------- Промокоды ---------- */
+/* ===== Промокоды ===== */
 app.post('/api/promo', auth, (req,res) => {
   const code = String(req.body.code||'').trim().toUpperCase();
   if (!code) return res.status(400).json({error:'Введите промокод'});
@@ -343,7 +322,7 @@ app.post('/api/promo', auth, (req,res) => {
   save(); res.json({message:msg,entries,balance:req.user.balance});
 });
 
-/* ---------- Апгрейдер v8: шанс до 97%, провал возвращает 25% ---------- */
+/* ===== Апгрейдер v9: старая механика (колесо, макс 95%) ===== */
 app.post('/api/upgrade', auth, (req,res) => {
   const uids = Array.isArray(req.body.uids)?req.body.uids:[];
   const target = String(req.body.target||'');
@@ -357,33 +336,27 @@ app.post('/api/upgrade', auth, (req,res) => {
   if (!items.length) return res.status(400).json({error:'Выберите предметы'});
   const inVal = items.reduce((s,x) => s+itV(x.id),0);
   if (itV(target) <= inVal) return res.status(400).json({error:'Цель должна быть дороже входа'});
-  let chance = Math.min(UPGRADE_MAX, Math.max(1, inVal/itV(target)*UPGRADE_BASE));
+  let chance = Math.min(UPGRADE_MAX,Math.max(1,inVal/itV(target)*UPGRADE_BASE));
   if (!req.user.admin){
     const p = PRIV[req.user.privilege];
-    if (p && p.upg) chance = Math.min(UPGRADE_MAX, chance*(1+p.upg/100));
+    if (p && p.upg) chance = Math.min(UPGRADE_MAX,chance*(1+p.upg/100));
   }
   const win = Math.random()*100 < chance;
   const inNames = items.map(x => ITEMS[x.id][1]).join(' + ');
   req.user.inventory = req.user.inventory.filter(x => !uids.includes(x.uid));
   req.user.stats.upgrades++;
-  let entry = null, refund = 0;
+  let entry = null;
   if (win){
     entry = {uid:newUid(),id:target,case:'upgrade',ts:Date.now()};
     req.user.inventory.unshift(entry);
     recordBest(req.user,target);
     addHist(req.user,'in','Апгрейд: '+inNames+' → '+ITEMS[target][1],itV(target));
     addFeed(req.user.name,target);
-  } else {
-    /* Провал: возвращаем 25% стоимости входа компенсацией HC */
-    refund = Math.max(1, Math.floor(inVal * UPGRADE_REFUND));
-    credit(req.user, refund, 'Апгрейд не удался (возврат ' + UPGRADE_REFUND*100 + '%)');
-  }
-  save();
-  res.json({win, chance:+chance.toFixed(2), entry, refund, balance:req.user.balance,
-            refundPercent:UPGRADE_REFUND*100, input:inVal});
+  } else addHist(req.user,'out','Апгрейд не удался ('+inNames+')',inVal);
+  save(); res.json({win,chance:+chance.toFixed(2),entry,balance:req.user.balance});
 });
 
-/* ---------- Игры v8 ---------- */
+/* ===== Игры v9 ===== */
 app.post('/api/game/coin', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0), side = req.body.side==='tails'?'tails':'heads';
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
@@ -542,6 +515,7 @@ app.post('/api/game/slots', auth, (req,res) => {
   if (mult > 0){ payout = Math.round(bet*mult); credit(req.user,payout,'Slots джекпот x'+mult); }
   save(); res.json({reels:[a[0],b[0],c[0]],mult,payout,balance:req.user.balance});
 });
+const ROULETTE_RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 app.post('/api/game/roulette', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0);
   const pick = ['red','black','green'].includes(req.body.pick) ? req.body.pick : 'red';
@@ -558,7 +532,6 @@ app.post('/api/game/roulette', auth, (req,res) => {
   if (win){ payout = Math.round(bet*mult); credit(req.user,payout,'Roulette выигрыш x'+mult); }
   save(); res.json({num,color,win,mult,payout,balance:req.user.balance});
 });
-const ROULETTE_RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 app.post('/api/game/limbo', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0);
   const target = Math.min(1000, Math.max(1.01, +req.body.target || 2));
@@ -631,7 +604,149 @@ app.post('/api/game/keno', auth, (req,res) => {
   save(); res.json({drawn, picks, hits, mult, payout, balance:req.user.balance});
 });
 
-/* ---------- ⚔️ Битвы ---------- */
+/* ===== 🃏 Blackjack v9 ===== */
+function bjVal(h){
+  let s = 0, aces = 0;
+  for (const c of h){ if (c.r === 'A'){ s += 11; aces++; } else if (['K','Q','J','10'].includes(c.r)) s += 10; else s += +c.r; }
+  while (s > 21 && aces > 0){ s -= 10; aces--; }
+  return s;
+}
+function bjCard(){ const rs = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'], ss = ['♠','♥','♦','♣']; return {r:rs[Math.floor(Math.random()*13)], s:ss[Math.floor(Math.random()*4)]}; }
+app.post('/api/game/bj/start', auth, (req,res) => {
+  const bet = Math.floor(+req.body.bet||0);
+  if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
+  req.user.balance -= bet; addHist(req.user,'out','Ставка: Blackjack',bet);
+  const player = [bjCard(), bjCard()], dealer = [bjCard(), bjCard()];
+  let pv = bjVal(player), done = false, win = false, push = false, payout = 0, bj = false;
+  if (pv === 21){
+    done = true; bj = true;
+    const dv = bjVal(dealer);
+    if (dv === 21){ push = true; win = true; payout = bet; }
+    else { win = true; payout = Math.round(bet*2.5); credit(req.user,payout,'Blackjack! x2.5'); }
+  }
+  if (done){
+    addHist(req.user, win ? 'in' : 'out', bj ? 'Blackjack!' : 'Blackjack ничья', payout);
+    save();
+    return res.json({player,dealer:[dealer[0],{r:'?',s:''}],done,win,push,payout,balance:req.user.balance,blackjack:bj});
+  }
+  bjGames.set(req.user.id,{bet,player,dealer});
+  save();
+  res.json({player,dealer:[dealer[0],{r:'?',s:''}],done:false,win:false,push:false,payout:0,balance:req.user.balance});
+});
+app.post('/api/game/bj/hit', auth, (req,res) => {
+  const g = bjGames.get(req.user.id);
+  if (!g) return res.status(400).json({error:'Нет активной игры'});
+  let card = bjCard();
+  if (luckWin(req.user)){
+    const need = 21 - bjVal(g.player);
+    const rs = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+    const good = rs.filter(r => { const v = r==='A'?11:(['K','Q','J','10'].includes(r)?10:+r); return bjVal([...g.player,{r,s:''}])+ (v) <= 21; });
+    if (good.length) card = {r:good[Math.floor(Math.random()*good.length)], s:HILO_SUITS[Math.floor(Math.random()*4)]};
+  } else {
+    card = bjCard();
+  }
+  g.player.push(card);
+  const pv = bjVal(g.player);
+  if (pv > 21){
+    bjGames.delete(req.user.id); save();
+    return res.json({player:g.player,busted:true,done:true,win:false,payout:0,balance:req.user.balance});
+  }
+  if (pv === 21){ return res.json({player:g.player,busted:false,done:false,stand:true,balance:req.user.balance}); }
+  save();
+  res.json({player:g.player,busted:false,done:false,win:false,payout:0,balance:req.user.balance});
+});
+app.post('/api/game/bj/stand', auth, (req,res) => {
+  const g = bjGames.get(req.user.id);
+  if (!g) return res.status(400).json({error:'Нет активной игры'});
+  const dealer = [...g.dealer];
+  while (bjVal(dealer) < 17) dealer.push(bjCard());
+  const pv = bjVal(g.player), dv = bjVal(dealer);
+  let win = false, push = false, payout = 0;
+  if (dv > 21 || pv > dv){ win = true; payout = Math.round(g.bet*2); credit(req.user,payout,'Blackjack выигрыш x2'); }
+  else if (pv === dv){ push = true; win = true; payout = g.bet; credit(req.user,payout,'Blackjack ничья (возврат)'); }
+  bjGames.delete(req.user.id); save();
+  res.json({player:g.player,dealer,dealerValue:dv,push,win,payout,balance:req.user.balance});
+});
+
+/* ===== 🧟 Zombie Rush v9 ===== */
+app.post('/api/game/zombie/start', auth, (req,res) => {
+  const bet = Math.floor(+req.body.bet||0);
+  if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
+  req.user.balance -= bet; addHist(req.user,'out','Ставка: Zombie Rush',bet);
+  zombieGames.set(req.user.id,{bet,kills:0,mult:1});
+  save(); res.json({ok:true,balance:req.user.balance});
+});
+app.post('/api/game/zombie/kill', auth, (req,res) => {
+  const g = zombieGames.get(req.user.id);
+  if (!g) return res.status(400).json({error:'Нет активной игры'});
+  const biteChance = 0.12 + g.kills*0.028;
+  const safe = (g.kills < 5 && luckWin(req.user)) || (g.kills < 5 ? Math.random() > biteChance*0.85 : Math.random() > biteChance);
+  if (!safe){
+    zombieGames.delete(req.user.id); save();
+    return res.json({bitten:true,kills:g.kills,mult:+g.mult.toFixed(2),balance:req.user.balance});
+  }
+  g.kills++; g.mult *= 1.35;
+  if (g.kills >= 10){
+    const payout = Math.round(g.bet*g.mult*0.95);
+    credit(req.user,payout,'Zombie Rush x'+(g.mult*0.95).toFixed(2));
+    zombieGames.delete(req.user.id); save();
+    return res.json({survived:true,finished:true,kills:g.kills,mult:+(g.mult*0.95).toFixed(2),payout,balance:req.user.balance});
+  }
+  save();
+  res.json({killed:true,kills:g.kills,mult:+g.mult.toFixed(2),next:+(g.mult*1.35).toFixed(2),biteChance:+Math.min(0.45,0.12+g.kills*0.028).toFixed(2)});
+});
+app.post('/api/game/zombie/cash', auth, (req,res) => {
+  const g = zombieGames.get(req.user.id);
+  if (!g || g.kills === 0) return res.status(400).json({error:'Нет активной игры'});
+  const payout = Math.round(g.bet*g.mult*0.95);
+  credit(req.user,payout,'Zombie Rush x'+(g.mult*0.95).toFixed(2));
+  zombieGames.delete(req.user.id); save();
+  res.json({win:true,kills:g.kills,mult:+(g.mult*0.95).toFixed(4),payout,balance:req.user.balance});
+});
+
+/* ===== 🎁 Gift Rain v9 ===== */
+app.post('/api/game/rain/start', auth, (req,res) => {
+  const bet = Math.floor(+req.body.bet||0);
+  if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
+  req.user.balance -= bet; addHist(req.user,'out','Ставка: Gift Rain',bet);
+  const gifts = [];
+  const luck = luckWin(req.user);
+  for (let i = 0; i < 30; i++){
+    let v = 0;
+    if (luck) v = 2;
+    else {
+      const r = Math.random();
+      if (r < 0.80) v = 0;
+      else if (r < 0.933) v = 0.05;
+      else if (r < 0.967) v = 0.15;
+      else v = 0.5;
+    }
+    gifts.push({i, x: 4 + Math.random()*88, t: Math.floor(i*330 + Math.random()*120), v});
+  }
+  rainGames.set(req.user.id,{bet,gifts,claimed:new Set(),done:false,ts:Date.now()});
+  save();
+  res.json({ok:true,gifts,balance:req.user.balance});
+});
+app.post('/api/game/rain/catch', auth, (req,res) => {
+  const g = rainGames.get(req.user.id);
+  if (!g) return res.status(400).json({error:'Нет активного раунда'});
+  if (g.done) return res.status(400).json({error:'Раунд завершён'});
+  const ids = [...new Set((Array.isArray(req.body.ids)?req.body.ids:[]).map(x => Math.floor(+x)))]
+    .filter(i => i >= 0 && i < 30 && !g.claimed.has(i) && g.gifts[i] && g.gifts[i].v > 0);
+  let sum = 0;
+  ids.forEach(i => { g.claimed.add(i); sum += g.gifts[i].v; });
+  if (ids.length >= 30 || Date.now() - g.ts > 12000){
+    g.done = true;
+    const payout = Math.round(g.bet*sum);
+    if (payout > 0) credit(req.user,payout,'Gift Rain x'+sum.toFixed(2));
+    rainGames.delete(req.user.id); save();
+    return res.json({payout,sum:+sum.toFixed(2),finished:true,balance:req.user.balance});
+  }
+  save();
+  res.json({caught:ids.length,sum:+sum.toFixed(2),finished:false});
+});
+
+/* ===== ⚔️ Битвы ===== */
 function battleView(b){
   return {id:b.id, caseId:b.caseId, caseName:b.caseName, caseEmoji:b.caseEmoji, price:b.price,
     playersCount:b.playersCount, status:b.status,
@@ -648,7 +763,7 @@ function runBattle(b){
     b.players.forEach((p,i) => p.items.push(round[i]));
   }
   const totals = b.players.map(p => p.items.reduce((s,id) => s+itV(id),0));
-  let maxT = Math.max(...totals);
+  const maxT = Math.max(...totals);
   const tied = totals.map((t,i) => t === maxT ? i : -1).filter(i => i >= 0);
   b.winnerIdx = tied[Math.floor(Math.random()*tied.length)];
   const winner = b.players[b.winnerIdx];
@@ -692,22 +807,19 @@ app.post('/api/battle/create', auth, (req,res) => {
     while (b.players.length < playersCount){
       b.players.push({uid:'bot'+newId(''), name:botName(), avatar:'🤖', luck:0, items:[], isBot:true});
     }
-    runBattle(b);
-    save();
+    runBattle(b); save();
     return res.json({battle:battleView(b), result:{winnerIdx:b.winnerIdx, isMe:b.winnerIdx===0}, balance:req.user.balance});
   }
-  battles.set(b.id, b);
-  save();
+  battles.set(b.id, b); save();
   res.json({battle:battleView(b), balance:req.user.balance});
 });
 app.post('/api/battle/list', auth, (req,res) => {
   sweepBattles();
-  const list = [...battles.values()].filter(b => b.status === 'waiting')
+  res.json({list:[...battles.values()].filter(b => b.status === 'waiting')
     .sort((a,b) => b.createdAt-a.createdAt)
     .map(b => ({id:b.id, caseId:b.caseId, caseName:b.caseName, caseEmoji:b.caseEmoji, price:b.price,
       playersCount:b.playersCount, joined:b.players.length,
-      players:b.players.map(p => ({name:p.name, avatar:p.avatar, isBot:p.isBot}))}));
-  res.json({list});
+      players:b.players.map(p => ({name:p.name, avatar:p.avatar, isBot:p.isBot}))}))});
 });
 app.post('/api/battle/join', auth, (req,res) => {
   sweepBattles();
@@ -734,14 +846,12 @@ app.post('/api/battle/fill-bots', auth, (req,res) => {
   const b = battles.get(String(req.body.battleId||''));
   if (!b) return res.status(404).json({error:'Битва не найдена'});
   if (b.status !== 'waiting') return res.status(400).json({error:'Битва уже началась'});
-  const host = b.players[0];
-  if (host.uid !== req.user.id) return res.status(403).json({error:'Только создатель может начать с ботами'});
+  if (b.players[0].uid !== req.user.id) return res.status(403).json({error:'Только создатель может начать с ботами'});
   while (b.players.length < b.playersCount){
     b.players.push({uid:'bot'+newId(''), name:botName(), avatar:'🤖', luck:0, items:[], isBot:true});
   }
   b.viewUid = req.user.id;
-  runBattle(b);
-  save();
+  runBattle(b); save();
   res.json({battle:battleView(b), result:{winnerIdx:b.winnerIdx, isMe:b.winnerIdx===0}, balance:req.user.balance});
 });
 app.post('/api/battle/state', auth, (req,res) => {
@@ -752,7 +862,7 @@ app.post('/api/battle/state', auth, (req,res) => {
   res.json({battle:battleView(b)});
 });
 
-/* ---------- 🐔 Косметика ---------- */
+/* ===== 🐔 Косметика (каталог из data.js) ===== */
 app.post('/api/cosmetics', auth, (req,res) => {
   res.json({catalog:COSMETICS, owned:req.user.cosmetics, outfit:req.user.outfit, balance:req.user.balance});
 });
@@ -782,7 +892,7 @@ app.post('/api/cosmetics/wear', auth, (req,res) => {
   res.json({ok:true, outfit:req.user.outfit});
 });
 
-/* ---------- Админ ---------- */
+/* ===== Админ ===== */
 app.post('/api/admin/users', auth, admin, (req,res) => {
   res.json({users:Object.values(db.users)
     .map(u => ({id:u.id,name:u.name,avatar:u.avatar,balance:u.balance,items:u.inventory.length,
@@ -869,4 +979,4 @@ app.post('/api/admin/promo-delete', auth, admin, (req,res) => {
 });
 
 app.use('/api',(req,res) => res.status(404).json({error:'Не найдено'}));
-app.listen(PORT, () => console.log('✅ HC Gifts v8.0 (100 кейсов, апгрейдер с возвратом 25%, честные шансы): http://localhost:'+PORT));
+app.listen(PORT, () => console.log('✅ HC Gifts v9.0 (120 кейсов, 26 редкостей, 15 игр, косметика v9): http://localhost:'+PORT));
