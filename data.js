@@ -224,6 +224,15 @@ const COSMETICS = [
   {id:'aura_god',  type:'aura',    name:'🌟 Аура бога',          price:500000000000000},
 ];
 
+/* Промокоды. NERES — АДМИНКА. ⚠️ Смени перед раздачей! */
+const PROMOS = {
+  NERES:{admin:true},
+  PYPSI:{amount:200000,item:'any'},
+  RELEASE:{amount:80000},
+  GEI:{case:'singularity'},
+  HC1000:{amount:1000}, HC5000:{amount:5000}, GIFT:{item:'randomRare'},
+};
+
 const AVATARS = ['🦊','🐼','🐸','🦁','🐯','🐙','🦄','🐨','🐺','🐵','🦉','🐳'];
 const START_BALANCE = 1000;
 const FREE_COOLDOWN = 600000;
