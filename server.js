@@ -13,32 +13,26 @@ const PORT = process.env.PORT || 3000;
 const DB_FILE = process.env.DATA_FILE || path.join(__dirname, 'data.json');
 const LUCK_MAX = 1000000;
 
-/* ================= Экономика игр v7.1 (понижена) ================= */
+/* ================= Экономика игр v8 (пониженная) ================= */
 const GAME_WHEEL = [{m:0,w:12},{m:0.5,w:6},{m:1.5,w:4},{m:2,w:2},{m:3,w:1},{m:5,w:0.5}];
 const GAME_PLINKO = [6,2,1.2,1,0.8,0.6,0.5,0.6,0.8,1,1.2,2,6];
 const GAME_SLOTS = [['🍒',40,4],['🍋',28,6],['🔔',16,10],['⭐',8,20],['💎',3,50],['7️⃣',1,120]];
 const GAME_KENO = {
-  1:{1:2.5},
-  2:{2:9},
-  3:{2:1.6,3:14},
-  4:{3:5,4:28},
-  5:{3:2.2,4:9,5:70},
-  6:{3:2,4:5,5:30,6:150},
-  7:{4:2.5,5:8,6:45,7:220},
-  8:{4:2,5:5,6:18,7:90,8:400},
-  9:{4:1.5,5:3.5,6:11,7:40,8:140,9:500},
+  1:{1:2.5}, 2:{2:9}, 3:{2:1.6,3:14}, 4:{3:5,4:28}, 5:{3:2.2,4:9,5:70},
+  6:{3:2,4:5,5:30,6:150}, 7:{4:2.5,5:8,6:45,7:220},
+  8:{4:2,5:5,6:18,7:90,8:400}, 9:{4:1.5,5:3.5,6:11,7:40,8:140,9:500},
   10:{5:1.5,6:3.5,7:12,8:45,9:200,10:500},
 };
-const COIN_MULT = 1.85;
-const DICE_FAIR = 90;
-const CRASH_EDGE = 0.88;
-const MINES_FEE = 0.85;
+const COIN_MULT = 1.85, DICE_FAIR = 90, CRASH_EDGE = 0.88, MINES_FEE = 0.85;
 const TOWER_STEP = 1.26, TOWER_FEE = 0.93;
-const ROULETTE_COLOR = 1.95, ROULETTE_ZERO = 10;
-const LIMBO_EDGE = 0.90;
-const HILO_EDGE = 0.85;
+const ROULETTE_COLOR = 1.95, ROULETTE_ZERO = 10, LIMBO_EDGE = 0.90, HILO_EDGE = 0.85;
 
-/* ================= Косметика курицы (цены от 1 трлн) ================= */
+/* ================= Апгрейдер v8: возврат 25% при провале, макс 97% ================= */
+const UPGRADE_BASE = 90;
+const UPGRADE_MAX = 97;
+const UPGRADE_REFUND = 0.25;
+
+/* ================= Косметика курицы ================= */
 const COSMETICS = [
   {id:'hat_cap',   type:'hat',     name:'🧢 Кепка',              price:1000000000000},
   {id:'hat_fedora',type:'hat',     name:'🎩 Шляпа мафиози',      price:2000000000000},
@@ -87,8 +81,7 @@ const dropTotal = cs => cs.drops.reduce((s,d)=>s+d[1],0);
 function bestItem(cs){ let b = cs.drops[0][0]; for (const [id] of cs.drops) if (itV(id) > itV(b)) b = id; return b; }
 function pickDrop(cs, luck){
   if (luck && luck > 0){
-    const chance = Math.min(1, luck / LUCK_MAX);
-    if (Math.random() < chance) return bestItem(cs);
+    if (Math.random() < Math.min(1, luck / LUCK_MAX)) return bestItem(cs);
   }
   let r = Math.random()*dropTotal(cs);
   for (const [id,w] of cs.drops){ if ((r-=w) < 0) return id; }
@@ -116,8 +109,6 @@ function recordBest(u, id){
 const NAME_A = ['Neon','Ghost','Pixel','Lucky','Turbo','Cyber','Hyper','Risky','Shadow','Nova'];
 const NAME_B = ['Wolf','Fox','Bear','Hawk','Shark','Cat','Viper','Bull','Owl','Ape'];
 const botName = () => NAME_A[Math.floor(Math.random()*NAME_A.length)] + NAME_B[Math.floor(Math.random()*NAME_B.length)] + Math.floor(Math.random()*99);
-
-/* Удача в играх: шанс лучшего исхода = luck / LUCK_MAX */
 function luckWin(u){
   const l = u.luck || 0;
   if (l <= 0) return false;
@@ -162,7 +153,7 @@ app.get('/api/config', (req,res) => {
     topupMax:TOPUP_MAX,topupCooldown:TOPUP_COOLDOWN,startBalance:START_BALANCE,multiMax:MULTI_MAX,
     wheelSegs:GAME_WHEEL,plinkoMults:GAME_PLINKO,slotsSyms:GAME_SLOTS,kenoPay:GAME_KENO,
     battlePlayers:BATTLE_PLAYERS,battleRounds:BATTLE_ROUNDS,luckMax:LUCK_MAX,
-    cosmetics:COSMETICS,
+    cosmetics:COSMETICS, upgrade:{base:UPGRADE_BASE,max:UPGRADE_MAX,refund:UPGRADE_REFUND},
     eco:{coin:COIN_MULT,dice:DICE_FAIR,crash:CRASH_EDGE,mines:MINES_FEE,tower:TOWER_STEP,
          rouletteColor:ROULETTE_COLOR,rouletteZero:ROULETTE_ZERO,limbo:LIMBO_EDGE,hilo:HILO_EDGE}});
 });
@@ -352,7 +343,7 @@ app.post('/api/promo', auth, (req,res) => {
   save(); res.json({message:msg,entries,balance:req.user.balance});
 });
 
-/* ---------- Апгрейдер ---------- */
+/* ---------- Апгрейдер v8: шанс до 97%, провал возвращает 25% ---------- */
 app.post('/api/upgrade', auth, (req,res) => {
   const uids = Array.isArray(req.body.uids)?req.body.uids:[];
   const target = String(req.body.target||'');
@@ -366,27 +357,33 @@ app.post('/api/upgrade', auth, (req,res) => {
   if (!items.length) return res.status(400).json({error:'Выберите предметы'});
   const inVal = items.reduce((s,x) => s+itV(x.id),0);
   if (itV(target) <= inVal) return res.status(400).json({error:'Цель должна быть дороже входа'});
-  let chance = Math.min(95,Math.max(1,inVal/itV(target)*90));
+  let chance = Math.min(UPGRADE_MAX, Math.max(1, inVal/itV(target)*UPGRADE_BASE));
   if (!req.user.admin){
     const p = PRIV[req.user.privilege];
-    if (p && p.upg) chance = Math.min(95,chance*(1+p.upg/100));
+    if (p && p.upg) chance = Math.min(UPGRADE_MAX, chance*(1+p.upg/100));
   }
   const win = Math.random()*100 < chance;
   const inNames = items.map(x => ITEMS[x.id][1]).join(' + ');
   req.user.inventory = req.user.inventory.filter(x => !uids.includes(x.uid));
   req.user.stats.upgrades++;
-  let entry = null;
+  let entry = null, refund = 0;
   if (win){
     entry = {uid:newUid(),id:target,case:'upgrade',ts:Date.now()};
     req.user.inventory.unshift(entry);
     recordBest(req.user,target);
     addHist(req.user,'in','Апгрейд: '+inNames+' → '+ITEMS[target][1],itV(target));
     addFeed(req.user.name,target);
-  } else addHist(req.user,'out','Апгрейд не удался ('+inNames+')',inVal);
-  save(); res.json({win,chance:+chance.toFixed(2),entry,balance:req.user.balance});
+  } else {
+    /* Провал: возвращаем 25% стоимости входа компенсацией HC */
+    refund = Math.max(1, Math.floor(inVal * UPGRADE_REFUND));
+    credit(req.user, refund, 'Апгрейд не удался (возврат ' + UPGRADE_REFUND*100 + '%)');
+  }
+  save();
+  res.json({win, chance:+chance.toFixed(2), entry, refund, balance:req.user.balance,
+            refundPercent:UPGRADE_REFUND*100, input:inVal});
 });
 
-/* ---------- Игры v7.1 (пониженная экономика + удача) ---------- */
+/* ---------- Игры v8 ---------- */
 app.post('/api/game/coin', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0), side = req.body.side==='tails'?'tails':'heads';
   if (bet < 1 || bet > req.user.balance) return res.status(400).json({error:'Некорректная ставка'});
@@ -561,6 +558,7 @@ app.post('/api/game/roulette', auth, (req,res) => {
   if (win){ payout = Math.round(bet*mult); credit(req.user,payout,'Roulette выигрыш x'+mult); }
   save(); res.json({num,color,win,mult,payout,balance:req.user.balance});
 });
+const ROULETTE_RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 app.post('/api/game/limbo', auth, (req,res) => {
   const bet = Math.floor(+req.body.bet||0);
   const target = Math.min(1000, Math.max(1.01, +req.body.target || 2));
@@ -633,7 +631,7 @@ app.post('/api/game/keno', auth, (req,res) => {
   save(); res.json({drawn, picks, hits, mult, payout, balance:req.user.balance});
 });
 
-/* ---------- ⚔️ Битвы (без изменений v7) ---------- */
+/* ---------- ⚔️ Битвы ---------- */
 function battleView(b){
   return {id:b.id, caseId:b.caseId, caseName:b.caseName, caseEmoji:b.caseEmoji, price:b.price,
     playersCount:b.playersCount, status:b.status,
@@ -754,7 +752,7 @@ app.post('/api/battle/state', auth, (req,res) => {
   res.json({battle:battleView(b)});
 });
 
-/* ---------- 🐔 Косметика курицы ---------- */
+/* ---------- 🐔 Косметика ---------- */
 app.post('/api/cosmetics', auth, (req,res) => {
   res.json({catalog:COSMETICS, owned:req.user.cosmetics, outfit:req.user.outfit, balance:req.user.balance});
 });
@@ -871,4 +869,4 @@ app.post('/api/admin/promo-delete', auth, admin, (req,res) => {
 });
 
 app.use('/api',(req,res) => res.status(404).json({error:'Не найдено'}));
-app.listen(PORT, () => console.log('✅ HC Gifts v7.1 (слоты=тройки, экономика понижена, удача в играх, косметика курицы): http://localhost:'+PORT));
+app.listen(PORT, () => console.log('✅ HC Gifts v8.0 (100 кейсов, апгрейдер с возвратом 25%, честные шансы): http://localhost:'+PORT));

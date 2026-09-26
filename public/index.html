@@ -64,10 +64,11 @@ main{padding:14px 14px 132px}
 .ct-name{font-weight:700;font-size:13.5px;margin-bottom:8px}
 .ct-price{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;background:rgba(0,0,0,.38);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:4px 10px 4px 5px;font-family:var(--mono);font-size:11.5px;font-weight:700;z-index:1}
 .ct-price.free{color:var(--green)}
-.case-tile.armed{animation:caseArm .5s ease}
-@keyframes caseArm{0%,100%{transform:none}15%,45%,75%{transform:scale(1.07) rotate(-2.5deg)}30%,60%,90%{transform:scale(1.05) rotate(2.5deg)}}
-.case-tile.armed .ct-emoji{animation:emojiGlow .25s ease infinite alternate}
-@keyframes emojiGlow{from{filter:drop-shadow(0 0 3px rgba(139,92,246,.5))}to{filter:drop-shadow(0 0 16px rgba(167,139,250,1))}}
+/* v8: многофазная анимация кейса */
+.case-tile.armed{animation:caseArm .55s cubic-bezier(.3,1.4,.5,1)}
+@keyframes caseArm{0%{transform:none}20%{transform:translateY(-8px) scale(1.05) rotate(-3deg)}40%{transform:translateY(-4px) scale(1.03) rotate(3deg)}60%{transform:translateY(-7px) scale(1.05) rotate(-2deg)}80%{transform:translateY(-3px) scale(1.02) rotate(2deg)}100%{transform:translateY(-6px) scale(1.06)}}
+.case-tile.armed .ct-emoji{animation:emojiGlow .3s ease infinite alternate}
+@keyframes emojiGlow{from{filter:drop-shadow(0 0 4px rgba(139,92,246,.6))}to{filter:drop-shadow(0 0 20px rgba(196,181,253,1))}}
 .shake{animation:shake .4s}
 @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
 .flash{position:fixed;inset:0;z-index:90;pointer-events:none;animation:flashFade 1.1s forwards}
@@ -227,13 +228,22 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .cosm-it button.wear{background:var(--surface2);border:1px solid var(--border2);color:var(--accent-txt)}
 .cosm-it button[disabled]{opacity:.4;pointer-events:none}
 .cosm-it.owned{border-color:rgba(52,211,153,.4)}
+/* ===== v8: Апгрейдер-лента ===== */
+.upg-ribbon-wrap{position:relative;overflow:hidden;height:104px;border-radius:15px;background:var(--bg);border:1px solid var(--border2);-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.upg-ribbon{display:flex;align-items:center;height:100%;will-change:transform}
+.upg-rib-cell{flex:0 0 74px;width:74px;height:88px;margin-right:7px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--surface2);border:1px solid var(--border2)}
+.upg-rib-cell .e{font-size:26px}
+.upg-rib-cell .v{font-family:var(--mono);font-size:9.5px;color:var(--muted)}
+.upg-rib-cell.winzone{background:linear-gradient(180deg,rgba(52,211,153,.22),rgba(52,211,153,.08));border-color:var(--green)}
+.upg-rib-cell.boostzone{background:linear-gradient(180deg,rgba(245,181,68,.22),rgba(245,181,68,.08));border-color:var(--gold)}
+.upg-rib-cell.won{box-shadow:0 0 0 2px var(--green),0 0 26px -4px var(--green);filter:brightness(1.3)}
+.upg-rib-marker{position:absolute;left:50%;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--accent-txt);z-index:3}
+.upg-rib-marker::before,.upg-rib-marker::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border:6px solid transparent}
+.upg-rib-marker::before{top:-1px;border-top:7px solid var(--accent-txt)}
+.upg-rib-marker::after{bottom:-1px;border-bottom:7px solid var(--accent-txt)}
+.upg-legend{display:flex;gap:12px;justify-content:center;margin-top:9px;font-size:10.5px;color:var(--muted)}
+.upg-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 .upg-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px 14px 14px;text-align:center}
-.upg-wheel{position:relative;width:212px;height:212px;margin:8px auto 2px}
-.upg-dial{width:100%;height:100%;border-radius:50%;border:1px solid var(--border2);box-shadow:0 12px 36px rgba(0,0,0,.55),inset 0 0 0 7px rgba(0,0,0,.28);will-change:transform}
-.upg-hub{position:absolute;inset:31.5%;border-radius:50%;background:#120D20;border:1px solid var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 0 7px rgba(0,0,0,.35)}
-.upg-hub b{font-size:21px;font-family:var(--mono)}
-.upg-hub span{font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
-.upg-needle{position:absolute;top:-8px;left:50%;transform:translateX(-50%);z-index:2;border:8px solid transparent;border-top:13px solid #fff}
 .upg-res{display:none;margin-top:12px;padding:11px 12px;border-radius:13px;font-size:13px;font-weight:650}
 .upg-res.show{display:block;animation:popIn .35s}
 @keyframes popIn{from{opacity:0;transform:scale(.92)}to{opacity:1}}
@@ -431,7 +441,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
     <section class="pane" id="pane-battles">
       <div class="section-title"><span class="tt">⚔️ Битвы кейсов</span><span class="st-action">2 / 4 / 6 игроков</span></div>
       <div class="ref-card">
-        <div class="ref-sub" style="margin:0 0 10px">Каждый вносит <b>5 одинаковых кейсов</b>. Открывается по 5 предметов на игрока — у кого суммарно дороже, забирает <b>ВСЕ предметы всех игроков</b>.</div>
+        <div class="ref-sub" style="margin:0 0 10px">Каждый вносит <b>5 одинаковых кейсов</b>. У кого суммарно дороже — забирает <b>ВСЕ предметы всех игроков</b>.</div>
         <div class="adm-row"><select class="sel-inp" id="btCase"></select></div>
         <div class="adm-row">
           <select class="sel-inp" id="btCount">
@@ -452,14 +462,18 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 
     <section class="pane" id="pane-upgrade">
       <div class="upg-card">
-        <div class="upg-wheel" id="upgWheel">
-          <div class="upg-dial" id="upgDial"></div>
-          <div class="upg-needle"></div>
-          <div class="upg-hub"><b id="upgChance">—</b><span>шанс</span></div>
+        <div class="upg-ribbon-wrap">
+          <div class="upg-ribbon" id="upgRibbon"></div>
+          <div class="upg-rib-marker"></div>
+        </div>
+        <div class="upg-legend">
+          <span><i style="background:rgba(52,211,153,.25);border:1px solid var(--green)"></i>Победа</span>
+          <span><i style="background:rgba(245,181,68,.25);border:1px solid var(--gold)"></i>Буст привилегии</span>
+          <span><i style="background:var(--surface2);border:1px solid var(--border2)"></i>Мимо</span>
         </div>
         <div class="upg-res" id="upgRes"></div>
         <div class="upg-chips" id="upgChips"></div>
-        <div class="upg-hint" id="upgHint">Шанс = 90% × (стоимость входа / стоимость цели)</div>
+        <div class="upg-hint" id="upgHint">Выбери предметы и цель — провал вернёт 25% стоимости</div>
       </div>
       <div class="section-title"><span class="tt">Ваши предметы</span><span class="st-action" id="upgInSum"></span></div>
       <div class="upg-strip" id="upgInv"></div>
@@ -558,7 +572,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
               <button class="btn" id="admLuckGo">Выдать</button>
               <button class="btn btn-ghost" id="admLuckOff">Снять</button>
             </div>
-            <div class="ref-sub" style="margin:0">1000000 = гарантированный лучший предмет и победы в играх</div>
+            <div class="ref-sub" style="margin:0">1000000 = лучший предмет в кейсах и победы в играх</div>
           </div>
           <div class="adm-sec">
             <div class="adm-sec-t">🎖 Привилегия игроку</div>
@@ -870,6 +884,7 @@ const nick = () => pick(NAME_A) + pick(NAME_B) + (Math.random() < .55 ? Math.flo
 const AVATARS = ['🦊','🐼','🐸','🦁','🐯','🐙','🦄','🐨','🐺','🐵','🦉','🐳'];
 const LS_TOKEN = 'hc_gifts_token_v1', LS_SOUND = 'hc_gifts_sound_v1';
 const CELL = 86, GAP = 9, STEP = CELL + GAP;
+const RIBW = 74, RIBG = 7, RIBSTEP = RIBW + RIBG;
 const HIGH_RAR = ['legendary','mythic','divine','secret','radiant','astral','eternal','celestial','primal','chrono','ascended','omega','void','absolute','limited','nova','apex','transcend','galactic','universal'];
 const HILO_VAL = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
 const HILO_RANKS = Object.keys(HILO_VAL);
@@ -1141,7 +1156,7 @@ setInterval(() => {
   else el.textContent = 'FREE';
 }, 1000);
 
-/* ================= Рулетка кейса (надёжный rAF + страховка) ================= */
+/* ================= Рулетка кейса v8 (разгон → спуск) ================= */
 const roll = {raf:null, watchdog:null, autoT:null, spinning:false, active:false, cs:null, mode:'single',
               results:[], multiIdx:0, multiTotal:0, soldAll:false, soldUid:null, openCount:1};
 
@@ -1193,13 +1208,14 @@ async function tryOpen(caseId, rowEl){
   renderContents(cs);
   openCountChips();
 
+  /* Фаза 1: кейс «взлетает» и трясётся на плитке */
   if (rowEl){ rowEl.classList.remove('armed'); void rowEl.offsetWidth; rowEl.classList.add('armed'); }
-  beep(300,.12,'sine',.06); beep(450,.12,'sine',.06,.13);
+  beep(300,.12,'sine',.06); beep(450,.12,'sine',.06,.13); beep(600,.12,'sine',.06,.26);
   setTimeout(() => {
     if (rowEl) rowEl.classList.remove('armed');
     openOv('#ovRoll');
-    setTimeout(runSequence, 260);
-  }, 520);
+    setTimeout(runSequence, 300);
+  }, 560);
 }
 
 function runSequence(){
@@ -1211,9 +1227,10 @@ function runSequence(){
     $('#rollResult').classList.remove('show');
   }
   const winItem = roll.results[roll.mode==='multi' ? roll.multiIdx : 0].item;
-  startSpin(winItem, roll.mode==='multi' ? 1500+Math.random()*300 : 4700+Math.random()*800);
+  startSpin(winItem, roll.mode==='multi' ? 1500+Math.random()*300 : 4900+Math.random()*700);
 }
 
+/* Спин v8: разгон (ease-in) 12% времени → плавный спуск (ease-out) 88% */
 function startSpin(winItem, dur){
   const winEl = $('#rlWindow'), W = winEl.clientWidth || 380, strip = $('#rlStrip');
   const N = 64, WIN = 56;
@@ -1233,8 +1250,17 @@ function startSpin(winItem, dur){
   const off0 = W/2 - (2*STEP + CELL/2);
   const jitter = (Math.random()*0.56 - 0.28) * CELL;
   const off1 = W/2 - (WIN*STEP + CELL/2) + jitter;
+  /* Многофазная кривая: быстрый разгон + длинное затухание */
+  const accel = dur * 0.12;
+  const ease = t => {
+    if (t < 0.12){
+      const p = t / 0.12;
+      return (p*p) * (dur*0.55) / dur;   // разгон: 55% пути за 12% времени
+    }
+    const p = (t - 0.12) / 0.88;
+    return (dur*0.55 + (off1-off0-dur*0.55)*(1 - Math.pow(1-p, 4.6))) / (off1-off0);
+  };
   const t0 = performance.now();
-  const ease = t => 1 - Math.pow(1-t, 4.2);
   let lastIdx = 2, done = false;
   cancelAnimationFrame(roll.raf);
   clearTimeout(roll.watchdog);
@@ -1386,8 +1412,8 @@ function renderContents(cs){
   closeOv($('#ovRoll'));
 };
 
-/* ================= Апгрейдер ================= */
-const upg = {inputs:new Set(), target:null, busy:false, angle:0, lastChance:0};
+/* ================= Апгрейдер v8: лента-рулетка ================= */
+const upg = {inputs:new Set(), target:null, busy:false, ribbonPos:0};
 function upgInputVal(){
   let s = 0;
   upg.inputs.forEach(uid => {
@@ -1404,22 +1430,17 @@ function myUpgBonus(){
 function upgChanceVal(){
   if (!upg.target) return 0;
   const v = upgInputVal(); if (!v) return 0;
-  const base = Math.min(95, Math.max(1, v/itV(upg.target)*90));
-  return Math.min(95, base * (1 + myUpgBonus()/100));
+  const base = Math.min(CFG.upgrade.max, Math.max(1, v/itV(upg.target)*CFG.upgrade.base));
+  return Math.min(CFG.upgrade.max, base * (1 + myUpgBonus()/100));
 }
-function updateWheel(){
-  const ch = upg.busy ? upg.lastChance : upgChanceVal();
-  const Z = Math.max(ch*3.6, 0.001);
-  $('#upgDial').style.background = ch > 0
-    ? `conic-gradient(from ${-Z/2}deg,#34D399 0deg ${Z}deg,rgba(255,255,255,.07) ${Z}deg 360deg)`
-    : 'conic-gradient(from 0deg,rgba(255,255,255,.07) 0deg 360deg)';
-  $('#upgChance').textContent = ch > 0 ? (ch >= 10 ? Math.round(ch) : ch.toFixed(1))+'%' : '—';
+function updateUpgButton(){
   $('#upgGo').disabled = upg.busy || !upg.target || !upg.inputs.size;
 }
 function renderUpgrader(){
   const bonus = myUpgBonus();
-  $('#upgHint').innerHTML = 'Шанс = 90% × (вход / цель)' +
-    (bonus > 0 ? ` · <b style="color:var(--green)">🎖 +${bonus}% от привилегии</b>` : '');
+  const refundPct = CFG.upgrade ? Math.round(CFG.upgrade.refund*100) : 25;
+  $('#upgHint').innerHTML = 'Провал вернёт <b style="color:var(--gold)">' + refundPct + '%</b> стоимости входа' +
+    (bonus > 0 ? ` · <b style="color:var(--green)">🎖 +${bonus}% шанс</b>` : '');
   const inv = $('#upgInv');
   if (!S.inventory.length){
     inv.innerHTML = `<div class="upg-empty">Инвентарь пуст — открой кейс</div>`;
@@ -1463,7 +1484,7 @@ function renderUpgrader(){
   } else {
     tg.innerHTML = ITEM_IDS.filter(id => itV(id) > inV).map(id => {
       const r = RARC(itR(id));
-      const ch = Math.min(95, Math.max(1, inV/itV(id)*90) * (1 + myUpgBonus()/100));
+      const ch = Math.min(CFG.upgrade.max, Math.max(1, inV/itV(id)*CFG.upgrade.base) * (1 + myUpgBonus()/100));
       return `<button class="upg-it ${upg.target===id?'sel':''}" data-id="${id}" style="--bc:${hexA(r.c,.5)}">
         <span class="e">${itE(id)}</span><b>${fmtShort(itV(id))}</b><span class="p">${ch >= 10 ? Math.round(ch) : ch.toFixed(1)}%</span></button>`;
     }).join('');
@@ -1474,17 +1495,72 @@ function renderUpgrader(){
       renderUpgrader();
     });
   }
-  updateWheel();
+  updateUpgButton();
+  /* Перерисовать ленту под новый шанс, если не крутится */
+  if (!upg.busy) drawUpgRibbon(upgChanceVal(), null);
+}
+/* Лента апгрейдера: победная зона в центре, соседние клетки — мимо */
+function drawUpgRibbon(chance, wonCell){
+  const ribbon = $('#upgRibbon');
+  const W = $('#upgRibbonWrap') ? $('#upgRibbonWrap').clientWidth || 380 : 380;
+  const N = 48, WIN = 24;
+  ribbon.innerHTML = '';
+  const tgt = ITEMS[upg.target];
+  const bonus = myUpgBonus();
+  const baseChance = Math.min(CFG.upgrade.max, Math.max(1, upgInputVal()/itV(upg.target)*CFG.upgrade.base));
+  const bonusCells = bonus > 0 ? Math.round(chance - baseChance) : 0;
+  const winCells = Math.max(1, Math.round(chance / 100 * N));
+  for (let i = 0; i < N; i++){
+    const el = document.createElement('div');
+    el.className = 'upg-rib-cell';
+    if (tgt) el.innerHTML = `<span class="e">${tgt[0]}</span><span class="v">${fmtShort(tgt[3])}</span>`;
+    else el.innerHTML = `<span class="e">🎯</span>`;
+    const dist = Math.abs(i - WIN);
+    if (i === WIN && wonCell) el.classList.add('won');
+    else if (dist < winCells/2 + (bonusCells/2)) el.classList.add(bonus > 0 && dist >= winCells/2 ? 'boostzone' : 'winzone');
+    ribbon.append(el);
+  }
+  return {W, N, WIN};
+}
+function spinUpgRibbon(chance, win){
+  return new Promise(resolve => {
+    const ribbon = $('#upgRibbon');
+    const {W, N, WIN} = drawUpgRibbon(chance, false);
+    const off0 = W/2 - (2*RIBSTEP + RIBW/2);
+    const jitter = (Math.random()*0.56 - 0.28) * RIBW;
+    const off1 = W/2 - (WIN*RIBSTEP + RIBW/2) + jitter;
+    const t0 = performance.now(), dur = 4300;
+    const ease = t => 1 - Math.pow(1-t, 4.3);
+    let lastIdx = 2, done = false;
+    const watchdog = setTimeout(() => { if (!done){ done = true; resolve(); } }, dur + 700);
+    const frame = now => {
+      if (done) return;
+      const t = Math.min(1,(now-t0)/dur);
+      const cur = off0 + (off1-off0)*ease(t);
+      ribbon.style.transform = `translateX(${cur}px)`;
+      const idx = Math.floor((W/2-cur)/RIBSTEP);
+      if (idx !== lastIdx){ lastIdx = idx; tickSnd(); }
+      if (t < 1) requestAnimationFrame(frame);
+      else {
+        done = true; clearTimeout(watchdog);
+        const cell = ribbon.children[WIN];
+        if (cell && win) cell.classList.add('won');
+        resolve();
+      }
+    };
+    requestAnimationFrame(frame);
+  });
 }
  $('#upgGo').onclick = async () => {
   if (upg.busy || !upg.target || !upg.inputs.size) return;
   const ch = upgChanceVal();
-  upg.lastChance = ch; upg.busy = true;
+  upg.busy = true;
   $('#upgRes').className = 'upg-res';
-  updateWheel();
+  updateUpgButton();
   let d;
   try { d = await api('upgrade', {uids:[...upg.inputs], target:upg.target}); }
-  catch(e){ upg.busy = false; updateWheel(); if (e.error) toast(e.error); return; }
+  catch(e){ upg.busy = false; updateUpgButton(); if (e.error) toast(e.error); return; }
+  const inNames = d.input ? 'предметы' : '';
   S.inventory = S.inventory.filter(x => !upg.inputs.has(x.uid));
   upg.inputs.clear();
   if (d.win && d.entry){
@@ -1493,41 +1569,24 @@ function renderUpgrader(){
       S.stats.best = {e:itE(d.entry.id), n:itN(d.entry.id), v:itV(d.entry.id)};
   }
   S.stats.upgrades = (S.stats.upgrades||0) + 1;
+  const targetBackup = upg.target;
   upg.target = null;
-  const win = d.win;
-  const Z = Math.max(d.chance*3.6, 2);
-  const m = Math.min(4, Z*0.25);
-  const final = win ? (Math.random()*(Z-2*m)) - (Z/2 - m) : (Z/2 + 6) + Math.random()*(360 - Z - 12);
-  const cur = ((upg.angle%360)+360)%360;
-  const delta = ((final-cur)%360+360)%360;
-  const targetA = upg.angle + 360*5 + delta;
-  const dial = $('#upgDial'), t0 = performance.now(), dur = 4200, from = upg.angle;
-  const ease = t => 1 - Math.pow(1-t, 4.4);
-  let lastTick = -1;
-  const step = now => {
-    const t = Math.min(1,(now-t0)/dur);
-    const a = from + (targetA-from)*ease(t);
-    dial.style.transform = `rotate(${a}deg)`;
-    const tk = Math.floor(a/40);
-    if (tk !== lastTick){ lastTick = tk; beep(760+Math.random()*180,.03,'square',.028); }
-    if (t < 1) requestAnimationFrame(step);
-    else {
-      upg.angle = targetA; upg.busy = false;
-      const res = $('#upgRes');
-      if (d.win){
-        res.className = 'upg-res win show';
-        res.innerHTML = `🎉 Апгрейд удался! Получено ${itE(d.entry.id)} <b>${itN(d.entry.id)}</b> (+${fmtShort(itV(d.entry.id))} HC)`;
-        winSnd(itR(d.entry.id)); vib([40,60,80]);
-        burst($('#upgWheel'), ['#34D399','#A855F7','#fff']);
-      } else {
-        res.className = 'upg-res lose show';
-        res.innerHTML = `💨 Неудача — предметы сгорели.`;
-        beep(150,.3,'sawtooth',.07); vib([60,40,60]);
-      }
-      renderProfile(); renderUpgrader(); updateWheel();
-    }
-  };
-  requestAnimationFrame(step);
+  /* Крутится лента с фактическим шансом сервера */
+  await spinUpgRibbon(d.chance, d.win);
+  upg.busy = false;
+  const res = $('#upgRes');
+  if (d.win){
+    res.className = 'upg-res win show';
+    res.innerHTML = `🎉 Апгрейд удался! Получено ${itE(d.entry.id)} <b>${itN(d.entry.id)}</b> (+${fmtShort(itV(d.entry.id))} HC)`;
+    winSnd(itR(d.entry.id)); vib([40,60,80]);
+    burst($('#upgRibbonWrap'), ['#34D399','#A855F7','#fff']);
+  } else {
+    res.className = 'upg-res lose show';
+    res.innerHTML = `💨 Неудача — возвращено <b>${fmtShort(d.refund || 0)} HC</b> (${d.refundPercent || 25}% от входа)`;
+    beep(150,.3,'sawtooth',.07); vib([60,40,60]);
+  }
+  upg.target = targetBackup;
+  renderProfile(); renderUpgrader();
 };
 
 /* ================= Инвентарь ================= */
@@ -2870,7 +2929,7 @@ function bootApp(){
   try {
     CFG = await fetch('/api/config').then(r => r.json());
   } catch(e){
-    document.body.innerHTML = '<div style="min-height:100dvh;display:grid;place-items:center;text-align:center;color:#928AA8"><div><div style="font-size:50px">📡</div><div style="margin-top:10px">Нет связи с сервером.<br>Убедись, что запущены data.js + server.js v7.1,<br>и обнови страницу (Ctrl+Shift+R).</div></div></div>';
+    document.body.innerHTML = '<div style="min-height:100dvh;display:grid;place-items:center;text-align:center;color:#928AA8"><div><div style="font-size:50px">📡</div><div style="margin-top:10px">Нет связи с сервером.<br>Убедись, что запущены data.js + server.js v8,<br>и обнови страницу (Ctrl+Shift+R).</div></div></div>';
     return;
   }
   ITEMS = CFG.items; CASES = CFG.cases;
