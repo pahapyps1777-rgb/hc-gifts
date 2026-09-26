@@ -160,7 +160,6 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .keno-cell.hit{background:rgba(52,211,153,.2);border-color:var(--green);color:var(--green);box-shadow:0 0 12px -3px var(--green)}
 .keno-info{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:10px}
 .keno-info b{color:var(--text);font-family:var(--mono)}
-/* ===== v9: Blackjack ===== */
 .bj-stage{background:var(--bg);border:1px solid var(--border2);border-radius:16px;padding:14px;margin-bottom:12px}
 .bj-row{display:flex;justify-content:center;gap:8px;min-height:74px;flex-wrap:wrap}
 .bj-lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:center;margin:6px 0 4px}
@@ -172,14 +171,11 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .bj-val{font-family:var(--mono);font-weight:800;color:var(--text)}
 .bj-btns{display:flex;gap:9px;margin-bottom:12px}
 .bj-btns .btn{flex:1;padding:12px}
-/* ===== v9: Zombie Rush ===== */
 .zomb-arena{background:var(--bg);border:1px solid var(--border2);border-radius:16px;height:150px;position:relative;overflow:hidden;margin-bottom:12px}
 .zomb-target{position:absolute;font-size:34px;cursor:pointer;transition:transform .1s;user-select:none;z-index:2;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5))}
 .zomb-target:active{transform:scale(1.25)}
-.zomb-bg{position:absolute;font-size:22px;opacity:.25;pointer-events:none;z-index:1}
 .zomb-hp{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-bottom:10px}
 .zomb-hp i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--red))}
-/* ===== v9: Gift Rain ===== */
 .rain-arena{background:linear-gradient(180deg,#1E1B4B,#0A0714);border:1px solid var(--border2);border-radius:16px;height:260px;position:relative;overflow:hidden;margin-bottom:10px;cursor:pointer}
 .rain-gift{position:absolute;font-size:26px;user-select:none;animation:giftFall linear forwards;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));z-index:2}
 .rain-gift.caught{animation:none;transform:scale(1.6);opacity:0;transition:all .25s;z-index:4}
@@ -201,7 +197,6 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .battle-banner.show{display:block;animation:popIn .4s}
 .battle-banner.win{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4);color:var(--green)}
 .battle-banner.lose{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);color:var(--red)}
-/* ===== v9: 3D Курица (переделана) ===== */
 .ch3d-wrap{display:flex;flex-direction:column;align-items:center;background:linear-gradient(180deg,#1A1430,#141021);border:1px solid var(--border);border-radius:20px;padding:18px 12px 14px;margin-bottom:10px;perspective:700px;overflow:hidden;position:relative}
 .ch3d-wrap::before{content:"";position:absolute;bottom:0;left:0;right:0;height:60px;background:radial-gradient(ellipse at 50% 100%,rgba(139,92,246,.18),transparent 70%);pointer-events:none}
 .ch3d-scene{width:190px;height:210px;cursor:grab;touch-action:none}
@@ -212,7 +207,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .ch-comb{position:absolute;left:50%;top:-14px;width:22px;height:16px;margin-left:-11px;transform:translateZ(80px);background:linear-gradient(180deg,#EF4444,#B91C1C);border-radius:50% 50% 20% 20%;z-index:1}
 .ch-comb::before,.ch-comb::after{content:"";position:absolute;top:-7px;width:9px;height:12px;background:inherit;border-radius:50% 50% 20% 20%}
 .ch-comb::before{left:-2px}.ch-comb::after{right:-2px}
-.ch-eye{position:absolute;top:22px;width:15px;height:17px;background:#fff;border-radius:50%;box-shadow:inset 0 -3px 4px rgba(0,0,0,.25);overflow:visible}
+.ch-eye{position:absolute;top:22px;width:15px;height:17px;background:#fff;border-radius:50%;box-shadow:inset 0 -3px 4px rgba(0,0,0,.25)}
 .ch-pupil{position:absolute;left:4px;top:5px;width:7px;height:8px;background:#1A1A2E;border-radius:50%;transition:left .08s,top .08s}
 .ch-eye.l{left:10px}.ch-eye.r{right:10px}
 .ch-beak{position:absolute;left:50%;top:46px;width:0;height:0;margin-left:-12px;border-left:12px solid transparent;border-right:12px solid transparent;border-top:16px solid #F59E0B;transform:translateZ(10px);filter:drop-shadow(0 2px 2px rgba(0,0,0,.18))}
@@ -288,7 +283,6 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 .cosm-it button.wear{background:var(--surface2);border:1px solid var(--border2);color:var(--accent-txt)}
 .cosm-it button[disabled]{opacity:.4;pointer-events:none}
 .cosm-it.owned{border-color:rgba(52,211,153,.4)}
-/* ===== Апгрейдер v9: старое колесо, новый дизайн ===== */
 .upg-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:16px 14px 14px;text-align:center;position:relative;overflow:hidden}
 .upg-card::before{content:"";position:absolute;top:-40%;left:-30%;width:60%;height:180%;background:radial-gradient(ellipse,rgba(139,92,246,.08),transparent 70%);pointer-events:none}
 .upg-wheel{position:relative;width:224px;height:224px;margin:10px auto 4px}
@@ -750,6 +744,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
   <div class="sheet-sub" id="cosmBal"></div>
   <div class="cosm-grid" id="cosmList"></div>
 </div></div>
+
 <div class="overlay" id="ovCoin"><div class="sheet">
   <div class="sheet-head"><div class="sheet-title">🪙 Coin Flip</div><button class="icon-btn" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <div class="side-btns"><button class="btn btn-ghost sel" id="coinHeads">🦅 Орёл</button><button class="btn btn-ghost" id="coinTails">🌙 Решка</button></div>
@@ -916,7 +911,7 @@ input[type=range].dice-r{width:100%;accent-color:var(--accent);margin:6px 0 2px}
 
 <div class="overlay" id="ovRain"><div class="sheet">
   <div class="sheet-head"><div class="sheet-title">🎁 Gift Rain</div><button class="icon-btn" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-  <div class="sheet-sub">10 секунд падают 30 подарков — лови тапом! Пустые не мешают. Лучшие дают x0.05–x0.5 от ставки, с удачей все x2</div>
+  <div class="sheet-sub">10 секунд падают 30 подарков — лови тапом! Пустые не мешают. Лучшие дают x0.05–x0.5, с удачей все x2</div>
   <div class="rain-arena" id="rainArena">
     <div class="rain-timer" id="rainTimer">10.0</div>
     <div class="rain-caught" id="rainCaught">🎁 0</div>
@@ -993,7 +988,6 @@ const HILO_RANKS = Object.keys(HILO_VAL);
 const HILO_SUITS = ['♠','♥','♦','♣'];
 const WHEEL_COLORS = ['#F87171','#F5B544','#38BDF8','#A855F7','#34D399','#F97316'];
 const RED_N = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
-const BJ_RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 
 /* ================= Конфиг с сервера ================= */
 let CFG = null, ITEMS = null, CASES = null, ITEM_IDS = null, LIMITED = new Set(), caseById = id => null;
@@ -1351,7 +1345,6 @@ function startSpin(winItem, dur){
   const off0 = W/2 - (2*STEP + CELL/2);
   const jitter = (Math.random()*0.56 - 0.28) * CELL;
   const off1 = W/2 - (WIN*STEP + CELL/2) + jitter;
-  const accel = dur * 0.12;
   const ease = t => {
     if (t < 0.12){
       const p = t / 0.12;
@@ -1512,7 +1505,7 @@ function renderContents(cs){
   closeOv($('#ovRoll'));
 };
 
-/* ================= Апгрейдер v9: старое колесо, новый дизайн ================= */
+/* ================= Апгрейдер v9 (старое колесо, новый дизайн) ================= */
 const upg = {inputs:new Set(), target:null, busy:false, angle:0, lastChance:0};
 function upgInputVal(){
   let s = 0;
@@ -1536,15 +1529,13 @@ function upgChanceVal(){
 function updateWheel(){
   const ch = upg.busy ? upg.lastChance : upgChanceVal();
   const Z = Math.max(ch*3.6, 0.001);
-  const bonus = myUpgBonus();
-  const base = Math.max(0, ch - Math.min(ch, ch*bonus/100/(1+bonus/100)));
   $('#upgDial').style.background = ch > 0
     ? `conic-gradient(from ${-Z/2}deg,#34D399 0deg ${Z}deg,rgba(255,255,255,.07) ${Z}deg 360deg)`
     : 'conic-gradient(from 0deg,rgba(255,255,255,.07) 0deg 360deg)';
   $('#upgChance').textContent = ch > 0 ? (ch >= 10 ? Math.round(ch) : ch.toFixed(1))+'%' : '—';
   $('#upgGo').disabled = upg.busy || !upg.target || !upg.inputs.size;
   const lg = $('#upgLegend');
-  if (lg) lg.style.display = (bonus > 0 && ch > 0) ? 'flex' : 'none';
+  if (lg) lg.style.display = (myUpgBonus() > 0 && ch > 0) ? 'flex' : 'none';
 }
 function renderUpgrader(){
   const bonus = myUpgBonus();
@@ -2662,7 +2653,6 @@ function bjReset(){
   bj.inRound = !d.done;
   $('#bjDealer').innerHTML = bjShow(d.dealer, !d.done);
   $('#bjPlayer').innerHTML = bjShow(d.player);
-  $('#bjDVal').textContent = d.done ? '?' : '?';
   $('#bjPVal').textContent = bjHandVal(d.player);
   const cr = $('#bjRes');
   if (d.done){
@@ -2945,7 +2935,7 @@ function openGame(id){
   closeOv('#ovPromo');
 };
 
-/* ================= 🐔 3D-курица v9 (зрачки-слежение) ================= */
+/* ================= 🐔 3D-курица v9 ================= */
 let chRotX = -8, chRotY = -18, chDrag = null;
 const chScene = $('#chScene'), chEl = $('#ch3d');
 function chApply(){ if (chEl) chEl.style.transform = `rotateX(${chRotX}deg) rotateY(${chRotY}deg)`; }
@@ -2964,7 +2954,6 @@ if (chScene){
   chScene.addEventListener('pointerup', () => chDrag = null);
   chScene.addEventListener('pointercancel', () => chDrag = null);
 }
-/* Зрачки следят за курсором по всей странице */
 document.addEventListener('pointermove', e => {
   const pL = $('#pupilL'), pR = $('#pupilR');
   if (!pL || !pR) return;
